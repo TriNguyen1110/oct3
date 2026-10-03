@@ -8,16 +8,19 @@
     "build": "eve build && next build",
     "start": "next start --hostname 127.0.0.1 --port 3003",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test tests/*.test.ts"
+    "test": "node --import tsx --test tests/*.test.ts",
+    "cli": "node --env-file-if-exists=.env.local cli/oct3.mjs"
   },
   "engines": {
     "node": "24.x"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "4.0.46",
+    "@modelcontextprotocol/server": "2.3.0",
     "@supabase/supabase-js": "2.117.2",
     "ai": "7.0.58",
     "eve": "0.47.3",
+    "mcp-handler": "2.2.0",
     "mppx": "0.13.1",
     "next": "16.3.8",
     "playwright-core": "1.63.0",
@@ -37,5 +40,8 @@
     "eve": {
       "undici": "8.10.2"
     }
+  },
+  "bin": {
+    "oct3": "./cli/oct3.mjs"
   }
 }

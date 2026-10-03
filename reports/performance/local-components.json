@@ -1,0 +1,39 @@
+{
+  "measured_at": "2026-10-03T18:34:39.867Z",
+  "environment": "local synthetic HTML form + real Claude API",
+  "model": "claude-sonnet-5-5",
+  "elapsed_ms": 20654,
+  "tool_calls": [
+    "inspect_task_page",
+    "plan_task_fields",
+    "fill_task_component",
+    "fill_task_component",
+    "fill_task_component",
+    "fill_task_component",
+    "plan_task_fields",
+    "fill_task_component",
+    "fill_task_component",
+    "verify_prepared_task"
+  ],
+  "steps": 9,
+  "usage": {
+    "inputTokens": 38709,
+    "inputTokenDetails": {
+      "noCacheTokens": 38709,
+      "cacheReadTokens": 0,
+      "cacheWriteTokens": 0
+    },
+    "outputTokens": 1669,
+    "outputTokenDetails": {
+      "textTokens": 1669,
+      "reasoningTokens": 0
+    },
+    "totalTokens": 40378
+  },
+  "assertions": {
+    "supplied_values_retained": true,
+    "conditional_field_discovered": true,
+    "final_submit_count": 0
+  },
+  "merchant_execution": false
+}

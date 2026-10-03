@@ -26,6 +26,15 @@ locally; live provider verification is separate. Supabase project setup and Stri
 configuration are pending. Fixture data and test payments must be labeled;
 neither proves a merchant order, freelancer hire, or ticket booking.
 
+## Agent connections and evidence
+
+- [Connect with CLI or MCP](docs/CONNECT.md)
+- [Sponsor integrations and proof](docs/SPONSORS.md)
+- [Demo runbook and latency](docs/DEMO.md)
+- [Form components and bounded recovery](docs/RELIABILITY.md)
+- [Coding team models and thinking levels](MODEL_ROUTING.md)
+- [Independent local verification](reports/verification/passed-local.md)
+
 ## Stack and boundaries
 
 Next.js and Eve on Vercel, Claude for coordination, remote Surfsky browsers,

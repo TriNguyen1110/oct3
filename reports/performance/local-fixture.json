@@ -1,0 +1,61 @@
+{
+  "measured_at": "2026-10-03T18:18:37.338Z",
+  "origin": "http://127.0.0.1:3003",
+  "mode": "fixture",
+  "environment": "local",
+  "mission_id": "4b577c5f-4069-4e94-9e17-da230a7001c2",
+  "time_to_results_ms": 78,
+  "measurements": [
+    {
+      "operation": "submit",
+      "duration_ms": 59,
+      "status": 202
+    },
+    {
+      "operation": "idempotent_submit",
+      "duration_ms": 19,
+      "status": 200
+    },
+    {
+      "operation": "read_results",
+      "duration_ms": 13,
+      "status": 200
+    },
+    {
+      "operation": "list",
+      "duration_ms": 7,
+      "status": 200
+    },
+    {
+      "operation": "revise_budget",
+      "duration_ms": 18,
+      "status": 200
+    }
+  ],
+  "outcomes": [
+    {
+      "lane": "amazon",
+      "status": "awaiting_approval",
+      "options": 2,
+      "blocker": null
+    },
+    {
+      "lane": "fiverr",
+      "status": "awaiting_approval",
+      "options": 2,
+      "blocker": null
+    },
+    {
+      "lane": "event_tickets",
+      "status": "awaiting_approval",
+      "options": 1,
+      "blocker": null
+    }
+  ],
+  "service_payment": "waived_fixture",
+  "notes": [
+    "Single observed run, not a latency guarantee or benchmark distribution.",
+    "No purchases, freelancer messages, or bookings were authorized by this script.",
+    "Fixture timings measure the application path, not browser work or sponsor payment processing."
+  ]
+}

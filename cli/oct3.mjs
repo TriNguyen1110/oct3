@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+import { readFile } from "node:fs/promises";
+
+const usage = `oct3 — browser workers for your agent
+
+  oct3 submit <mission.json> --key <stable-idempotency-key>
+  oct3 status <mission-id>
+  oct3 list
+
+Set OCT3_BASE_URL and OCT3_AGENT_TOKEN in your environment.
+Outputs JSON. Reuse your submit key after any network failure.
+Approvals happen in the manager dashboard.
+`;
+
+async function main(args) {
+  if (!args.length || args[0] === "--help" || args[0] === "help") { process.stdout.write(usage); return; }
+  const [command, ...rest] = args;
+  let path = "/api/missions", method = "GET", body, key;
+  if (command === "submit") {
+    if (rest.length !== 3 || rest[1] !== "--key" || !/^[A-Za-z0-9_.:-]{8,160}$/.test(rest[2])) throw new Error("Usage: oct3 submit <mission.json> --key <stable-key-of-at-least-8-characters>");
+    const raw = await readFile(rest[0], "utf8");
+    if (Buffer.byteLength(raw) > 65536) throw new Error("Mission input exceeds 64 KiB");
+    body = JSON.parse(raw); method = "POST"; key = rest[2];
+  } else if (command === "status") {
+    if (rest.length !== 1 || !/^[a-f0-9-]{36}$/i.test(rest[0])) throw new Error("Usage: oct3 status <mission-uuid>");
+    path += `/${encodeURIComponent(rest[0])}`;
+  } else if (command !== "list" || rest.length) throw new Error("Use oct3 submit, status, or list. See --help.");
+  const base = new URL(process.env.OCT3_BASE_URL ?? "http://127.0.0.1:3003");
+  if (base.username || base.password || base.search || base.hash || base.pathname !== "/") throw new Error("OCT3_BASE_URL must be an origin without credentials, path or query");
+  if (base.protocol !== "https:" && !(base.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(base.hostname))) throw new Error("Use HTTPS for a remote oct3 service");
+  if (!process.env.OCT3_AGENT_TOKEN) throw new Error("Set OCT3_AGENT_TOKEN in your environment");
+  const response = await fetch(new URL(path, base), {
+    method, redirect: "error", signal: AbortSignal.timeout(60000),
+    headers: { Authorization: `Bearer ${process.env.OCT3_AGENT_TOKEN}`, "Content-Type": "application/json", ...(key ? { "Idempotency-Key": key } : {}) },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+  const data = await response.json().catch(() => ({ error: { code: "invalid_response", message: "The server did not return JSON." } }));
+  process.stdout.write(JSON.stringify(data, null, 2) + "\n");
+  if (!response.ok) process.exitCode = 1;
+}
+
+main(process.argv.slice(2)).catch(error => {
+  const message = error instanceof TypeError ? "Network request failed. Retry submission with the same idempotency key." : error.message;
+  process.stderr.write(JSON.stringify({ error: { code: "client_error", message } }) + "\n");
+  process.exitCode = 1;
+});

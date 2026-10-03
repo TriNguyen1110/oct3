@@ -31,6 +31,12 @@ Build one readable mission screen:
 - Constraint edit/replan and an understandable infeasible-plan state.
 - Final structured results for the caller, confirmations and remaining handoffs.
 
+Visual direction: dark cinematic plum and ink, ivory serif headlines, champagne
+actions, translucent glass, and distinct restrained worker accents. Use readable
+14–16px core text, 44px or larger controls, generous spacing, and purposeful
+entrance/hover/press/state motion. Respect reduced-motion preferences. Keep local
+assets and avoid decorative dependencies. Verify desktop and mobile output.
+
 Design around decisions. Keep tokens, hidden reasoning, cookies, raw payment
 credentials and implementation logs off product screens. Do not expose private
 profile/session links. Clearly label fixtures, test mode, recordings and replays.

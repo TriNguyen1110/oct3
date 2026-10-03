@@ -1,0 +1,156 @@
+{
+  "measured_at": "2026-10-03T18:19:16.979Z",
+  "origin": "http://127.0.0.1:3003",
+  "mode": "live_read_only",
+  "environment": "local",
+  "mission_id": "18adf869-952f-4e75-99cc-091ef240d5e4",
+  "time_to_results_ms": 21036,
+  "measurements": [
+    {
+      "operation": "submit",
+      "duration_ms": 575,
+      "status": 202
+    },
+    {
+      "operation": "idempotent_submit",
+      "duration_ms": 17,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 15,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 42,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 13,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 34,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 17,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 13,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 18,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 16,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 11,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 51,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 13,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 16,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 25,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 25,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 29,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 13,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 16,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 9,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 10,
+      "status": 200
+    },
+    {
+      "operation": "poll",
+      "duration_ms": 23,
+      "status": 200
+    },
+    {
+      "operation": "read_results",
+      "duration_ms": 11,
+      "status": 200
+    },
+    {
+      "operation": "list",
+      "duration_ms": 16,
+      "status": 200
+    }
+  ],
+  "outcomes": [
+    {
+      "lane": "amazon",
+      "status": "needs_human",
+      "options": 0,
+      "blocker": "No verifiable USD options were found in this page layout. Open the source for a manager handoff."
+    },
+    {
+      "lane": "fiverr",
+      "status": "options_ready",
+      "options": 3,
+      "blocker": "Select an option and verify the final merchant checkout total, including fees, before a purchase proposal can be approved."
+    },
+    {
+      "lane": "event_tickets",
+      "status": "options_ready",
+      "options": 1,
+      "blocker": "Select an option and verify the final merchant checkout total, including fees, before a purchase proposal can be approved."
+    }
+  ],
+  "service_payment": "not_configured",
+  "notes": [
+    "Single observed run, not a latency guarantee or benchmark distribution.",
+    "No purchases, freelancer messages, or bookings were authorized by this script.",
+    "Read-only live merchant observations; provider blocking remains an explicit outcome."
+  ]
+}

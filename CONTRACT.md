@@ -28,6 +28,7 @@ service credential and manager approval identity are distinct.
 | POST /api/tasks/:id/approve | Manager submits exact proposal ID/revision; ownership, budget and immutable action checked; return Link approval URL/state if required |
 | POST /api/tasks/:id/reject | Reject proposal; release only reservations with no ambiguous or confirmed commitment |
 | POST /api/tasks/:id/resume | Backend verifies current application and Link approval with the provider, claims the attempt once, and resumes execution; client-supplied payment status is never trusted |
+| POST /api/tasks/:id/retry-research | Manager retries read-only research for this existing task and current revision; acquire its lane lease, preserve mission identity and existing commitments; do not submit another paid mission |
 
 Use MPP library's documented format, not a custom payment challenge. Payment
 redemption and mission creation are idempotent: same authenticated key returns
@@ -87,6 +88,15 @@ One persistent Surfsky profile per lane/account; bounded retries and runtime.
 Ambiguous checkout returns needs_human plus uncertain evidence; reconcile before
 retrying. Stop idle compute while preserving authorized persistent sessions.
 Progress is action/observation data, not hidden chain-of-thought.
+
+## Agent interfaces — simplified kickoff slice
+
+The CLI and authenticated HTTP MCP endpoint wrap the same mission API.
+Only three operations: submit a mission with an idempotency key, read its status
+and results, and list missions in the caller workspace. They share persistence,
+budget accounting and authorization; they do not implement a second scheduler.
+Manager approval stays in the dashboard. No public signup/OAuth onboarding or
+additional workflow builder is included. Browser Assist is deferred by the user.
 
 ## Invariants
 

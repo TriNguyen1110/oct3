@@ -1,0 +1,70 @@
+ts	kind	id	value	owner	scope	note
+kickoff	item	01	backlog	coordinator	DATA	Create new repo; freeze contract, accounts, ticket provider and actual commands by 11:15
+kickoff	item	02	backlog	browser	BROWSER	Prove Surfsky sessions/concurrency and all three fixed portal paths by 12:00; record limits
+kickoff	item	03	backlog	backend	DATA	Supabase workspace records, auth, mission API and deterministic fixtures
+kickoff	item	04	backlog	frontend	SCREEN	Three-lane mission board and spending UI against frozen contract
+kickoff	item	05	backlog	backend	DATA	External caller, durable Eve jobs and verified idempotent Stripe service payment
+kickoff	item	06	backlog	browser	BROWSER	Grounded lane proposals, approved execution adapter and provider evidence
+kickoff	item	07	backlog	backend	DATA	Exact approvals, Link flow, atomic reservations, retries and constraint revision
+kickoff	item	08	backlog	frontend	SCREEN	Approval/replan/handoff/result states; separate test and merchant evidence
+kickoff	item	09	backlog	coordinator	JOURNEY	Early hosted deployment and external-agent demonstration
+kickoff	item	10	backlog	verifier	JOURNEY	Verify core invariants and hosted caller-to-results flow; return actionable failures
+kickoff	item	11	backlog	coordinator	SCREEN	Freeze 16:00; rehearse/record; submit and validate links by 17:00 or earlier cutoff
+2026-10-03T18:05:51.259138+00:00	item	02	doing	browser	BROWSER	Verified oct3 independent root; implementing remote Surfsky adapter and concurrent read-only portal proofs
+2026-10-03T18:12:00Z	item	04	doing	frontend	SCREEN	Building three-lane mission desk; explicit preview state with authenticated API wiring
+2026-10-03T18:12:00Z	item	08	doing	frontend	SCREEN	Exact approval detail, constraints editor, evidence and caller-result panels
+2026-10-03T18:06:54.909010+00:00	item	01	doing	coordinator	DATA	New independent oct3 repo created; all three builders passed workspace guard; shared types frozen; Node24 dependencies installed
+2026-10-03T18:06:54.909010+00:00	fact	repo-root	verified	coordinator	DATA	/Users/tringuyen/Developer/.worktrees/oct3; private GitHub remote https://github.com/TriNguyen1110/oct3
+2026-10-03T18:06:54.909010+00:00	fact	surfsky-config	configured	coordinator	BROWSER	Copied Surfsky key and assigned API host from job_search into ignored .env.local; live validation delegated
+2026-10-03T18:06:54.909010+00:00	fact	stripe-setup	pending	coordinator	DATA	User confirms Stripe account integration not yet set up; no payment success claims
+2026-10-03T18:06:54.909010+00:00	fact	supabase-setup	pending	coordinator	DATA	New product database credentials requested; schema work continues
+2026-10-03T18:06:54.909010+00:00	fact	commands	recorded	coordinator	DATA	COMMANDS.md: Node24 npm install; npm run dev port3003; npm run build; npm run typecheck; npm test after tests exist
+2026-10-03T18:06:55.858320+00:00	item	03	doing	backend	DATA	Implementing persisted authenticated mission API and fixture data
+2026-10-03T18:06:55.858529+00:00	item	05	doing	backend	DATA	Implementing agent-facing durable dispatch and explicit Stripe setup status
+2026-10-03T18:06:55.858533+00:00	item	07	doing	backend	DATA	Implementing revision-bound approval and atomic budget reservations
+2026-10-03T18:09:48.810331+00:00	fact	claude-runtime	verified	coordinator	DATA	Anthropic Sonnet5.5 actual AI SDK request passed; model claude-sonnet-5-5; no credentials exposed
+2026-10-03T18:09:48.810331+00:00	fact	dependency-audit	verified	coordinator	DATA	npm install completed; Eve undici override8.10.2; npm audit reports zero known vulnerabilities
+2026-10-03T18:11:51.844676+00:00	item	12	doing	frontend	SCREEN	User approved floating Browser Assist: selected-worker evidence/help and same-task research retry; live view requires separately verified provider support
+2026-10-03T18:12:28.845318+00:00	fact	surfsky-probes	verified	browser	BROWSER	Three concurrent oct3-owned profiles; shared US Fiverr options15.4s and Eventbrite listing13.6s; Amazon5037.2s; all stops confirmed and active0; 15 account slots. Evidence src/browser/README.md
+2026-10-03T18:12:28.845318+00:00	fact	claude-browser-ranking	verified	browser	BROWSER	Live Claude ranking took1.3s and excluded irrelevant food-menu gig; selects observed indices only; seven input/approval assertions and global tsc pass
+2026-10-03T18:12:28.845318+00:00	item	02	review	browser	BROWSER	Stable browser slice src/browser/** SHA256 05595db36a5fece15beeccedf3c4b7c1195454c338fbbcebd43f5e9939b9c109; actual portal limits documented; Amazon503 remains handoff
+2026-10-03T18:12:28.845318+00:00	item	06	review	browser	BROWSER	Grounded research and exact-approval validation implemented; merchant execution explicitly needs_human with no commitment. Stable slice SHA256 05595db36a5fece15beeccedf3c4b7c1195454c338fbbcebd43f5e9939b9c109
+2026-10-03T18:13:21.571197+00:00	item	03	review	backend	DATA	Stable backend slice SHA256 e119986afedfec2cf3451e9487882c3067b1a38fe819310f13eb0a32b3fcaea8; local persistence/auth/API/fixtures implemented; tsc and ten invariants pass; Supabase SQL unprovisioned
+2026-10-03T18:13:21.571197+00:00	item	07	review	backend	DATA	Same stable slice: exact approval, CAS reservations, revision invalidation and honest handoff; actual Link execution blocked/unimplemented
+2026-10-03T18:13:21.571197+00:00	item	05	blocked	backend	DATA	Eve dispatch and caller API authored; Stripe MPP and Link flow not implemented because Stripe account/profile unavailable; no paid claim
+2026-10-03T18:13:21.571197+00:00	fact	backend_first_slice	review	backend	DATA	Single workspace role tokens; local .data/missions.json; Supabase migration required; fixture78800 to58800 budget plan; no real merchant commitments
+2026-10-03T18:13:22.741163+00:00	item	12	delayed	coordinator	SCREEN	User explicitly deferred Browser Assist; retain only already useful task research retry endpoint
+2026-10-03T18:13:22.741163+00:00	item	13	doing	coordinator	JOURNEY	Simple CLI and MCP: submit/status/list through same backend; verify actual agent-to-results journey
+2026-10-03T18:16:11.812273+00:00	item	10	doing	verifier	JOURNEY	Independent tests added; browser and DATA deterministic checks active; hosted/MCP journey pending
+2026-10-03T18:16:11.812273+00:00	item	06	doing	browser	BROWSER	Independent test fails: Eventbrite SoldOut for quantity6 becomes availability unknown and can be offered; fix extract.ts
+2026-10-03T18:16:11.812273+00:00	item	07	doing	backend	DATA	Independent test fails: resumeTask downgrades confirmed commitment to needs_human; preserve terminal confirmation on retries
+2026-10-03T18:16:11.812273+00:00	fact	initial-verification	failed	verifier	DATA	npm test:14 passing checks and2 failing cases; tsc passes; reports/verification/initial.md documents limits and reproduction
+2026-10-03T18:17:19.660935+00:00	item	07	review	backend	DATA	Fixed protected commitment resume replay; stable SHA256 41eb51b76ec248a3308114b08f2e0ddfb505a4c156bfcf8bc262219704b8514c; independent DATA tests and tsc pass; Link remains unimplemented
+2026-10-03T18:17:19.660935+00:00	fact	sponsor_demo_docs	review	backend	JOURNEY	docs/SPONSORS.md and docs/DEMO.md connect actual sponsor proof to implementation and honest latency; local links verified; no new provider probes
+2026-10-03T18:17:28.005261+00:00	item	04	review	frontend	SCREEN	Stable 6aca772: three worker desk, budget and evidence; typecheck and HTTP200 pass; native CUA screenshot unavailable
+2026-10-03T18:17:28.005261+00:00	item	08	review	frontend	SCREEN	Stable 6aca772: exact approvals, constraint revision, honest fixture/live state, API polling, result and CLI/MCP connection modals
+2026-10-03T18:19:06.321874+00:00	item	06	review	browser	BROWSER	SoldOut regression fixed and9 deterministic browser checks pass; live final checkout remains an explicit handoff, not verified purchase
+2026-10-03T18:19:06.321874+00:00	item	07	review	backend	DATA	Confirmed/executing retry regression fixed;9 DATA invariant checks pass on local atomic storage; Supabase and Link integration still unverified
+2026-10-03T18:19:06.321874+00:00	fact	local-invariants	verified	verifier	DATA	npm test19 reported passes18leafchecks zero failures1opt-in skip; typecheck passes; hashes and limitations reports/verification/passed-local.md
+2026-10-03T18:19:06.321874+00:00	fact	cli-mcp-local-journey	verified	verifier	JOURNEY	Actual local MCP initialize3tools fixture submit/status/list plus standalone CLI same-key reuse; agent approval403 stale409 manager replan handoff;7.14s
+2026-10-03T18:19:06.321874+00:00	fact	merchant-completion	unverified	verifier	JOURNEY	No final merchant checkout implemented; StripeMPP Link Supabase hosted checks pending; fixture handoff cannot be claimed as order/hire/booking
+2026-10-03T18:21:05.821291+00:00	fact	amazon-200-error-page	verified	browser	BROWSER	One diagnostic returned HTTP200 Amazon error title with zero cards in14.5s; verification5035.6s; exact error-page classifier added; all sessions stopped and active0; tests9pass plus2focused assertions
+2026-10-03T18:21:05.821291+00:00	item	06	review	browser	BROWSER	Amazon classifier follow-up frozen; source src/browser/** SHA256 d98fed7416d10dd86c4e426b2f15ce81e06264b9bac7651567b90e6dd116a953; no checkout or parser-price fabrication; SoldOut preserved
+2026-10-03T18:22:19.205776+00:00	fact	live-local-latency	verified	coordinator	JOURNEY	Local Claude/Eve to Surfsky real research: handle575ms; all3outcomes21.036s; Fiverr3/Eventbrite1 options; Amazon error-page handoff; reports/performance/local-live.json
+2026-10-03T18:22:19.205776+00:00	fact	fixture-api-latency	verified	coordinator	JOURNEY	Local labeled fixture: submit59ms; read13ms; replan18ms; app path only, not browser/payment latency
+2026-10-03T18:22:19.205776+00:00	item	13	review	coordinator	JOURNEY	CLI submit/status/list and HTTP MCP3tools share same backend; independent actual local journey passed7.14s; frozen cli/oct3.mjs app/api/mcp/route.ts
+2026-10-03T18:22:19.205776+00:00	fact	vercel-project	linked	coordinator	JOURNEY	Eve linked separate oct3 project on Node24 with Next preset; production provider/auth environment set without exposing values; deployment pending
+2026-10-03T18:22:19.205776+00:00	fact	sponsor-evidence	documented	coordinator	JOURNEY	docs/SPONSORS.md maps every sponsor to implementation/proof/gaps; docs/DEMO.md records measured latency and90s labeled demo script
+2026-10-03T18:23:30.420591+00:00	item	04	review	frontend	SCREEN	Stable 0f50e0e: old Hollywood editorial restyle; local serif fonts, ivory and oxblood, 12px body; inspected desktop/mobile fixture and live screenshots with no overflow or page/request errors
+2026-10-03T18:23:30.420591+00:00	item	08	review	frontend	SCREEN	Stable 0f50e0e: approval modal restyled and inspected; functionality unchanged; shared typecheck passes
+2026-10-03T18:30:20.313791+00:00	item	04	review	frontend	SCREEN	Stable faca629: premium dark default with warm charcoal, ivory local serif, 56px gutters, quieter framed artwork; desktop/mobile preview and actual live mission inspected
+2026-10-03T18:30:20.313791+00:00	item	08	review	frontend	SCREEN	Stable faca629: all modals dark and inspected; no overflow/page errors/console errors/failed requests; local icon fixes favicon404; typecheck passes
+2026-10-03T18:31:08.261534+00:00	fact	research_reliability	review	backend	DATA	Private attempt+typed cleanup ledger; initial plus one manual failure retry;15s cooldown; exact provider stopped-state reconciliation; unchanged technical failures block; typecheck+10 DATA+no-network smokes passed; slice SHA256 2af55f8d65a5931055dcb5923ad9e4aeed29c37e362cb8f9a5c4947f368354a0
+2026-10-03T18:33:27.683079+00:00	fact	component-tools-fixture	verified	browser	BROWSER	Internal inspect/plan/fill/verify tools share one live page; local synthetic fixture verified dynamic rediscovery and readback, native text/select/radio/checkbox, one safe retry and zero submissions. Live merchant filling not verified. Source README records job_search architecture references.
+2026-10-03T18:33:27.683079+00:00	item	06	review	browser	BROWSER	Runtime component tools and exact-lane stopped reconciliation frozen; explicit readOnly=false plus allowlist required to mutate. src/browser/** SHA256 7302cceb1eb33cb6154e3d1d13bad0e63aa4124360154b4c99356f19b54035f5
+2026-10-03T18:34:25.510450+00:00	item	04	review	frontend	SCREEN	Stable 280d4dc: cinematic plum/ink/champagne glass; larger 14-16px core text and 44px actions; jewel lanes; stagger/hover/press and real-state running indicators; desktop1440/mobile390 preview+live screenshots inspected; no overflow or page/console errors; typecheck passes
+2026-10-03T18:34:25.510639+00:00	item	08	review	frontend	SCREEN	Stable 280d4dc: glass approval/connect dialogs with readable mobile details and reduced-motion support; exact approval and evidence labels unchanged; screenshots /tmp/oct3-glass-*.png; no purchase or new live research initiated
+2026-10-03T18:35:34.321677+00:00	item	component-tools-local	done	verifier	BROWSER	Independent actual Chrome local DOM:6 focused checks pass; default-readonly regression caught and owner fixed; preparation only, no merchant or purchase claim; reports/verification/research-components-local.md
+2026-10-03T18:35:34.321677+00:00	item	research-retry-local	done	verifier	DATA	Independent isolated live-mode records and actual retry route:6 checks pass; cooldown/exhaustion/config repair/reconciliation/zero-fetch retries/private metadata; mocked providers only; report records exact hashes
+2026-10-03T18:35:34.321677+00:00	fact	reliability-verification	verified	verifier	DATA	30leafchecks33reported pass0fail0skip3.74s; typecheck passes; browser6leaf rerun passes3.05s; no cloud/payment/merchant completion claim; tests/component-tools.test.ts and tests/research-reliability.test.ts
+2026-10-03T18:36:13.469335+00:00	item	04	review	frontend	SCREEN	Hover follow-up: entrance fill backwards releases transform after arrival; Chrome computed transform none to matrix(1 0 0 1 0 -5) on hover; reduced-motion animation and transform both none

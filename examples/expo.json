@@ -1,0 +1,13 @@
+{
+  "objective": "Prepare our six-person expo team with booth supplies, a flyer designer, and six event passes.",
+  "mode": "fixture",
+  "currency": "USD",
+  "purchase_budget_minor": 90000,
+  "deadline": "2026-10-10T17:00:00-07:00",
+  "headcount": 6,
+  "requirements": {
+    "amazon": { "category": "booth supplies", "delivery_ref": "manager-office" },
+    "fiverr": { "category": "flyer design", "brief": "One print-ready A5 flyer, editable source and one revision.", "due_date": "2026-10-08T17:00:00-07:00" },
+    "event_tickets": { "event_url": "https://www.eventbrite.com/", "date": "2026-10-10T17:00:00-07:00", "quantity": 6, "attendee_ref": "team-six" }
+  }
+}
