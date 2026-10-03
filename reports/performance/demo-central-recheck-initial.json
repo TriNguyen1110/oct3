@@ -1,0 +1,61 @@
+{
+  "checked_at": "2026-10-03T21:59:01.372Z",
+  "scope": "Fresh hosted read-only CLI/MCP/auth/preferences/passkeys and existing Stripe sandbox payment reconciliation",
+  "checks": [
+    {
+      "name": "anonymous mission access denied",
+      "status": "passed",
+      "elapsed_ms": 229
+    },
+    {
+      "name": "manager saved preferences readable",
+      "status": "passed",
+      "elapsed_ms": 377
+    },
+    {
+      "name": "manager passkeys status readable",
+      "status": "failed",
+      "elapsed_ms": 187,
+      "error_type": "AssertionError"
+    },
+    {
+      "name": "agent cannot access manager preferences",
+      "status": "failed",
+      "elapsed_ms": 357,
+      "error_type": "AssertionError"
+    },
+    {
+      "name": "CLI persisted mission status and safe handoff links",
+      "status": "passed",
+      "elapsed_ms": 692
+    },
+    {
+      "name": "CLI persisted history",
+      "status": "passed",
+      "elapsed_ms": 850
+    },
+    {
+      "name": "MCP initialize",
+      "status": "passed",
+      "elapsed_ms": 278
+    },
+    {
+      "name": "MCP three documented tools",
+      "status": "passed",
+      "elapsed_ms": 110
+    },
+    {
+      "name": "MCP actual persisted status",
+      "status": "passed",
+      "elapsed_ms": 402
+    },
+    {
+      "name": "Stripe previous real sandbox payment still succeeded",
+      "status": "passed",
+      "elapsed_ms": 446
+    }
+  ],
+  "new_missions": 0,
+  "new_payments": 0,
+  "merchant_actions": 0
+}

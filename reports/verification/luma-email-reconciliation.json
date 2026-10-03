@@ -1,0 +1,54 @@
+{
+  "checked_at": "2026-10-03T21:58:04.224Z",
+  "storage": "actual Supabase read only",
+  "task_status": "confirmed",
+  "approval_state": "approved",
+  "completed_at": "2026-10-03T21:23:10.131Z",
+  "confirmation_present": true,
+  "bound_confirmation_evidence_count": 1,
+  "private_snapshot_retained": true,
+  "attendee_name_matches_current_profile": true,
+  "attendee_email_matches_current_profile": true,
+  "attendee_email_matches_case_insensitive": true,
+  "proposal_matches_prepared": true,
+  "reservation_states": [
+    {
+      "state": "released",
+      "amount_minor": 0
+    },
+    {
+      "state": "committed",
+      "amount_minor": 0
+    }
+  ],
+  "attempt_state": "finished",
+  "receipt_state": "not_captured",
+  "receipt_present": false,
+  "email_delivery_verified": false,
+  "provider_email_status_stored": false,
+  "provider_read_only": {
+    "http": 200,
+    "exact_public_event": true,
+    "guest_data_present": true,
+    "guest_field_names": [
+      "email",
+      "name",
+      "ticket_key",
+      "approval_status",
+      "proxy_key",
+      "event_tickets",
+      "payments"
+    ],
+    "guest_email_present": false,
+    "guest_email_matches_pinned": null,
+    "guest_approval_status": null,
+    "sign_in_control_visible": true,
+    "going_status_visible": false,
+    "verify_email_prompt_visible": false,
+    "blocked_write_requests": 6,
+    "actions_clicked": 0,
+    "cleanup": "confirmed",
+    "profile_stopped": true,
+    "lease_released": true
+  }
+}

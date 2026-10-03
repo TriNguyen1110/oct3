@@ -63,3 +63,24 @@ test("blank optional phone from the current Luma form preserves the exact free p
   const m = mock(t, { requestBody }); const result = await executeFreeRegistration(input());
   assert.equal(m.allowed.length, 1); assert.equal(result.status, "confirmed");
 });
+
+test("unexpected extra ticket or explicit attendee mismatch remains uncertain without leaking identity", async t => {
+  const variants = [
+    { ...success(), event_tickets: [...success().event_tickets, { api_id: "ticket_unexpected", event_ticket_type_api_id: "other", amount: 100 }] },
+    { ...success(), email: "different-attendee@example.test" },
+    { ...success(), email: { unexpected: true } },
+  ];
+  for (const [index, response] of variants.entries()) await t.test(String(index), async t => {
+    const m = mock(t, { response }); const result = await executeFreeRegistration(input());
+    assert.equal(m.allowed.length, 1); assert.equal(result.status, "needs_human"); assert.equal(result.uncertain, true);
+    assert.equal(result.confirmation_ref, undefined);
+    assert.doesNotMatch(JSON.stringify(result), /different-attendee|synthetic-attendee|private-ticket|private-proxy/);
+  });
+});
+
+test("approved provider ticket does not claim confirmation email delivery", async t => {
+  mock(t); const result = await executeFreeRegistration(input());
+  assert.equal(result.status, "confirmed");
+  assert.match(result.evidence[0].detail, /Confirmation email delivery was not verified/);
+  assert.doesNotMatch(result.evidence[0].detail, /optional account-management/);
+});

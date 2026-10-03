@@ -1,0 +1,68 @@
+{
+  "checked_at": "2026-10-03T21:59:31.673Z",
+  "harness_corrections": [
+    "Passkey GET requires trusted Origin or Referer; initial harness omitted it",
+    "Workspace agents intentionally have read-only preference access; initial expectation403 was incorrect"
+  ],
+  "scope": "Fresh hosted read-only CLI/MCP/auth/preferences/passkeys and existing Stripe sandbox payment reconciliation",
+  "checks": [
+    {
+      "name": "anonymous mission access denied",
+      "status": "passed",
+      "elapsed_ms": 220
+    },
+    {
+      "name": "manager saved preferences readable",
+      "status": "passed",
+      "elapsed_ms": 539
+    },
+    {
+      "name": "manager passkeys status readable",
+      "status": "passed",
+      "elapsed_ms": 420
+    },
+    {
+      "name": "agent can read saved preferences within its workspace",
+      "status": "passed",
+      "elapsed_ms": 505
+    },
+    {
+      "name": "agent cannot access manager passkey status",
+      "status": "passed",
+      "elapsed_ms": 106
+    },
+    {
+      "name": "CLI persisted mission status and safe handoff links",
+      "status": "passed",
+      "elapsed_ms": 701
+    },
+    {
+      "name": "CLI persisted history",
+      "status": "passed",
+      "elapsed_ms": 758
+    },
+    {
+      "name": "MCP initialize",
+      "status": "passed",
+      "elapsed_ms": 243
+    },
+    {
+      "name": "MCP three documented tools",
+      "status": "passed",
+      "elapsed_ms": 120
+    },
+    {
+      "name": "MCP actual persisted status",
+      "status": "passed",
+      "elapsed_ms": 239
+    },
+    {
+      "name": "Stripe previous real sandbox payment still succeeded",
+      "status": "passed",
+      "elapsed_ms": 384
+    }
+  ],
+  "new_missions": 0,
+  "new_payments": 0,
+  "merchant_actions": 0
+}

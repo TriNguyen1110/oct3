@@ -261,13 +261,14 @@ export async function executeFreeRegistration(input: ExecuteRegistrationInput): 
         return ticket.event_ticket_type_api_id === TICKET_TYPE_API_ID && typeof ticket.api_id === "string" && /^[A-Za-z0-9_-]{8,128}$/.test(ticket.api_id)
           && (ticket.amount === undefined || ticket.amount === 0) && (ticket.amount_tax === undefined || ticket.amount_tax === 0);
       }) as Record<string, unknown>[];
-      if (result.status !== "success" || result.approval_status !== "approved" || matches.length !== 1) {
+      const attendeeMatches = result.email === undefined || result.email === null || result.email === input.attendee.email;
+      if (result.status !== "success" || result.approval_status !== "approved" || tickets.length !== 1 || matches.length !== 1 || !attendeeMatches) {
         const rawState = typeof result.approval_status === "string" ? result.approval_status : "";
         const state = ["approved", "pending_approval", "waitlist", "declined", "invited", "session"].includes(rawState) ? rawState : "unverified";
         throw new RegistrationIssue(`Luma did not return one approved matching free ticket (provider state: ${state}). Reconcile before any retry.`, true);
       }
       const confirmationRef = String(matches[0].api_id);
-      observations.push({ ...evidence(input.task_id, input.attempt_key, "Luma registration confirmed", "Luma returned success with approved status and one matching zero-dollar ticket. No private ticket or proxy URL is exposed; email verification remains a separate optional account-management step.", "merchant_confirmation"), confirmation_ref: confirmationRef });
+      observations.push({ ...evidence(input.task_id, input.attempt_key, "Luma registration confirmed", "Luma returned success with approved status and one matching zero-dollar ticket. Confirmation email delivery was not verified. No private ticket or proxy URL is exposed.", "merchant_confirmation"), confirmation_ref: confirmationRef });
       return confirmationRef;
     });
     return { status: "confirmed", evidence: observations, confirmation_ref: run.value, uncertain: false, cleanup: run.cleanup };
