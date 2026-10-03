@@ -1,0 +1,34 @@
+{
+  "checked_at": "2026-10-03T21:54:39.444Z",
+  "source_commit": "733330f",
+  "origin": "https://oct3-five.vercel.app",
+  "asset_http": 200,
+  "asset_sha256": "6866290ef2f1532e3ded92d8a6c16ebf76ddb3681442283fc9c28f7bd2186d15",
+  "actor_asset_http": 404,
+  "actor_removed_from_current_site": true,
+  "screens": [
+    {
+      "width": 1440,
+      "http": 200,
+      "portrait": "real classical marble",
+      "decoded": true,
+      "overflow": false,
+      "animation": "none",
+      "page_errors": 0,
+      "api_writes": 0,
+      "new_mission_dialog": true
+    },
+    {
+      "width": 390,
+      "http": 200,
+      "portrait": "real classical marble",
+      "decoded": true,
+      "overflow": false,
+      "animation": "none",
+      "page_errors": 0,
+      "api_writes": 0,
+      "new_mission_dialog": true
+    }
+  ],
+  "merchant_actions": 0
+}

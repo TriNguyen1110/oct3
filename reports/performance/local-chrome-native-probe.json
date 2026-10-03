@@ -8,5 +8,11 @@
   "owned_tab_creation": "not_started",
   "lease_released": true,
   "native_attach_proven": false,
-  "note": "The native Allow prompt remained visible when inspected after the bounded connection attempt. Waiting for user to accept before retry."
+  "note": "Both bounded attempts ended before creating a tab. Chrome native Allow prompt remained visible after each attempt; native attachment is unproven and no merchant integration is enabled.",
+  "last_checked_at": "2026-10-03T21:54:17.876901+00:00",
+  "bounded_attempt_count": 2,
+  "second_probe_result": "permission_or_connection_failed",
+  "second_owned_tab_creation": "not_started",
+  "second_native_permission_prompt_observed_after_attempt": true,
+  "lease_absence_verified": true
 }
