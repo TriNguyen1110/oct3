@@ -14,6 +14,7 @@
     "claude:check": "node --env-file-if-exists=.env.local scripts/claude-demo.mjs --check",
     "claude:status": "node --env-file-if-exists=.env.local scripts/claude-demo.mjs --status",
     "claude:doordash": "node --env-file-if-exists=.env.local scripts/claude-demo.mjs --doordash",
+    "claude:fiverr": "node --env-file-if-exists=.env.local scripts/claude-demo.mjs --fiverr",
     "claude:rehearse": "node --env-file-if-exists=.env.local scripts/claude-demo.mjs --rehearse"
   },
   "engines": {
