@@ -1,0 +1,15 @@
+{
+  "recorded_at": "2026-10-03T22:11:23.947300+00:00",
+  "evidence_source": "coordinator report of actual native Chrome run; verifier did not run against user Chrome",
+  "script": "/tmp/cue-raw-cdp-probe.mts",
+  "script_sha256": "a2ac03707f728c085acf1490c19cc24271587d2285fdbca7fb8e8559830350e2",
+  "state": "passed",
+  "version_answered": true,
+  "owned_tab_verified": true,
+  "owned_tab_cleanup": "confirmed",
+  "connection_cleanup": "confirmed",
+  "lease_released": true,
+  "existing_targets_requested": false,
+  "merchant_navigation": false,
+  "interpretation": "Raw CDP works after native permission. This supports, but does not prove, the Playwright existing-target initialization stall hypothesis."
+}

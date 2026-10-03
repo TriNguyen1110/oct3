@@ -1,0 +1,19 @@
+# Local Chrome raw-CDP diagnostic
+
+The coordinator reports a successful actual run of the consent-gated raw blank-tab probe: Chrome answered Browser.getVersion; the owned about:blank target was verified and closed; transport cleanup and lease release completed. The verifier did not operate the user's Chrome. [Sanitized coordinator-reported proof](../performance/local-chrome-raw-cdp-probe.json).
+
+Installed Playwright1.63's `lib/coreBundle.js` enables root Target.setAutoAttach at38371, then awaits all attached page initialization at38376/38420. Page startup at37577–37672 awaits frame-tree, Runtime/Network and initial navigation work; noDefaults does not remove those operations. Raw success supports this startup as a possible cause of the earlier Playwright timeout, but does not identify the exact hung operation or prove causality.
+
+A separate Amazon diagnostic is prepared only in `/tmp/cue-local-amazon-readonly.mts` (SHA256 `c2dba6f61c0dafa981ff00179481b184f7722234d104761b218b57c637580c5e`). **No actual Amazon run has occurred in this verifier task.** It creates/attaches only its own blank target, installs page-session Fetch interception allowing GET/HEAD/OPTIONS with fixed product-document navigation and known login/cart/checkout paths blocked, enables Network and service-worker bypass before navigating the fixed ASIN. It never requests existing target lists, cookies/storage, account names, addresses, emails or input actions. Public product selectors and a conservative positive signout-link/explicit-signin signal produce sanitized output; otherwise login is unknown. It does not claim preparation or checkout readiness. This is a request-method guard for a bounded no-click diagnostic, not a universal guarantee that every site's GET handler is side-effect free.
+
+The owned target is closed before session detachment; socket closes and the owned lease is released. Unknown cleanup remains explicit. Native permission/phase waits are capped at60s with90s total operation budget plus bounded cleanup. Endpoint and target/session IDs are not printed.
+
+`/tmp/cue-local-amazon-readonly.test.mts` passed5/5 synthetic protocol tests: method/path/credential-URL negatives, page session/guard ordering, guard failure before navigation, unknown login fallback and output redaction. Isolated TypeScript check passed. Missing consent exits2 without Chrome access. Coordinator review and actual run remain pending. No production source changes.
+
+## Later coordinator actual Amazon run
+
+The coordinator subsequently ran the reviewed fixed-product diagnostic successfully: exact ASIN B01BNEWDFQ, six-pack public product, $9.98, and **signed_out** from explicit sign-in text. Four requests were blocked; no merchant controls were clicked. Owned-tab close, transport close and lease release completed. The protocol_error boolean was traced by the coordinator to the expected detach attempt after closing the owned target, not the product read. This proves the native browser path can read the product; it does not prove authenticated preparation. [Sanitized coordinator-reported evidence](../performance/local-amazon-readonly.json).
+
+## Exact Work-profile retry and stop
+
+After the user restricted scope to the verified Work/Profile9 window, the coordinator created a uniquely named blank tab in that window. The revised diagnostic used one metadata-only target inventory to match the exact nonce, verified it again, and attached only that known owned tab; no default target creation or cookie reads. Seven synthetic checks and isolated typecheck passed. The subsequent coordinator actual run read B0195UTBKA at$3.99 but still observed explicit signed-out text. Six requests blocked, zero clicks, all owned cleanup confirmed. Local Chrome retries are now stopped; this does not claim the user is signed out in every normal tab or account. [Work-specific proof](../performance/local-work-amazon-readonly.json).

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-03T21:25:00Z",
+  "generated_at": "2026-10-03T22:25:29.456618+00:00",
   "scope": "Existing repository evidence only; no provider runs performed for this report",
   "measured": {
     "application_fixture": {
@@ -71,6 +71,10 @@
       "confirmed_total_minor": 0,
       "matching_provider_confirmation": true,
       "confirmed_free_registrations": 1,
+      "confirmation_email_verified": true,
+      "confirmation_email_source": "reports/verification/luma-email-reconciliation.json",
+      "confirmation_email_received_at": "2026-10-03T21:23:08.000Z",
+      "confirmation_email_scope": "One pinned query, one metadata read and one eligible body read; Inbox true, spam/trash false, zero external actions.",
       "timing_caveat": "The 17330ms cycle includes preparation, review retrieval and missing-passkey rejection checks. Approval-to-confirmation includes manager delay before Register now. Neither measures isolated adapter latency or human-active time; do not sum these separate scopes.",
       "confirmed_run_prepare_review_guard_cycle_source": "reports/performance/hosted-luma-passkey-review.json",
       "confirmed_run_prepare_review_guard_cycle_ms": 17330,
@@ -121,7 +125,7 @@
     "browser_provider_cost_usd": null,
     "coordinator_model_cost_usd": null,
     "production_infrastructure_cost_usd": null,
-    "food_release_smoke": {
+    "food_release_smoke_historical_failure": {
       "source": "reports/verification/food-readback-live.json",
       "wall_ms": 25665,
       "options": 0,
@@ -129,7 +133,24 @@
       "selected_store_readback_completed": false,
       "merchant_actions": 0,
       "cleanup_confirmed": true,
-      "status": "handoff"
+      "status": "historical_failed_handoff"
+    },
+    "food_selected_state_latest": {
+      "source": "reports/performance/food-demo-retest.json",
+      "wall_ms": 52971,
+      "options": 1,
+      "merchant": "Boba Guys",
+      "store_readback": "Potrero",
+      "selected_recipe_control_readbacks": 4,
+      "item_estimate_minor": 660,
+      "currency": "USD",
+      "add_to_order_activated": false,
+      "cart_prepared": false,
+      "checkout_prepared": false,
+      "cleanup_confirmed": true,
+      "status": "selected_recipe_item_estimate",
+      "limitations": "Tax, final total, pickup time and availability remain unverified; no cart, checkout, payment or order.",
+      "merchant_commitments": 0
     },
     "hosted_voice_draft_historical": {
       "source": "reports/performance/hosted-voice-proof.json",
@@ -144,8 +165,8 @@
       "historical": true
     },
     "hosted_voice_draft": {
-      "source": "reports/performance/hosted-voice-stable-release.json",
-      "roundtrip_ms": 3238,
+      "source": "reports/performance/hosted-voice-demo-retest.json",
+      "roundtrip_ms": 2968,
       "audio_seconds": 4.842,
       "synthetic_microphone": true,
       "actual_hosted_browser": true,
@@ -154,21 +175,16 @@
       "merchant_actions": 0,
       "limitation": "Editable draft only; no real user microphone, mission submission, approval, or merchant action.",
       "historical": false,
-      "source_revision": "d144a094f980a78d684352bbd210669346415453",
-      "checked_at": "2026-10-03T21:31:04.399Z",
+      "source_revision": "73169d13c67cd1679cd1f0392040e8a33b9d691f",
+      "checked_at": "2026-10-03T21:58:25.497Z",
       "elapsed_scope": "Hosted browser voice round trip including upload/server/provider/response/UI handling; not isolated Gemini latency. Synthetic4.842s recording duration is separate.",
       "delayed_mission_preserves_dialog_and_recording": true
     }
   },
   "derived": {
-    "live_lane_attempts_per_wall_hour_single_run": 513.406,
-    "live_grounded_option_lanes_per_wall_hour_single_run": 342.27,
-    "live_confirmed_commitments_per_wall_hour": 0,
-    "paid_live_lane_attempts_per_wall_hour_single_run": 393.758,
-    "paid_live_grounded_option_lanes_per_wall_hour_single_run": 131.253,
-    "paid_live_confirmed_commitments_per_wall_hour": 0,
     "hosted_reported_caller_cost_per_lane_attempt_usd": 0.03732975,
-    "caveat": "Theoretical arithmetic from one run each, not sustained throughput, benchmark distribution or scale/capacity measurement. Lane attempts and options are not completed purchases.",
+    "single_run_lane_per_hour_extrapolations": null,
+    "caveat": "Numeric lanes-per-hour extrapolations were removed because one run does not establish sustained throughput, a benchmark distribution, scale or capacity. Lane attempts and options are not completed purchases.",
     "confirmed_free_registrations_observed": 1,
     "confirmed_paid_purchases_observed": 0,
     "confirmed_event_throughput_per_hour": null,

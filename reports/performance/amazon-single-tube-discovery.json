@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-03T22:16:13Z",
+  "mode": "read_only_public_page_discovery",
+  "authorization": "single_tube_candidate_discovery_only",
+  "excluded_previous_selection": {
+    "asin": "B01BNEWDFQ",
+    "reason": "User superseded the previous six-pack selection with a pack-of-one request."
+  },
+  "recommended_candidate": {
+    "asin": "B0195UTBKA",
+    "url": "https://www.amazon.com/dp/B0195UTBKA",
+    "title": "Colgate Cavity Protection Fluoride Toothpaste, Mint, 6 oz",
+    "pack_readback": "6 Ounce (Pack of 1)",
+    "unit_readback": "One 6 oz tube",
+    "public_offer_evidence": "The anonymous public crawl reported no featured offer. A separate local signed-out read observed a $3.99 product-page price; it did not establish account-specific availability or a checkout total.",
+    "price_status": "product_page_price_observed_signed_out_not_final",
+    "source": "Official Amazon product page plus separate local read-only evidence recorded by the root worker"
+  },
+  "alternate_candidate": {
+    "asin": "B07XTWY967",
+    "url": "https://www.amazon.com/dp/B07XTWY967",
+    "title": "Colgate Total Teeth Whitening Toothpaste Gel, 10 Benefits, No Trade-Offs, Sensitivity and Whitening Gel Toothpaste, 4.8 oz Tube",
+    "pack_readback": "4.8 Ounce (Pack of 1)",
+    "unit_readback": "One 4.8 oz tube of Colgate Total Teeth Whitening Gel Toothpaste",
+    "public_offer_evidence": "No featured offer; two other-seller options shown from $7.62.",
+    "price_status": "unverified_offer_floor_only",
+    "source": "Official Amazon product page crawled 2026-10-03"
+  },
+  "rejected_candidates": [
+    {
+      "asin": "B081S7B91Y",
+      "reason": "Exact Crest 5.7 oz single tube, but public page reported no featured offer."
+    }
+  ],
+  "required_signed_in_verification": [
+    "selected ASIN and Pack of 1",
+    "one-time purchase rather than subscription",
+    "offer seller and fulfiller",
+    "availability for the account delivery location",
+    "item price and all delivery, fee, and tax lines at final review"
+  ],
+  "actions_performed": [],
+  "cart_or_order_changed": false,
+  "final_total_verified": false,
+  "claim_limit": "No candidate is prepared for checkout and no price is a final total until the signed-in review page is read back."
+}

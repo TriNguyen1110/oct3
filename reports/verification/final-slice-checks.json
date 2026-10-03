@@ -1,0 +1,33 @@
+{
+  "checked_at": "2026-10-03T22:23:41.689404+00:00",
+  "commit": "21237f1",
+  "npm_test": {
+    "tests": 186,
+    "passed": 178,
+    "failed": 0,
+    "skipped": 8,
+    "duration_ms": 50099.470208,
+    "scope": "Local suite including untracked experimental merchant preparation tests; no native profile attached or real merchant order submitted."
+  },
+  "typecheck": "passed",
+  "diff_check": "passed",
+  "deployment": "verified_hosted",
+  "origin": "https://oct3-five.vercel.app",
+  "hosted_3d": {
+    "desktop_width": 1440,
+    "mobile_width": 390,
+    "vertices": 32502,
+    "canvas": true,
+    "rotation_drag_reset": "passed",
+    "new_mission_dialog": "passed",
+    "overflow": false,
+    "page_errors": 0,
+    "timing_note": "UI check includes interactions; not isolated render latency."
+  },
+  "hosted_luma_email": {
+    "verified_email_hint_visible": true,
+    "public_event_link_label_correct": true,
+    "api_mutations": 0
+  },
+  "hosted_checked_at": "2026-10-03T22:24:39.244807+00:00"
+}

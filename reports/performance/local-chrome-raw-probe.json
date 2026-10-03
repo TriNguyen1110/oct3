@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-10-03T22:09:41.545092+00:00",
+  "scope": "Actual user-approved existing Chrome owned blank-tab diagnostic; not a merchant workflow or production local adapter",
+  "implementation": "/tmp/cue-raw-cdp-probe.mts",
+  "state": "passed",
+  "websocket_opened": true,
+  "version_answered": true,
+  "owned_tab_verified": true,
+  "owned_tab_cleanup": "confirmed",
+  "connection_cleanup": "confirmed",
+  "lease_released": true,
+  "existing_targets_requested": false,
+  "cookie_export": false,
+  "merchant_navigation": false,
+  "prior_playwright_probe": "Timed out during connectOverCDP before owned-tab creation",
+  "interpretation": "Raw protocol works; Playwright initialization waits on existing targets and is a plausible cause, not conclusively isolated"
+}
