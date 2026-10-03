@@ -11,8 +11,8 @@ interface RegistrationReview {
   source_url: string; total_minor: number; expires_at: string; profile_unchanged: boolean;
 }
 
-export function FreeRegistrationReview({ task, busy, onAction }: {
-  task: Task; busy: boolean; onAction: (action: "approve" | "reject" | "resume") => Promise<void>;
+export function FreeRegistrationReview({ task, busy, onAction, passkeyRequired = false, passkeyReady = false }: {
+  task: Task; busy: boolean; passkeyRequired?: boolean; passkeyReady?: boolean; onAction: (action: "approve" | "reject" | "resume") => Promise<void>;
 }) {
   const [review, setReview] = useState<RegistrationReview | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export function FreeRegistrationReview({ task, busy, onAction }: {
     {!loading && !valid && <p className="form-error" role="alert">{error || "The pinned details are missing, expired, or no longer match your saved profile or this proposal."} Prepare the free RSVP again before approving.</p>}
     {protectedAttempt ? <p className="field-hint" role="status">{task.status === "executing" ? "Registration is in progress. Wait for the saved provider result." : "This registration needs a manual check. An uncertain attempt must be reconciled before another submission."}</p> : <>
       <p className="field-hint">Preparation does not fill or submit the form. Approval binds this attendee, event and free ticket. “Register now” submits the actual RSVP; no Link payment is needed.</p>
-      {approved ? <><p className="approved-status">Free RSVP approved for these exact details.</p><button className="button primary full" disabled={busy || loading || !valid} onClick={() => void onAction("resume")}>{busy ? "Checking registration…" : "Register now"}</button></> : <div className="action-row"><button className="button secondary" disabled={busy} onClick={() => void onAction("reject")}>Decline plan</button><button className="button primary" disabled={busy || loading || !valid || task.approval?.state === "rejected"} onClick={() => void onAction("approve")}>{busy ? "Saving…" : "Approve free RSVP"}</button></div>}
+      {approved ? <><p className="approved-status">Free RSVP approved for these exact details.</p><button className="button primary full" disabled={busy || loading || !valid} onClick={() => void onAction("resume")}>{busy ? "Checking registration…" : "Register now"}</button></> : <div className="action-row"><button className="button secondary" disabled={busy} onClick={() => void onAction("reject")}>Decline plan</button><button className="button primary" disabled={busy || loading || !valid || task.approval?.state === "rejected" || (passkeyRequired && !passkeyReady)} onClick={() => void onAction("approve")}>{busy ? "Confirming…" : passkeyRequired ? "Confirm with passkey" : "Approve free RSVP"}</button></div>}
     </>}
   </section>;
 }

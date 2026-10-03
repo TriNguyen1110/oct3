@@ -6,7 +6,7 @@ export interface BrowserProgress { task_id: string; lane: Lane; at: string; mess
 export interface ResearchTaskInput {
   task_id: string;
   lane: Lane;
-  requirements: MissionInput["requirements"][Lane];
+  requirements: NonNullable<MissionInput["requirements"][Lane]>;
   deadline: string;
   budget_minor: number;
   attempt_key: string;

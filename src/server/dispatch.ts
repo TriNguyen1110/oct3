@@ -49,7 +49,7 @@ export async function dispatchMission(id: string, workspace: string, origin: str
       if (needsClaim && mission.eve_dispatch?.claim_id !== claimId) return;
       mission.eve_session_id = sessionId;
       if (needsClaim) mission.eve_dispatch!.state = "sent";
-      activity(mission, onlyTaskId ? "Claude accepted a retry of the selected worker in the existing mission." : "Claude accepted the mission in a durable Eve session. Three browser workers will research concurrently.");
+      activity(mission, onlyTaskId ? "Claude accepted a retry of the selected worker in the existing mission." : `Claude accepted the mission in a durable Eve session. ${mission.view.tasks.length} browser workers will research concurrently.`);
     })).view;
   } catch {
     return (await mutateRecord(id, workspace, mission => {

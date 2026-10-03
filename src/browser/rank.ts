@@ -8,6 +8,7 @@ export async function rankCandidates(candidates: ObservedCandidate[], input: Res
   if (!process.env.ANTHROPIC_API_KEY || candidates.length < 2) return fallback;
   const requirement = "brief" in input.requirements ? {category:input.requirements.category,brief:input.requirements.brief,due_date:input.requirements.due_date}
     : "category" in input.requirements ? {category:input.requirements.category}
+    : "query" in input.requirements ? {query:input.requirements.query,fulfillment:input.requirements.fulfillment,location:input.requirements.location,quantity:input.requirements.quantity}
     : {date:input.requirements.date,quantity:input.requirements.quantity};
   try {
     const result = await generateText({

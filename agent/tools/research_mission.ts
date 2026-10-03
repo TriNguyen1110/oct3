@@ -4,7 +4,7 @@ import { z } from "zod";
 import { runMissionResearch } from "../../src/server/research";
 
 export default defineTool({
-  description: "Run the mission's three read-only browser workers concurrently, persisting grounded options and explicit blockers. Makes no merchant commitments.",
+  description: "Run the mission's browser workers concurrently, including boba pickup preparation when requested, persisting grounded options and explicit blockers. Makes no merchant commitments.",
   inputSchema: z.object({ mission_id: z.string().uuid() }),
   async execute({ mission_id }, ctx) {
     const workspace = ctx.session.auth.current?.attributes.workspace_id;

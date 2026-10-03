@@ -1,0 +1,61 @@
+{
+  "checked_at": "2026-10-03T20:33:43.357Z",
+  "synthetic_attendee": true,
+  "all_network_writes_aborted": true,
+  "blocked_writes": 5,
+  "continued_writes": 0,
+  "captured": {
+    "endpoint_matches": true,
+    "field_types": {
+      "name": "string",
+      "first_name": "string",
+      "last_name": "string",
+      "email": "string",
+      "event_api_id": "string",
+      "for_waitlist": "boolean",
+      "payment_method": "null",
+      "payment_currency": "null",
+      "registration_answers": "array",
+      "coupon_code": "null",
+      "token_gate_info": "null",
+      "eth_address_info": "null",
+      "phone_number": "string",
+      "solana_address_info": "null",
+      "expected_amount_cents": "number",
+      "expected_amount_tax": "number",
+      "currency": "null",
+      "event_invite_api_id": "null",
+      "ticket_type_to_selection": "object",
+      "solana_address": "null",
+      "solana_wallet_type": "null",
+      "opened_from": "null"
+    },
+    "name_matches": true,
+    "email_matches": true,
+    "first_name_empty": true,
+    "last_name_empty": true,
+    "phone_number_empty": true,
+    "event_matches": true,
+    "for_waitlist_false": true,
+    "amount_zero": true,
+    "tax_zero": true,
+    "selected_ticket_matches": true,
+    "selection_fields": [
+      "count",
+      "amount"
+    ],
+    "count_one": true,
+    "selection_amount_zero": true,
+    "answer_count": 1,
+    "answer_fields": [
+      "label",
+      "question_id",
+      "value",
+      "question_type"
+    ],
+    "answer_question_matches": true,
+    "answer_label_matches": true,
+    "answer_type_matches": true,
+    "answer_blank": true
+  }
+}

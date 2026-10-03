@@ -3,15 +3,17 @@
 **Your agent’s extra hands.**
 
 Browser workers other agents can hire. One mission coordinates **Hiring,
-Logistics, and Travel** under a shared budget and manager approvals. The wider
-vision includes **Food & supplies**, shown as coming next.
+Logistics, Travel, and optional Food & supplies** under a shared budget and
+manager approvals. The food demo focuses on one boba for pickup near the venue.
 
 Public demo: **https://oct3-five.vercel.app**. Today’s lanes use Fiverr, Amazon
 and event-ticket research. The hosted Claude → Stripe sandbox → Surfsky →
 Supabase research flow is verified: Fiverr and Luma returned options, while
 Amazon returned an access blocker. The narrow free Luma registration adapter has
 passed synthetic guard checks and actual read-only preparation; its final RSVP
-is unverified. Food ordering and paid merchant transactions are not implemented.
+is unverified. Boba Guys' official pickup form is reachable; final food checkout
+and paid merchant transactions remain unverified. New live approvals require
+the manager's device passkey. No test authenticator enrolls in their account.
 
 Built for Supabase Select, October 3, 2026. Theme: **Make Something Agents Want**.
 Judging: **Innovation, Design, Functionality, Impact**.
@@ -28,7 +30,7 @@ Read [TEAM_BRIEF.md](TEAM_BRIEF.md), [HACKATHON.md](HACKATHON.md), and
 ## Development
 
 Use Node 24 and run `npm install`, then `npm run dev`. The coordinator owns the
-single development server at `http://127.0.0.1:3003`.
+single development server at `http://localhost:3003` (required for local passkeys).
 See [COMMANDS.md](COMMANDS.md) for checks. Copy `.env.example` to `.env.local` only
 when the local file does not already exist; credentials are never committed.
 
@@ -45,6 +47,13 @@ evidence. **Past missions** reopens the latest 20 workspace missions. The saved
 manager profile stores name, email, company and role in Supabase and supplies
 attendee defaults. It never authorizes commitments. External merchant-history
 import remains unimplemented.
+
+Short voice notes can draft the brief, budget and food request for explicit
+review. Actual Gemini audio-to-draft inference passed with a 4.842-second
+synthetic spoken request in 2.088 seconds; hosted end-to-end verification is
+tracked separately. Typed briefs remain usable.
+No voice result submits a mission or approves an action, and Cue does not save
+recordings.
 
 ## Agent connections and evidence
 
@@ -64,6 +73,14 @@ touch and reduced-motion users receive static affordances. No new animation
 runtime or component subscription was added. The original components take
 pattern inspiration from 21st.dev's [spotlight guidance](https://docs.21st.dev/blog/react-spotlight-effect-components)
 and [card collection guide](https://docs.21st.dev/blog/react-card-components).
+
+The cinematic hero adapts the MIT-licensed
+[Kokonut Shape Hero](https://github.com/kokonut-labs/kokonutui/blob/main/components/kokonutui/shape-hero.tsx)
+found on [21st.dev](https://21st.dev/@kokonutd/components/shape-landing-hero),
+with CSS lighting and an original gold Art Deco concierge render. It uses a
+responsive raster asset, not WebGL. [Asset](public/images/cue-concierge-gold.png),
+[image prompt](public/images/cue-concierge-gold.prompt.txt),
+[component license](components/cinematic-hero.LICENSE.txt).
 
 ## Stack and boundaries
 

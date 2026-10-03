@@ -1,0 +1,11 @@
+# Saved history and profile: read-only verification
+
+Checked 2026-10-03 against the configured Supabase database using existing local server credentials. No application/database writes, profile edits, mission creation, approvals, credential enrollment, merchant calls, or test suites were performed. Personal field values, mission objectives, and secrets are omitted.
+
+- `storageMode()` reported `supabase`. The mission service returned **5 persisted missions**, matching an independent workspace-scoped database count: **3 live, 2 fixture**. Current mission statuses: **4 needs_attention, 1 awaiting_approval**. There are **0 confirmed live tasks and 0 available live public merchant receipts**. These records are saved work/progress, not evidence of completed merchant orders.
+- The manager profile exists in `oct3_preferences`; name, email, company, and role are populated. Each returned field and `updated_at` exactly matched a separate database query. An initial JSON-string comparison incorrectly reported a mismatch because PostgreSQL JSONB and schema parsing used different object key order; field-wise comparison resolved it without changing data.
+- Saved mission history is implemented by `src/server/store.ts:82` and authenticated `GET /api/missions` in `app/api/missions/route.ts:13`: workspace-scoped Supabase records, newest first, maximum 20. `components/mission-desk.tsx:251` fetches these records for Past missions and opens the selected saved mission.
+- Profile GET/PUT uses Supabase in `src/server/preferences.ts:23`; `app/api/preferences/route.ts` authenticates reads and requires manager role for writes. The current audit invoked reads only.
+- No external merchant order-history import or synchronization is implemented. Targeted source search and API/browser entry-point inspection found Cue research/execution flows and stored mission retrieval, not a connector that fetches prior Amazon, Fiverr, Luma, or food orders. The current UI history therefore does not establish or import purchases made outside Cue.
+
+Sanitized timestamped counts and field-presence evidence: `reports/verification/saved-history-profile-readonly.json`. This is a point-in-time database/source audit, not a new hosted browser test or a claim of successful merchant fulfillment.

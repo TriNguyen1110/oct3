@@ -10,12 +10,15 @@ export function publicSourceUrl(value: string, lane: Lane): string {
   const host = url.hostname.toLowerCase();
   const permitted = lane === "amazon" ? host === "www.amazon.com" || host === "amazon.com"
     : lane === "fiverr" ? host === "www.fiverr.com" || host === "fiverr.com"
+    : lane === "food" ? host === "www.doordash.com" || host === "doordash.com"
     : host === "www.eventbrite.com" || host === "eventbrite.com" || host === "luma.com" || host === "www.luma.com" || host === "lu.ma" || host === "www.lu.ma";
   if (!permitted) throw new BrowserIssue("unsupported_url", "This worker supports only its selected merchant domain.");
   url.hash = "";
   const allowedQuery = lane === "amazon" ? new Set(["k"]) : lane === "fiverr" ? new Set(["query"]) : new Set<string>();
   for (const key of [...url.searchParams.keys()]) if (!allowedQuery.has(key)) url.searchParams.delete(key);
-  if (lane === "event_tickets") {
+  if (lane === "food") {
+    if (!/^\/(?:store|(?:[a-z]{2}(?:-[A-Z]{2})?\/)?convenience\/store)\//.test(url.pathname)) throw new BrowserIssue("unsupported_url", "Use an individual DoorDash store menu URL.");
+  } else if (lane === "event_tickets") {
     if (host === "eventbrite.com" || host === "www.eventbrite.com") {
       if (!url.pathname.startsWith("/e/")) throw new BrowserIssue("missing_event", "Use an individual Eventbrite event URL, not a search or discovery page.");
     } else {

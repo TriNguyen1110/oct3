@@ -36,7 +36,7 @@ test("execution blocks early requests then permits exactly one matching final PO
   });
 });
 test("malformed, extra, payment, wrong attendee and nested extras never leave browser", async t => {
-  const variants = [null, { ...body(), payment_method: "card" }, { ...body(), extra: true }, { ...body(), email: "other@example.test" }, { ...body(), expected_amount_cents: 1 },
+  const variants = [null, { ...body(), payment_method: "card" }, { ...body(), extra: true }, { ...body(), email: "other@example.test" }, { ...body(), expected_amount_cents: 1 }, { ...body(), phone_number: "+15555550123" },
     { ...body(), ticket_type_to_selection: { [ticketId]: { count: 2, amount: 0 } } },
     { ...body(), ticket_type_to_selection: { [ticketId]: { count: 1, amount: 0, payment_method: "card" } } },
     { ...body(), registration_answers: [{ ...body().registration_answers[0], private_extra: "unexpected" }] } ];
@@ -56,4 +56,10 @@ test("pending, waitlist, wrong ticket, malformed and lost responses remain uncer
 test("unrecognized provider status cannot inject attendee or private ticket links into evidence", async t => {
   mock(t, { response: { ...success(), approval_status: `${attendee.email} https://luma.com/OpenTogether?tk=private-ticket&pk=private-proxy` } });
   const result = await executeFreeRegistration(input()); assert.equal(result.uncertain, true); assert.doesNotMatch(JSON.stringify(result), /synthetic-attendee|private-ticket|private-proxy|\?tk=/);
+});
+
+test("blank optional phone from the current Luma form preserves the exact free payload", async t => {
+  const requestBody = { ...body(), first_name: "", last_name: "", phone_number: "", payment_method: null, payment_currency: null, coupon_code: null, token_gate_info: null, eth_address_info: null, solana_address_info: null, currency: null, event_invite_api_id: null, solana_address: null, solana_wallet_type: null, opened_from: null };
+  const m = mock(t, { requestBody }); const result = await executeFreeRegistration(input());
+  assert.equal(m.allowed.length, 1); assert.equal(result.status, "confirmed");
 });

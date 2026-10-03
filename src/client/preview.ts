@@ -1,7 +1,7 @@
 import type { MissionInput, MissionView, Task } from "@/src/shared/contracts";
 
 export const defaultInput: MissionInput = {
-  objective: "Get our six-person team ready for the expo. Find booth supplies, a flyer designer, and six event passes.",
+  objective: "Get our six-person team ready for the expo. Find booth supplies, a flyer designer, six event passes, and an inexpensive food pickup.",
   currency: "USD",
   purchase_budget_minor: 90000,
   deadline: "2026-10-10T09:00:00-07:00",
@@ -10,6 +10,7 @@ export const defaultInput: MissionInput = {
     amazon: { category: "Portable expo booth supplies", delivery_ref: "demo-office" },
     fiverr: { category: "Event flyer design", brief: "Design one print-ready A5 flyer for our six-person team at a startup expo. Supply editable source and print-ready PDF. One revision.", due_date: "2026-10-09T17:00:00-07:00" },
     event_tickets: { event_url: "", date: "2026-10-10T09:00:00-07:00", quantity: 6, attendee_ref: "demo-team" },
+    food: { query: "boba milk tea", fulfillment: "pickup", location: "580 20th Street, San Francisco", quantity: 1 },
   },
 };
 
@@ -18,12 +19,13 @@ const taskSeed = [
   { lane: "amazon" as const, title: "Equip the booth", product: "The booth essentials", description: "Table cover, display stands & badge holders", merchant: "Amazon", amount: 18600, quantity: 1, url: "https://www.amazon.com/", reason: "A compact setup that covers the basics.", detail: "Illustrative supplies bundle. Price, stock, and delivery have not been checked." },
   { lane: "fiverr" as const, title: "Find the right designer", product: "A flyer with a point of view", description: "Print-ready A5 · source files · one revision", merchant: "Fiverr", amount: 14500, quantity: 1, url: "https://www.fiverr.com/", reason: "A focused deliverable with room for a revision.", detail: "Illustrative designer package. No seller has been contacted or hired." },
   { lane: "event_tickets" as const, title: "Get everyone through the door", product: "Six seats at the expo", description: "General admission · one pass per teammate", merchant: "Event provider", amount: 36000, quantity: 6, url: "https://www.eventbrite.com/", reason: "All six passes stay together in the plan.", detail: "Illustrative event passes. Select the actual event before starting a live mission." },
+  { lane: "food" as const, title: "Take care of the food", product: "A little boba break", description: "One milk tea · pickup near the venue", merchant: "DoorDash", amount: 900, quantity: 1, url: "https://www.doordash.com/", reason: "A small pickup order keeps the plan practical.", detail: "Illustrative boba pickup. Menu, fees, availability and checkout have not been verified. No order has been placed." },
 ];
 
 export function createPreview(budget = 90000, revision = 1): MissionView {
-  const lean = budget < 69100;
+  const lean = budget < 70000;
   const tasks: Task[] = taskSeed.map((seed, index) => {
-    const amount = lean ? [14300, 12500, 36000][index] : seed.amount;
+    const amount = lean ? [14300, 12500, 36000, 700][index] : seed.amount;
     const optionId = `preview-option-${seed.lane}-${revision}`;
     const evidenceId = `preview-evidence-${seed.lane}`;
     return {
@@ -42,8 +44,8 @@ export function createPreview(budget = 90000, revision = 1): MissionView {
     service_payment: { status: "not_configured", amount_minor: 50, currency: "USD", mode: "test" },
     tasks, evidence: tasks.flatMap(task => task.evidence), blockers: [], next_actions: ["Connect manager access and choose an event to start a mission."],
     activity: [
-      { id: "preview-1", at: observed, kind: "info", text: "Your agent brings the brief. Three workers take it from here." },
-      { id: "preview-2", at: observed, kind: "decision", text: "One budget is shared across supplies, design, and tickets." },
+      { id: "preview-1", at: observed, kind: "info", text: "Your agent brings the brief. Four workers take it from here." },
+      { id: "preview-2", at: observed, kind: "decision", text: "One budget is shared across supplies, design, tickets, and food." },
       { id: "preview-3", at: observed, kind: "approval", text: "You review the exact cost before any commitment." },
     ],
   };

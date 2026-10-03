@@ -5,6 +5,13 @@ Repository: `oct3`, an independent Git repository at
 `/Users/tringuyen/Developer/.worktrees/oct3`. All product code belongs here.
 The original hacker-kit remains a reusable preparation template.
 
+Latest user-approved additions: optional Food & supplies for boba pickup and
+native passkey confirmation before new live commitments. These supersede the
+original three-lane limit below for this narrow fourth worker. Browser Use is
+cancelled; use Surfsky. Gemini voice drafting passed actual audio-to-draft inference
+with synthetic speech; hosted end-to-end verification is tracked separately.
+External merchant order-history import remains deferred.
+
 Latest stage priority: a fresh Claude Code terminal session delegates preparation
 for a low-budget team outing. Default real merchant spend is $0: supplier
 previews, a verified free RSVP if implemented, and a Stripe sandbox demonstration. See
@@ -93,7 +100,7 @@ rehearsal earlier. Lost time comes from features, not the submission buffer.
 | Stripe MPP | Preferred fixed per-mission service fee; paid response returns a durable job handle |
 | Stripe Link | Manager-approved merchant spend requests/credentials; separate from service payment |
 | Codex | Bounded implementation and independent verification; retain actual contribution evidence |
-| Gemini | Stretch only: useful image/video interpretation after the core is verified |
+| Gemini | Short audio brief to structured, editable mission draft; no autonomous action |
 
 One TypeScript web application with Eve integration, one Supabase project, three
 named browser sessions and one demo workspace. Confirm the web integration from

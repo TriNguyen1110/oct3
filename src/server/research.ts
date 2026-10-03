@@ -50,7 +50,7 @@ export async function runMissionResearch(id: string, workspace: string, onlyTask
       });
       if (!claimed) return;
       const result = await researchTask({
-        task_id: original.id, lane, requirements: initial.input.requirements[lane],
+        task_id: original.id, lane, requirements: initial.input.requirements[lane]!,
         deadline: initial.input.deadline, budget_minor: initial.input.purchase_budget_minor,
         attempt_key: `${id}:${revision}:${lane}:research:${attempt}`, timeout_ms: 90000,
         onProgress: async event => {

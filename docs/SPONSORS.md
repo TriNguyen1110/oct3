@@ -2,7 +2,7 @@
 
 Snapshot: October 3, 2026, hosted baseline `21377a8`. Public demo:
 **https://oct3-five.vercel.app**. An installed package or configured key is not
-integration proof; the free-registration changes have separate verification.
+integration proof; the free-registration, passkey and food changes have separate verification.
 Theme: **Make Something Agents Want**. Agents submit work through the CLI or MCP,
 then retrieve structured results; a manager controls commitments.
 
@@ -52,10 +52,29 @@ API and stable submission key.
 Voting categories: Best Use of Vercel; Best Use of Claude; Functionality and
 Completeness; Innovation and Creativity; User Experience and Design; Impact and
 Usefulness; Best Use of Stripe; Best Use of Codex; Best Use of Multimodal AI for
-Gemini. **Gemini is unused** and is not part of the current submission claims.
+Gemini. **Gemini audio-to-draft inference is verified** with synthetic speech;
+claim this bounded multimodal use, not realtime voice or autonomous ordering.
 The organizer advertises **100K+ shared participant credits** and a separate
 **31K winner credits pool**, not cash or guaranteed per-team awards. See the
 [team brief](../TEAM_BRIEF.md) and [organizer listing](https://luma.com/select-2026-hackathon).
+
+Latest additions: Supabase also stores passkey credentials (public keys only)
+and short-lived exact-action challenges. Its atomic consume RPC and counter CAS
+passed real-crypto tests and an isolated actual-cloud proof; see
+[passkey proof](../reports/performance/passkey-cloud-proof.json). The real
+manager's hardware enrollment is still required. The optional food worker uses
+Surfsky to reach Boba Guys' official pickup site, with observed form choices;
+final checkout is unverified. Browser Use was explicitly cancelled.
+
+Gemini voice drafting uses the audio-capable Interactions API with strict
+structured output, no tools, and `store:false`. After project funding, an actual
+Gemini 3.8 Flash request returned the correct transcript, boba pickup request and
+$10 budget from a 4.842-second synthetic recording in **2.088 seconds**.
+[Actual inference evidence](../reports/performance/gemini-voice-proof.json).
+Hosted UI-to-provider verification is recorded separately. Voice only drafts:
+explicit application and the usual mission review still follow. Saved Cue
+history and the profile were independently read from Supabase; importing past
+external merchant orders is not implemented.
 
 ## Primary references
 

@@ -156,7 +156,7 @@ function exactRegistrationBody(request: Request, attendee: RegistrationAttendee)
     && body.event_api_id === EVENT_API_ID && body.for_waitlist === false
     && body.expected_amount_cents === 0 && body.expected_amount_tax === 0 && body.currency == null
     && body.payment_method == null && body.payment_currency == null && body.coupon_code == null
-    && body.token_gate_info == null && body.eth_address_info == null && body.phone_number == null
+    && body.token_gate_info == null && body.eth_address_info == null && (body.phone_number == null || body.phone_number === "")
     && body.solana_address_info == null && body.event_invite_api_id == null
     && body.solana_address == null && body.solana_wallet_type == null && body.opened_from == null
     && selection != null && Object.keys(selection).length === 1 && selected != null

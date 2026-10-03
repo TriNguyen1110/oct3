@@ -1,0 +1,73 @@
+{
+  "scope": "Actual bounded DoorDash food-lane access and read-only menu proof",
+  "observed_at": "2026-10-03T20:43:32.280Z",
+  "workspace": "oct3-demo",
+  "profile": "oct3-food",
+  "requested_action": "Prepare one classic milk tea with boba for pickup near 580 20th Street; do not order",
+  "nearby_store": {
+    "merchant": "Boba Guys Potrero",
+    "merchant_location_source": "https://www.bobaguys.com/sf-bay-area-express",
+    "merchant_location": "1002 16th St, San Francisco, CA 94107",
+    "doordash_source": "https://www.doordash.com/store/boba-guys-san-francisco-880283/?pickup=true",
+    "public_menu_observation": "DoorDash's public page lists Pickup and Classic Black at $6.90; required drink and boba modifiers were not opened or inferred."
+  },
+  "surfsky_attempts": [
+    {
+      "source": "https://www.doordash.com/store/boba-guys-san-francisco-880283/?pickup=true",
+      "http_status": 403,
+      "title": "Just a moment...",
+      "product_controls": 0,
+      "wall_ms": 13856,
+      "cleanup": "confirmed"
+    },
+    {
+      "source": "https://www.doordash.com/store/724691?pickup=true&src=yp",
+      "http_status": 403,
+      "title": "Just a moment...",
+      "product_controls": 0,
+      "wall_ms": 12939,
+      "cleanup": "confirmed"
+    }
+  ],
+  "earlier_layout_probe": {
+    "source": "https://www.doordash.com/store/safeway-san-francisco-956098/",
+    "http_status": 200,
+    "wall_ms": 17613,
+    "adapter_wall_ms": 12947,
+    "result": "Public menu extraction produced grounded item prices and observed Pickup/Delivery, but this store is not evidence for the user's later boba request."
+  },
+  "direct_official_fallback": {
+    "source_provenance": "Boba Guys' official website links Order Ahead to https://boba-guys.square.site/",
+    "http_status": 200,
+    "provider": "Square Online for Boba Guys",
+    "requested_location_result": "Boba Guys Potrero, 1002 16th St, San Francisco, 0.7 miles from the supplied location",
+    "observed_item": "Classic Black",
+    "observed_required_choices": [
+      "16oz ICED \u2014 $5.75 base",
+      "Boba \u2014 $0.85",
+      "Organic Half + Half (Clover)",
+      "50% sweetness (recommended)"
+    ],
+    "observed_item_subtotal": "$6.60",
+    "observed_reversible_control": "Add to order $6.60",
+    "cart_result": "Not added: the location finder overlay intercepted the final item interaction during the bounded preparation attempt.",
+    "checkout_opened": false,
+    "order_submitted": false,
+    "payment_attempted": false,
+    "cleanup": "confirmed",
+    "adapter_source_sha256": "d58a9db0d41b6b9f4f7bd484c6c76b3a046cba99ce8d5319e2e7911ad244b0d4",
+    "adapter_behavior": "Strictly pinned to pickup, quantity 1, the supplied 580 20th Street San Francisco location, Boba Guys Potrero, and the observed Classic Black choices. Stops before activating Add to order.",
+    "latest_bounded_adapter_result": "Fail-closed merchant_changed because Square intermittently did not expose the expected location result/item after the location overlay; no cart, checkout, order, or payment action occurred.",
+    "latest_cleanup": "confirmed; exact oct3-food profile verified stopped"
+  },
+  "terminal_state": {
+    "durable_lease_released": true,
+    "profile_stopped": true,
+    "cart_mutated": false,
+    "checkout_opened": false,
+    "order_submitted": false,
+    "payment_attempted": false
+  },
+  "blocker": "DoorDash requires private browser verification. The merchant's official Square ordering page is reachable and exposes the exact item form, but the final reversible add was not completed in the bounded run.",
+  "honest_limit": "The exact item and required modifiers were observed with a $6.60 item subtotal. Cart state, tax, fees, pickup time and checkout total remain unverified; do not claim prepared_cart."
+}

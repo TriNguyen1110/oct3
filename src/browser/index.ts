@@ -5,13 +5,14 @@ import { BrowserIssue, withSurfskyPage } from "./surfsky";
 import { rankCandidates } from "./rank";
 import { createComponentToolkit, type ComponentSnapshot } from "./components";
 import type { ExecuteApprovedTaskInput, ExecuteApprovedTaskResult, ResearchTaskInput, ResearchTaskResult } from "./types";
+import { researchDoorDash } from "./doordash";
 
 export type * from "./types";
 export { surfskyConfigured, surfskyHealth, verifyLaneStopped } from "./surfsky";
 export { createComponentTools } from "./component-tools";
 export { createComponentToolkit } from "./components";
 export type { ComponentSnapshot, ComponentPolicy, TaskComponent } from "./components";
-const merchant: Record<Lane, string> = { amazon: "Amazon", fiverr: "Fiverr", event_tickets: "event provider" };
+const merchant: Record<Lane, string> = { amazon: "Amazon", fiverr: "Fiverr", event_tickets: "event provider", food: "DoorDash" };
 function providerName(lane: Lane, source?: string): string {
   if (lane !== "event_tickets") return merchant[lane];
   if (!source) return "Eventbrite or Luma";
@@ -30,6 +31,7 @@ function runSignal(input: ResearchTaskInput) {
   return AbortSignal.any([AbortSignal.timeout(Math.max(10_000,Math.min(input.timeout_ms ?? 90_000,120_000))), ...(input.signal ? [input.signal] : [])]);
 }
 export async function researchTask(input: ResearchTaskInput): Promise<ResearchTaskResult> {
+  if(input.lane==="food")return researchDoorDash(input);
   const started = Date.now();
   let source: string | undefined;
   const observations: Evidence[] = [];

@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-10-03T20:45:51.204Z",
+  "synthetic": true,
+  "storage": "actual Supabase",
+  "authenticator": "Chromium virtual authenticator; no user hardware",
+  "merchant_actions": 0,
+  "real_manager_credential_changed": false,
+  "registration_persisted": true,
+  "missing_passkey_denied": true,
+  "concurrent_challenge_consume_winners": 1,
+  "exact_signed_approval_persisted": true,
+  "idempotent_reservation": true,
+  "assertion_replay_denied": true,
+  "synthetic_records_removed": true,
+  "passed": true
+}

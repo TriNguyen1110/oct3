@@ -80,6 +80,35 @@ from the observed candidates, and excluded an irrelevant food-menu gig. Seven
 narrow assertions covered missing event, URL boundaries and invalid approval
 expiry. Independent verification is still required.
 
+## DoorDash food lane
+
+The `food` worker is bounded to boba pickup for the current venue scenario. It
+uses the persistent `oct3-food` profile and the public Boba Guys Potrero menu;
+it does not treat an unrelated restaurant as a fallback for another query.
+Displayed item prices are arithmetic research subtotals only. Required size,
+sweetness, ice and boba modifiers, pickup availability, taxes, fees and timing
+remain unverified until the exact item dialog and cart are observed.
+
+An earlier layout probe reached a public Safeway Deli page and proved grounded
+menu extraction, Pickup/Delivery detection and confirmed cleanup. It is not boba
+evidence. Two later bounded Boba Guys pickup URLs both returned DoorDash's HTTP
+403 “Just a moment...” page with zero product controls. Both sessions stopped
+and released the durable lane. No address, modifier, cart, checkout, order or
+payment action occurred. The exact prerequisite is a private manager challenge
+handoff in the persistent food profile; only then can an observed Add to cart
+control be considered for reversible preparation. See
+`reports/performance/food-doordash-proof.json`.
+
+Boba Guys' official site separately links its Square Order Ahead page. That
+page returned HTTP 200 in Surfsky and resolved the supplied location to Boba
+Guys Potrero at 1002 16th St, 0.7 miles away. The actual Classic Black form
+showed 16 oz iced at $5.75, Boba at $0.85, Organic Half + Half, and 50%
+sweetness marked recommended; the exact visible item subtotal was $6.60. The
+bounded run observed “Add to order $6.60” but did not activate it because the
+location overlay still intercepted the item interaction. Cart state, tax,
+fees, pickup time and checkout total remain unverified. No checkout, order or
+payment action occurred, and cleanup was confirmed.
+
 ## Runtime form components and internal agent tools
 
 `createComponentTools(page, policy)` exposes four AI SDK tools on the **same live

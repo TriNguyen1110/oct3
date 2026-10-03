@@ -1,0 +1,37 @@
+{
+  "observed_at": "2026-10-03T20:29:37Z",
+  "workspace": "oct3-demo",
+  "lane": "fiverr",
+  "product_url": "https://www.fiverr.com/isacandersen/make-a-beat-for-you",
+  "actual_observation": {
+    "http_status": 200,
+    "page_title": "Make a beat for you by Isacandersen | Fiverr",
+    "account_state": "signed_out",
+    "package": "Basic",
+    "price_display": "$5",
+    "delivery_display": "1-day delivery",
+    "revisions_display": "4 Revisions",
+    "continue_control_visible": true,
+    "sign_in_control_visible": true,
+    "join_control_visible": true
+  },
+  "checkout_observation": {
+    "post_continue_state_verified": false,
+    "checkout_total_observed": false,
+    "taxes_observed": false,
+    "fees_observed": false,
+    "payment_state_reached": false,
+    "blocker": "The post-Continue state was not captured reliably while signed out. A later bounded page load returned HTTP 403 with no package controls, so automatic retries stopped pending a private login/state change."
+  },
+  "safety": {
+    "orders_placed": 0,
+    "payments_submitted": 0,
+    "messages_sent": 0,
+    "accounts_created": 0,
+    "requirements_submitted": 0,
+    "session_cleanup": "confirmed",
+    "durable_lane_released": true,
+    "credentials_or_session_links_recorded": false
+  },
+  "next_step": "Privately sign in to the existing oct3-fiverr Surfsky profile, reopen the exact product URL, select Basic, and inspect the checkout total and fees. Stop before the final order or payment control."
+}

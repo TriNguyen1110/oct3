@@ -1,4 +1,4 @@
-export type Lane = "amazon" | "fiverr" | "event_tickets";
+export type Lane = "amazon" | "fiverr" | "event_tickets" | "food";
 export type TaskStatus = "queued" | "researching" | "options_ready" | "prepared" | "awaiting_approval" | "executing" | "confirmed" | "needs_human" | "failed";
 export type MissionStatus = "queued" | "running" | "awaiting_approval" | "completed" | "needs_attention" | "failed";
 export type EvidenceMode = "live" | "test" | "fixture" | "replay";
@@ -65,6 +65,7 @@ export interface MissionInput {
     amazon: { category: string; delivery_ref: string };
     fiverr: { category: string; brief: string; due_date: string };
     event_tickets: { event_url: string; date: string; quantity: number; attendee_ref: string };
+    food?: { query: string; fulfillment: "pickup" | "delivery"; location: string; quantity: number };
   };
 }
 export interface MissionView {

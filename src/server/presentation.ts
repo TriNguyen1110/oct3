@@ -3,6 +3,7 @@ import type { Evidence, Lane, MissionView, TaskLinks } from "../shared/contracts
 const hosts: Record<Lane, string[]> = {
   amazon: ["amazon.com", "www.amazon.com"],
   fiverr: ["fiverr.com", "www.fiverr.com"],
+  food: ["doordash.com", "www.doordash.com", "boba-guys.square.site"],
   event_tickets: ["eventbrite.com", "www.eventbrite.com", "luma.com", "www.luma.com", "lu.ma", "www.lu.ma"],
 };
 
@@ -15,6 +16,7 @@ function providerLink(value: string | undefined, lane: Lane): string | null {
     // Unknown query parameters may carry private login/session credentials. Do
     // not strip them and invent a different, potentially unusable receipt URL.
     const keys = new Set(["k", "query", "orderID", "order_id", "id", "invoice_id", "ticket_id"]);
+    if (lane === "food" && ["true", "false"].includes(url.searchParams.get("pickup") || "")) keys.add("pickup");
     if ([...url.searchParams.keys()].some(key => !keys.has(key)) || url.hash) return null;
     return url.href;
   } catch { return null; }

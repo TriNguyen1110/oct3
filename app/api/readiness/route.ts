@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const stripe = servicePaymentReadiness();
     const services: RuntimeReadiness[] = [
       { service: "Claude", ready: !!process.env.ANTHROPIC_API_KEY, detail: process.env.ANTHROPIC_API_KEY ? "API key configured; coordinator uses claude-sonnet-5-5." : "Add ANTHROPIC_API_KEY to enable planning." },
+      { service: "Gemini voice", ready: !!process.env.GEMINI_API_KEY, detail: process.env.GEMINI_API_KEY ? "Key configured for short audio briefs. Voice produces an editable draft; it never submits or approves work." : "Voice is not configured. Typed briefs remain available." },
       { service: "Surfsky", ready: !!process.env.SURFSKY_API_KEY, detail: process.env.SURFSKY_API_KEY ? "Key configured. Each destination still needs an observed browser result." : "Add SURFSKY_API_KEY to enable remote browsers." },
       { service: "Supabase", ready: storageMode() === "supabase", detail: storageMode() === "supabase" ? "Supabase persistence configured. Connection health is verified separately." : "Local development JSON storage. Connect Supabase for deployment." },
       { service: "Stripe MPP", ready: stripe.ready, detail: stripe.detail },

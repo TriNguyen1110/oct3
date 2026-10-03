@@ -122,7 +122,7 @@ export async function surfskyHealth(): Promise<{ ready: boolean; active_sessions
 
 /** Reconcile only the exact existing oct3 lane; never starts or stops a browser. */
 export async function verifyLaneStopped(lane: Lane): Promise<{confirmed:boolean;detail:string}> {
-  if(!["amazon","fiverr","event_tickets"].includes(lane))return {confirmed:false,detail:"Unknown browser lane."};
+  if(!["amazon","fiverr","event_tickets","food"].includes(lane))return {confirmed:false,detail:"Unknown browser lane."};
   try{
     const signal=AbortSignal.timeout(15_000);
     const matches:{status:unknown}[]=[];

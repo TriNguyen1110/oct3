@@ -1,0 +1,14 @@
+{
+  "objective": "Prepare for a founder event: research toothpaste, a low-cost beat-making gig, one free Open Together ticket, and one boba milk tea for pickup near 580 20th Street, San Francisco. Return source and review links. Do not buy, contact sellers, or register anyone; the manager must separately review and confirm each exact live action with a passkey.",
+  "mode": "live",
+  "currency": "USD",
+  "purchase_budget_minor": 2500,
+  "deadline": "2026-10-16T18:00:00-07:00",
+  "headcount": 1,
+  "requirements": {
+    "amazon": { "category": "toothpaste", "delivery_ref": "manager-office" },
+    "fiverr": { "category": "beat maker", "brief": "Research a basic beat-making gig around $5. Do not contact or hire the seller.", "due_date": "2026-10-15T17:00:00-07:00" },
+    "event_tickets": { "event_url": "https://luma.com/OpenTogether", "date": "2026-10-16T18:00:00-07:00", "quantity": 1, "attendee_ref": "manager" },
+    "food": { "query": "boba milk tea", "fulfillment": "pickup", "location": "580 20th Street, San Francisco", "quantity": 1 }
+  }
+}

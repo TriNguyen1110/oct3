@@ -9,6 +9,7 @@ const sources: Record<Lane, string> = {
   amazon: "https://www.amazon.com/dp/SYNTHETIC",
   fiverr: "https://www.fiverr.com/synthetic/gig",
   event_tickets: "https://www.eventbrite.com/e/synthetic-tickets-123",
+  food: "https://www.doordash.com/store/synthetic-123/",
 };
 function task(lane: Lane): Task {
   const id = `synthetic-${lane}`;
@@ -111,7 +112,7 @@ test("Cue result links with synthetic records only", async t => {
     assert.equal(present(view).tasks[0].links!.preview_kind, "provider_page");
   });
 
-  await t.test("all three lanes return independently captured merchant confirmation and receipt URLs", () => {
+  await t.test("all lanes return independently captured merchant confirmation and receipt URLs", () => {
     const view = confirmed();
     const output = present(view);
     for (const [index, target] of output.tasks.entries()) {

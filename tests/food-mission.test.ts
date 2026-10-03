@@ -1,0 +1,50 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { missionSchema } from "../src/server/schema";
+import { createMission, decideTask, reviseMission, runFixture } from "../src/server/missions";
+import { presentMission } from "../src/server/presentation";
+
+test("optional food worker preserves older missions and shares revision, budget and idempotency guards", async t => {
+  const directory = await mkdtemp(join(tmpdir(), "cue-food-test-"));
+  const previous = { SUPABASE_URL: process.env.SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY, OCT3_STATE_PATH: process.env.OCT3_STATE_PATH, VERCEL: process.env.VERCEL };
+  delete process.env.SUPABASE_URL; delete process.env.SUPABASE_SERVICE_ROLE_KEY; delete process.env.VERCEL;
+  process.env.OCT3_STATE_PATH = join(directory, "state.json");
+  t.after(async () => { for (const [name, value] of Object.entries(previous)) { if (value === undefined) delete process.env[name]; else process.env[name] = value; } await rm(directory, { recursive: true, force: true }); });
+  const principal = { workspace_id: "synthetic-food", id: "synthetic-manager", role: "manager" as const };
+  const input = missionSchema.parse(JSON.parse(await readFile(new URL("../examples/boba-outing.json", import.meta.url), "utf8")));
+  input.purchase_budget_minor = 90000;
+  const oldInput = structuredClone(input); delete oldInput.requirements.food;
+  const old = await createMission(oldInput, principal, "old-three-worker-key", "fixture");
+  assert.equal(old.record.view.tasks.length, 3);
+  await assert.rejects(createMission(input, principal, "old-three-worker-key", "fixture"), (error: any) => error?.code === "idempotency_conflict");
+  const made = await createMission(input, principal, "new-four-worker-key", "fixture");
+  assert.equal(made.record.view.tasks.length, 4);
+  const again = await createMission(input, principal, "new-four-worker-key", "fixture");
+  assert.equal(again.created, false); assert.equal(again.record.id, made.record.id);
+  const planned = await runFixture(made.record.id, principal.workspace_id);
+  const food = planned.view.tasks.find(task => task.lane === "food")!;
+  assert.ok(food.proposal); assert.equal(food.evidence[0].mode, "fixture");
+  const exact = { proposal_id: food.proposal.id, revision: food.proposal.revision };
+  const approved = await decideTask(food.id, principal, exact, "approve");
+  assert.equal(approved.view.budget.reserved_minor, food.proposal.total_minor);
+  const changed = await reviseMission(planned.id, principal, { expected_revision: 1, purchase_budget_minor: 65000 });
+  assert.equal(changed.view.budget.reserved_minor, 0);
+  await assert.rejects(decideTask(food.id, principal, exact, "approve"));
+  const view = structuredClone(changed.view);
+  const task = view.tasks.find(task => task.lane === "food")!;
+  const source = "https://www.doordash.com/store/synthetic-boba-123/?pickup=true";
+  task.proposal!.source_url = source;
+  assert.equal(presentMission(view, "http://localhost:3003").tasks.find(task => task.lane === "food")!.links?.preview_url, source);
+  task.proposal!.source_url = `${source}&session=private`;
+  assert.equal(presentMission(view, "http://localhost:3003").tasks.find(task => task.lane === "food")!.links?.preview_url, null);
+  task.proposal!.source_url = "https://boba-guys.square.site/";
+  assert.equal(presentMission(view, "http://localhost:3003").tasks.find(task => task.lane === "food")!.links?.preview_url, "https://boba-guys.square.site/");
+  for (const unsafe of ["https://boba-guys.square.site/?session=private", "https://unrelated.square.site/"]) {
+    task.proposal!.source_url = unsafe;
+    assert.equal(presentMission(view, "http://localhost:3003").tasks.find(task => task.lane === "food")!.links?.preview_url, null);
+  }
+  assert.equal(missionSchema.safeParse({ ...input, requirements: { ...input.requirements, food: { ...input.requirements.food, quantity: -1 } } }).success, false);
+});

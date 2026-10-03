@@ -9,6 +9,31 @@ caller has submitted sandbox-paid research and read the same hosted mission.
 Fiverr and Luma returned observed options; Amazon returned an explicit HTTP 503
 handoff. Actual orders and event registration have not been completed.
 
+## Current rehearsal additions
+
+- The optional fourth worker prepares boba pickup near the venue. Use
+  `examples/boba-outing.json` with a new idempotency key; preserve the older
+  `examples/team-outing.json` request already used for hosted evidence.
+- New live approvals require a native passkey. Open the HTTPS dashboard, sign
+  in as manager, and enroll under Saved profile. Enrollment alone never approves
+  anything. Review the exact proposal, then use **Confirm with passkey**. The OS
+  chooses available biometrics or device verification; Cue stores public-key
+  verification data, never fingerprints. Local ceremonies require
+  `http://localhost:3003`, not `127.0.0.1`.
+- The first real Luma attempt stopped before sending its approved registration
+  POST because the observed request contained a blank optional phone field.
+  That narrow guard mismatch is fixed and tested. No RSVP was confirmed. A
+  fresh prepared proposal and the real manager's passkey are needed before a
+  new one-shot submit; never present the earlier attempt as a registration.
+- Saved profile and **Past missions** use Supabase. History preserves each
+  mission's mode, evidence and observed receipts. It does not import external
+  Amazon, Fiverr or food orders. Past actions never grant future approval.
+- Gemini voice controls and the draft-only API are implemented. Actual Gemini
+  inference converted 4.842 seconds of synthetic speech into the correct boba
+  brief and $10 budget in 2.088 seconds. Hosted UI-to-provider proof is tracked
+  separately. Recording produces an editable draft and never submits a mission.
+  Browser Use was cancelled; all current browser workers use Surfsky.
+
 Latest direction: make the story approachable and target **$0 in real merchant
 spending**. One request: “Get my team ready for a local event, under $25.” Show
 supplies and freelancer research as two reviewable previews. Aim for one free

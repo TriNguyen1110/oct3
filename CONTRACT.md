@@ -230,3 +230,57 @@ snapshot/attendee/approval/reservation/attempt and rechecks the exact free event
 Implementation/tests do not authorize an actual RSVP. The user requested a
 review link before commitment; prepare that concrete result before asking them
 to approve the final registration.
+
+## User-requested additions — October 3, 13:45 PDT
+
+The user explicitly expanded today's scope to Food & supplies and requested
+device confirmation before commitments. This supersedes the earlier three-lane
+limit for this narrow fourth worker; rides remain a future marketing example.
+
+- `Lane` additionally supports `food`. Optional `requirements.food` contains
+  `{query, fulfillment: "pickup" | "delivery", location, quantity}`. Omitting it
+  preserves existing three-worker missions. Including it creates a fourth task
+  in the same shared budget, persistence, idempotency and research mechanisms.
+  Today's selected case is one boba milk tea for pickup near 580 20th Street.
+  Public menu observations are estimates, not prepared checkout or purchases.
+  The worker must report browser challenges and missing modifiers accurately.
+- New live approvals require a cryptographically verified WebAuthn assertion
+  with required user verification. Use the trusted application origin and RP
+  ID, a short-lived single-use Supabase challenge, exact workspace/principal/
+  task/proposal/revision/action-hash binding and a final CAS hash check.
+  Signature counters update by CAS. Enrollment is manager-only, once per
+  workspace manager, and never approves an action. No reset/additional-key
+  flow is included. The platform may use biometrics or a device PIN; Cue never
+  receives or stores biometric templates. Existing exact approved reservations
+  remain idempotent; fixtures retain explicit synthetic behavior.
+- Manager APIs: `GET /api/passkeys`; `POST /api/passkeys/register/options`;
+  `POST /api/passkeys/register/verify {challenge_id,response}`;
+  `POST /api/tasks/:id/approval-options {proposal_id,revision}`; the existing
+  approval request adds `passkey:{challenge_id,response}`. Ceremony writes
+  require the trusted Origin in addition to manager authentication. New live
+  approval without a valid assertion is denied on the server.
+- Native device confirmation must be exercised by the real manager in the
+  hosted HTTPS board. Software-authenticator proof uses an isolated synthetic
+  principal and does not establish that the user's Touch ID was used. Local
+  development uses `http://localhost:3003`, not an IP-address RP ID.
+
+The user authorized preparing/filling a food order but explicitly withheld
+purchase until passkey confirmation. No registration, hiring, ride dispatch or
+paid order can be inferred from a prepared page or a successful service fee.
+
+## Voice drafting — user-authorized October 3, 14:00 PDT
+
+Manager-only `POST /api/voice/draft` accepts one multipart `audio` recording:
+canonical PCM16 mono WAV at 16 kHz, 0.3–20 seconds, at most 640044 bytes.
+The request must have the same Origin as the dashboard. An existing durable
+workspace lease permits one draft generation at a time. The provider request
+has a 25-second timeout, a bounded output, no tools and `store:false`.
+
+Gemini 3.8 Flash transcribes audio and proposes `{transcript,objective,
+purchase_budget_minor,food,notes}` under a strict schema. Budget and food may be
+null; absent fields preserve the existing editable form. The server adds fixed
+`model` and `draft_only:true` metadata. Only an explicit **Use this draft** click
+updates those form fields. Sending a mission and approving an action remain
+separate existing steps. Voice has no mission, approval, browser or payment
+execution capability. Cue saves neither audio nor voice drafts. A provider
+error keeps typed input available and cannot imply that work was started.

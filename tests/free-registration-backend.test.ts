@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test, type TestContext } from "node:test";
-import { createMission, decideTask, resumeTask, reviseMission, refresh } from "../src/server/missions";
+import { approvalRequirement, createMission, decideTask, resumeTask, reviseMission, refresh } from "../src/server/missions";
 import { prepareFreeRegistrationTask, freeRegistrationReview } from "../src/server/free-registration";
 import { getRecord, mutateRecord } from "../src/server/store";
 import { servicePaymentBinding } from "../src/server/service-payments";
@@ -55,6 +55,7 @@ function setup(t: TestContext, options: Options = {}) {
 }
 const task = (r: MissionRecord) => r.view.tasks.find(x => x.lane === "event_tickets")!;
 const exact = (r: MissionRecord) => ({ proposal_id: task(r).proposal!.id, revision: task(r).proposal!.revision });
+const approve = async (r: MissionRecord) => decideTask(task(r).id, manager, exact(r), "approve", (await approvalRequirement(task(r).id, manager, exact(r))).action_hash);
 
 test("free registration private preparation and exact approval guards", async t => {
   const h = setup(t);
@@ -66,7 +67,7 @@ test("free registration private preparation and exact approval guards", async t 
   await assert.rejects(decideTask(id, agent, exact(p), "approve"), /manager/);
   await assert.rejects(freeRegistrationReview(id, agent), /manager/);
   const review = await freeRegistrationReview(id, manager); assert.deepEqual(review.attendee, { name: h.profile.name, email: h.profile.email }); assert.equal(review.profile_unchanged, true);
-  const approved = await decideTask(id, manager, exact(p), "approve");
+  const approved = await approve(p);
   assert.equal(approved.reservations.length, 1); assert.equal(approved.reservations[0].amount_minor, 0); assert.equal(approved.view.budget.available_minor, 100); assert.equal(task(approved).approval!.link_state, "not_applicable_free");
   for (const mutate of [
     (v: MissionRecord) => { task(v).proposal!.action_hash = "f".repeat(64); },
@@ -83,11 +84,11 @@ test("free registration private preparation and exact approval guards", async t 
 test("forged free action without a private preparation is denied", async t => {
   const h = setup(t), p = await h.prepared(), id = task(p).id;
   await mutateRecord(p.id, manager.workspace_id, r => { delete r.prepared_registrations; });
-  await assert.rejects(decideTask(id, manager, exact(p), "approve"), /private action/); assert.equal(h.browser.allowed.length, 0);
+  await assert.rejects(approve(p), /private action/); assert.equal(h.browser.allowed.length, 0);
 });
 test("concurrent resumes claim once and uncertain registration cannot replay or reprepare", async t => {
   const h = setup(t, { lost: true }), p = await h.prepared(), id = task(p).id;
-  await decideTask(id, manager, exact(p), "approve");
+  await approve(p);
   await Promise.allSettled([resumeTask(id, agent, exact(p)), resumeTask(id, agent, exact(p))]);
   const result = await getRecord(p.id, manager.workspace_id);
   assert.equal(h.browser.allowed.length, 1); assert.equal(result.reservations[0].state, "uncertain"); assert.equal(result.attempts[id].state, "uncertain");
@@ -96,14 +97,14 @@ test("concurrent resumes claim once and uncertain registration cannot replay or 
 });
 test("clean pre-submit failure releases zero hold and requires fresh approval", async t => {
   const h = setup(t), p = await h.prepared(), id = task(p).id;
-  await decideTask(id, manager, exact(p), "approve"); h.options.prefilled = true;
+  await approve(p); h.options.prefilled = true;
   const result = await resumeTask(id, agent, exact(p));
   assert.equal(result.reservations[0].state, "released"); assert.equal(result.prepared_registrations?.[id], undefined); assert.equal(task(result).approval!.state, "stale");
   await assert.rejects(resumeTask(id, agent, exact(p))); assert.equal(h.browser.allowed.length, 0);
 });
 test("prepare finishing after execution claims cannot replace proposal or release its hold", async t => {
   const h = setup(t), p = await h.prepared(), id = task(p).id;
-  await decideTask(id, manager, exact(p), "approve");
+  await approve(p);
   // Profile change forces a fresh asynchronous inspection rather than cached return.
   h.profile.company = "Changed company";
   h.options.onGoto = async () => { await mutateRecord(p.id, manager.workspace_id, r => { task(r).status = "executing"; r.attempts[id] = { state: "claimed", started_at: new Date().toISOString() }; }); };
@@ -112,7 +113,7 @@ test("prepare finishing after execution claims cannot replace proposal or releas
 });
 test("failed preparation finishing after execution claims cannot invalidate protected approval", async t => {
   const h = setup(t), p = await h.prepared(), id = task(p).id;
-  await decideTask(id, manager, exact(p), "approve"); h.profile.company = "Changed company"; h.options.prefilled = true;
+  await approve(p); h.profile.company = "Changed company"; h.options.prefilled = true;
   h.options.onGoto = async () => { await mutateRecord(p.id, manager.workspace_id, r => { task(r).status = "executing"; r.attempts[id] = { state: "claimed", started_at: new Date().toISOString() }; }); };
   await assert.rejects(prepareFreeRegistrationTask(id, manager, 1), /protected|locked|busy/i);
   const current = await getRecord(p.id, manager.workspace_id); assert.equal(task(current).proposal!.id, exact(p).proposal_id); assert.equal(current.reservations[0].state, "reserved");
@@ -125,7 +126,7 @@ test("prepare finishing after constraint revision cannot write stale proposal", 
 });
 test("actual matching synthetic confirmation binds task proposal revision and repeats without new POST", async t => {
   const h = setup(t), p = await h.prepared(), id = task(p).id;
-  await decideTask(id, manager, exact(p), "approve"); const result = await resumeTask(id, agent, exact(p));
+  await approve(p); const result = await resumeTask(id, agent, exact(p));
   assert.equal(task(result).status, "confirmed"); assert.equal(result.reservations[0].state, "committed");
   const proof = task(result).evidence.find(e => e.kind === "merchant_confirmation")!;
   assert.equal(proof.task_id, id); assert.equal(proof.proposal_id, exact(p).proposal_id); assert.equal(proof.revision, 1); assert.equal(proof.mode, "live"); assert.equal(proof.confirmation_ref, task(result).confirmation_ref);
@@ -139,7 +140,7 @@ test("unpaid mission cannot prepare a free registration", async t => {
 });
 test("execution respects the shared event browser lease before any registration request", async t => {
   const h = setup(t), p = await h.prepared(), id = task(p).id;
-  await decideTask(id, manager, exact(p), "approve");
+  await approve(p);
   h.leases.set(`${manager.workspace_id}:event_tickets`, "synthetic-other-worker");
   await assert.rejects(resumeTask(id, agent, exact(p)), /browser|busy/i);
   assert.equal(h.browser.allowed.length, 0);

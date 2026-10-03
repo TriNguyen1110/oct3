@@ -24,9 +24,9 @@ test("refined mission desk preserves local fixture controls, dialog access and r
     page.on("response", response => { if (response.status() >= 400 && !new URL(response.url()).pathname.startsWith("/api/")) assetErrors.push(`${response.status()} ${new URL(response.url()).pathname}`); });
     await page.goto(origin.href); await page.getByRole("button", { name: "New mission", exact: true }).waitFor();
     await page.locator(".brief-eyebrow").filter({ hasText: "EXAMPLE MISSION" }).waitFor();
-    assert.equal(await page.locator(".worker-card").count(), 3);
-    assert.equal(await page.locator(".worker-art svg").count(), 3);
-    assert.match(await page.locator("h1").innerText(), /Consider it\s+in good hands/);
+    assert.equal(await page.locator(".worker-card").count(), 4);
+    assert.equal(await page.locator(".worker-art svg").count(), 4);
+    assert.match(await page.locator("h1").innerText(), /Hands free\.\s+In good hands\./);
     const audit = async () => page.evaluate(() => ({
       overflow: document.documentElement.scrollWidth > innerWidth,
       unnamedButtons: [...document.querySelectorAll("button")].filter(button => button.getBoundingClientRect().width > 0 && !button.textContent?.trim() && !button.getAttribute("aria-label") && !button.getAttribute("aria-labelledby")).length,
@@ -49,7 +49,7 @@ test("refined mission desk preserves local fixture controls, dialog access and r
     await budget.getByLabel("New purchase budget · USD").fill("650");
     await budget.getByRole("button", { name: "Revise example plan" }).click(); await budget.waitFor({ state: "hidden" });
     assert.equal(mutations.length, 0, "Fixture budget revision must remain local");
-    for (let index = 0; index < 3; index++) {
+    for (let index = 0; index < 4; index++) {
       await page.locator(".worker-card").nth(index).getByRole("button").last().click();
       const dialog = page.getByRole("dialog"); await dialog.waitFor();
       assert.match(await dialog.innerText(), /EXAMPLE DATA|Example plan/);
@@ -85,16 +85,16 @@ test("live-shaped task cards and pinned review finish entrance animation fully v
       const request = route.request(), url = new URL(request.url()); if (url.origin !== origin.origin) return route.abort();
       if (!url.pathname.startsWith("/api/")) return route.continue();
       if (request.method() !== "GET") mutations.push(url.pathname);
-      const body = url.pathname === "/api/auth" ? { authenticated: true, role: "manager" } : url.pathname === "/api/readiness" ? { services: [] } : url.pathname.endsWith("/registration-review") ? review : url.pathname === "/api/preferences" ? { preferences: null } : mission;
+      const body = url.pathname === "/api/auth" ? { authenticated: true, role: "manager" } : url.pathname === "/api/readiness" ? { services: [] } : url.pathname.endsWith("/registration-review") ? review : url.pathname === "/api/preferences" ? { preferences: null } : url.pathname === "/api/passkeys" ? { enrolled: true, required: true } : mission;
       await route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
     });
     const page = await context.newPage(); page.on("pageerror", error => errors.push(error.message));
     await page.goto(`${origin.origin}/?mission=${mission.mission_id}&task=${encodeURIComponent(task.id)}&revision=1`);
     const dialog = page.getByRole("dialog"); await dialog.getByText("synthetic@example.test", { exact: true }).waitFor();
     await page.evaluate(async () => { await Promise.all(document.getAnimations().filter(animation => animation.effect?.getTiming().iterations !== Infinity).map(animation => animation.finished.catch(() => {}))); });
-    assert.equal(await dialog.getByRole("button", { name: "Approve free RSVP", exact: true }).isEnabled(), true);
+    assert.equal(await dialog.getByRole("button", { name: "Confirm with passkey", exact: true }).isEnabled(), true);
     const states = await page.locator(".worker-card, dialog[open]").evaluateAll(nodes => nodes.map(node => ({ opacity: getComputedStyle(node).opacity, visibility: getComputedStyle(node).visibility, display: getComputedStyle(node).display, area: node.getBoundingClientRect().width * node.getBoundingClientRect().height })));
-    assert.equal(states.length, 4); assert.ok(states.every(state => state.opacity === "1" && state.visibility === "visible" && state.display !== "none" && state.area > 0), JSON.stringify(states));
+    assert.equal(states.length, 5); assert.ok(states.every(state => state.opacity === "1" && state.visibility === "visible" && state.display !== "none" && state.area > 0), JSON.stringify(states));
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     await page.screenshot({ path: `/tmp/cue-screen-live-${width}-${reducedMotion}.png` });
     await page.keyboard.press("Escape"); await dialog.waitFor({ state: "hidden" });
@@ -102,5 +102,41 @@ test("live-shaped task cards and pinned review finish entrance animation fully v
     assert.equal(await page.locator(".worker-card").first().evaluate(node => getComputedStyle(node).opacity), "1");
     await page.screenshot({ path: `/tmp/cue-screen-live-cards-${width}-${reducedMotion}.png` });
     assert.deepEqual(errors, []); assert.deepEqual(mutations, []); await context.close();
+  });
+});
+
+test("final four-worker palette keeps level hero and explicit boba pickup defaults", { skip: !base }, async t => {
+  const origin = new URL(base!); assert.ok(["127.0.0.1", "localhost", "[::1]"].includes(origin.hostname));
+  const browser = await chromium.launch({ executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless: true }); t.after(() => browser.close());
+  for (const width of [1440, 390]) await t.test(`${width}px final palette and food form`, async () => {
+    const context = await browser.newContext({ viewport: { width, height: 1000 }, reducedMotion: "reduce" }); const errors: string[] = [], writes: string[] = [];
+    await context.route("**/*", async route => {
+      const request = route.request(), url = new URL(request.url()); if (url.origin !== origin.origin) return route.abort();
+      if (!url.pathname.startsWith("/api/")) return route.continue();
+      if (request.method() !== "GET") writes.push(url.pathname);
+      const body = url.pathname === "/api/auth" ? { authenticated: true, role: "manager" } : url.pathname === "/api/readiness" ? { services: [] } : url.pathname === "/api/preferences" ? { preferences: null } : { mission: null, missions: [] };
+      await route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
+    });
+    const page = await context.newPage(); page.on("pageerror", error => errors.push(error.message)); await page.goto(origin.href);
+    await page.getByText("Workspace access", { exact: true }).waitFor({ state: "attached" });
+    assert.equal(await page.locator(".worker-card").count(), 4); assert.equal(await page.locator(".worker-art svg").count(), 4);
+    assert.equal(await page.locator(".cinematic-hero").evaluate(node => getComputedStyle(node).transform), "none");
+    assert.match(await page.locator("h1").innerText(), /Hands free\.\s+In good hands\./);
+    await page.locator(".cue-sculpture-image").evaluate(async node => { await (node as HTMLImageElement).decode(); });
+    assert.ok(await page.locator(".cue-sculpture-image").evaluate(node => (node as HTMLImageElement).naturalWidth > 0));
+    assert.equal(await page.locator(".cue-sculpture-image").evaluate(node => getComputedStyle(node).animationName), "none");
+    for (const node of await page.locator(".cue-shape-float").all()) assert.equal(await node.evaluate(el => getComputedStyle(el).animationName), "none");
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    await page.screenshot({ path: `/tmp/cue-cinematic-independent-${width}.png`, fullPage: true });
+    await page.getByRole("button", { name: "New mission", exact: true }).click(); const dialog = page.getByRole("dialog", { name: "What needs doing?" }); await dialog.waitFor();
+    assert.equal(await dialog.getByLabel("Find food for this mission").isChecked(), true);
+    assert.equal(await dialog.getByLabel("What sounds good?").inputValue(), "boba milk tea");
+    assert.equal(await dialog.getByLabel("Fulfillment", { exact: true }).inputValue(), "pickup");
+    assert.equal(await dialog.getByLabel("Quantity", { exact: true }).inputValue(), "1");
+    assert.equal(await dialog.getByLabel("Search near").inputValue(), "580 20th Street, San Francisco");
+    await dialog.getByText(/DoorDash menu research only/).waitFor(); await dialog.getByLabel("What sounds good?").scrollIntoViewIfNeeded();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    await page.screenshot({ path: `/tmp/cue-final-food-form-independent-${width}.png` });
+    await page.keyboard.press("Escape"); assert.deepEqual(writes, []); assert.deepEqual(errors, []); await context.close();
   });
 });

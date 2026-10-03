@@ -1,0 +1,26 @@
+{
+  "checked_at": "2026-10-03T21:07:50.693Z",
+  "synthetic_audio": true,
+  "audio_seconds": 4.842,
+  "provider": "actual Gemini Interactions API",
+  "provider_status": 200,
+  "elapsed_ms": 2088,
+  "draft": {
+    "transcript": "Find one boba milk tea for pickup near the hackathon venue with a budget of $10.",
+    "objective": "Find one boba milk tea for pickup near the hackathon venue within a $10 budget.",
+    "purchase_budget_minor": 1000,
+    "food": {
+      "query": "boba milk tea",
+      "fulfillment": "pickup",
+      "location": "580 20th Street, San Francisco",
+      "quantity": 1
+    },
+    "notes": [
+      "Hackathon venue mapped to 580 20th Street, San Francisco."
+    ],
+    "model": "gemini-3.8-flash",
+    "draft_only": true
+  },
+  "mission_created": false,
+  "merchant_actions": 0
+}

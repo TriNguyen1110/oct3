@@ -1,0 +1,40 @@
+{
+  "checked_at": "2026-10-03T20:54:32.448Z",
+  "storage": "supabase",
+  "workspace_mission_rows": 5,
+  "history_returned": 5,
+  "history_limit": 20,
+  "history_modes": {
+    "live": 3,
+    "fixture": 2
+  },
+  "history_statuses": {
+    "needs_attention": 4,
+    "awaiting_approval": 1
+  },
+  "history_task_statuses": {
+    "needs_human": 4,
+    "options_ready": 3,
+    "queued": 3,
+    "awaiting_approval": 5
+  },
+  "live_confirmed_tasks_by_lane": {},
+  "live_public_receipts_available": 0,
+  "latest_created_at": "2026-10-03T20:00:54.628Z",
+  "oldest_returned_created_at": "2026-10-03T19:19:31.340Z",
+  "profile": {
+    "present": true,
+    "storage": "supabase",
+    "field_presence": {
+      "name": true,
+      "email": true,
+      "company": true,
+      "role": true
+    },
+    "updated_at": "2026-10-03T19:49:09.015+00:00",
+    "matches_independent_database_read": true,
+    "comparison_method": "Individual field values and updated_at; JSON object key order ignored.",
+    "comparison_checked_at": "2026-10-03T20:55:51.302Z"
+  },
+  "external_merchant_history_import_implemented": false
+}
