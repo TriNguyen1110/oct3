@@ -1,0 +1,15 @@
+{
+  "checked_at": "2026-10-03T19:19:33.014Z",
+  "schema_applied": true,
+  "mode": "fixture",
+  "mission_id": "a200de29-fb1e-405c-8d6b-8eab5702a306",
+  "dashboard_url": "http://localhost:3003/?mission=a200de29-fb1e-405c-8d6b-8eab5702a306",
+  "storage": "supabase",
+  "api_save_reload": true,
+  "independent_database_read": true,
+  "same_id_on_retry": true,
+  "tasks": 3,
+  "version": 2,
+  "elapsed_ms": 2347,
+  "merchant_actions": 0
+}

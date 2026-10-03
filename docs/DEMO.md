@@ -1,15 +1,21 @@
 # Demo runbook
 
 The current stage direction is [Claude terminal → merchant outcomes](CLAUDE_DEMO.md):
-connect Claude Code live, delegate toothpaste + a $5 beat gig + one free Luma
-registration, review exact commitments, then reveal the actual merchant pages.
-The terminal connection is verified; Luma and merchant completion remain build
+connect Claude Code live, prepare a low-budget team outing, review supplies and
+freelancer previews, and target one verified free event registration. Default
+real merchant spend is $0; Stripe uses its sandbox. The terminal connection is
+verified; event registration and merchant completion remain build
 targets. The measured research and fixture sequence below is the working fallback.
 
 **90 seconds is the presentation goal, not an end-to-end runtime guarantee.**
 The current app has real browser research, labeled fixture planning, and explicit
 payment/checkout gaps. Do not present the fixture plan as merchant observations.
 See [sponsor status](SPONSORS.md) for claims that are safe to make today.
+
+Architecture talking point: Supabase persists shared mission state; Queues could
+hold durable browser jobs, and Cron could check stalled work. Queues and Cron are
+planned, not active in this build. Stripe has a verified 50-cent sandbox Payments
+API probe with an idempotent retry; MPP and Link need their own end-to-end evidence.
 
 ## Timing evidence
 

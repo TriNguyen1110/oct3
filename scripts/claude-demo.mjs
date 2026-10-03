@@ -9,11 +9,9 @@ if (process.argv.slice(2).some(arg => arg !== "--check")) throw new Error("Usage
 if (!process.env.OCT3_AGENT_TOKEN) throw new Error("Set OCT3_AGENT_TOKEN privately before opening the demo.");
 const base = new URL(process.env.OCT3_BASE_URL || "http://127.0.0.1:3003");
 if (base.username || base.password || base.search || base.hash || base.pathname !== "/" || !(base.protocol === "https:" || (base.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(base.hostname)))) throw new Error("OCT3_BASE_URL must be an HTTPS origin, or a local HTTP origin.");
-const environment = { ...process.env, OCT3_BASE_URL: base.origin };
-// Caller needs its oct3 credential and Claude authentication, not merchant/admin credentials.
-for (const key of Object.keys(environment)) {
-  if (/^(SURFSKY_|SUPABASE_|STRIPE_|VERCEL_)/.test(key) || key === "OCT3_MANAGER_TOKEN") delete environment[key];
-}
+// Explicit allowlist: new server credentials must not silently reach the caller.
+const callerKeys = new Set(["PATH", "HOME", "SHELL", "USER", "LOGNAME", "TERM", "COLORTERM", "LANG", "LC_ALL", "LC_CTYPE", "TMPDIR", "XDG_CONFIG_HOME", "CLAUDE_CONFIG_DIR", "ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN", "OCT3_AGENT_TOKEN"]);
+const environment = { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => callerKeys.has(key))), OCT3_BASE_URL: base.origin };
 const directory = await mkdtemp(join(tmpdir(), "oct3-caller-"));
 const tools = ["submit_mission", "mission_status", "list_missions"].map(name => `mcp__oct3__${name}`);
 const args = [

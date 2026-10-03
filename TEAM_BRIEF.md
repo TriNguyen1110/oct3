@@ -65,11 +65,14 @@ Category-specific payouts and eligibility rules are not yet established.
 
 ## Stage story
 
-Latest user direction: open Claude Code in the terminal, connect oct3 during the
-presentation, and follow the resulting merchant pages. Use a small real-spend
-run: toothpaste, a roughly $5 beat-making gig and one free Luma registration.
-See [the stage runbook](docs/CLAUDE_DEMO.md). Luma and completed merchant flows
-are implementation targets, not current capabilities. Flights remain deferred.
+Latest user direction: approachable, inexpensive, easy to demo. Open Claude Code
+in the terminal and connect oct3 live. Target **$0 real merchant spending**:
+supplies and freelancer previews, one verified free event RSVP if implemented,
+and Stripe sandbox payment. Use one coherent “get my team ready for a local
+event under $25” planning request. Review, change budget, invalidate old approval,
+then return evidence. Rehearsals reuse saved research to reduce browser/model
+usage. See [the stage runbook](docs/CLAUDE_DEMO.md). Free RSVP completion remains
+an implementation target; Eventbrite is the existing adapter. Flights deferred.
 
 The earlier expo scenario remains the labeled budget-revision fixture:
 

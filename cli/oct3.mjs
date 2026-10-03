@@ -31,10 +31,17 @@ async function main(args) {
   if (!process.env.OCT3_AGENT_TOKEN) throw new Error("Set OCT3_AGENT_TOKEN in your environment");
   const response = await fetch(new URL(path, base), {
     method, redirect: "error", signal: AbortSignal.timeout(60000),
-    headers: { Authorization: `Bearer ${process.env.OCT3_AGENT_TOKEN}`, "Content-Type": "application/json", ...(key ? { "Idempotency-Key": key } : {}) },
+    headers: { Authorization: `Bearer ${process.env.OCT3_AGENT_TOKEN}`, "Content-Type": "application/json", ...(key ? { "Idempotency-Key": key } : {}), ...(command === "submit" && process.env.OCT3_PAYMENT_AUTHORIZATION ? { "Payment-Authorization": process.env.OCT3_PAYMENT_AUTHORIZATION } : {}) },
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
   const data = await response.json().catch(() => ({ error: { code: "invalid_response", message: "The server did not return JSON." } }));
+  // Preserve durable handles on the standard MPP 402 response. Credentials stay
+  // in the request header; only the public challenge is returned to the caller.
+  for (const [field, header] of [["mission_id", "x-cue-mission-id"], ["dashboard_url", "x-cue-dashboard-url"], ["result_url", "x-cue-result-url"]]) {
+    const value = response.headers.get(header);
+    if (value && data[field] === undefined) data[field] = value;
+  }
+  if (response.status === 402) data.payment_challenge = response.headers.get("www-authenticate");
   process.stdout.write(JSON.stringify(data, null, 2) + "\n");
   if (!response.ok) process.exitCode = 1;
 }

@@ -19,11 +19,16 @@ async function handler(request: Request): Promise<Response> {
     const origin = new URL(request.url).origin;
     const headers = { authorization: request.headers.get("authorization")!, "content-type": "application/json" };
     const callRequest = (path: string, method = "GET", body?: unknown, key?: string) => new Request(new URL(path, origin), {
-      method, headers: { ...headers, ...(key ? { "idempotency-key": key } : {}) },
+      method, headers: { ...headers, ...(key ? { "idempotency-key": key } : {}), ...(method === "POST" && request.headers.get("payment-authorization") ? { "payment-authorization": request.headers.get("payment-authorization")! } : {}) },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
     const result = async (response: Response) => {
       const data = await response.json();
+      for (const [field, header] of [["mission_id", "x-cue-mission-id"], ["dashboard_url", "x-cue-dashboard-url"], ["result_url", "x-cue-result-url"]]) {
+        const value = response.headers.get(header);
+        if (value && data[field] === undefined) data[field] = value;
+      }
+      if (response.status === 402) data.payment_challenge = response.headers.get("www-authenticate");
       return { content: [{ type: "text" as const, text: JSON.stringify(data) }], structuredContent: data, ...(!response.ok ? { isError: true } : {}) };
     };
     // Per-request server avoids retaining credentials between callers. Transport

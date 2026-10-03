@@ -1,5 +1,19 @@
 # Runtime form handling and recovery
 
+Approval and spending decisions are enforced by server code. Manager identity,
+workspace, current revision, valid expiry, itemized integer USD amounts, exact
+held reservation and a hash of every approved proposal field are checked before
+resume. A model cannot approve its own work. A proposal changed under the same ID
+fails validation. Uncertain commitments retain their reserved budget.
+
+Live research also requires a saved, bound Stripe service-payment proof. The
+mission row exists before payment is attempted, so conflicting bodies with one
+idempotency key cannot create separate charges. Direct worker calls enforce the
+same gate. A durable dispatch claim prevents duplicate session creation, including
+after a replan with an unresolved session-creation attempt. These are application
+boundaries; final merchant execution remains disabled pending verified Link and
+merchant adapters.
+
 Forms are discovered at runtime. The browser worker does not assume that two
 merchant pages, or two visits to one page, expose the same fields.
 
@@ -15,8 +29,12 @@ Supported components are native text inputs, selects, radio buttons and
 checkboxes. Custom comboboxes, embedded frames and arbitrary widgets remain
 unsupported. Password, payment and final-submit controls are excluded. Changing
 fields requires explicit `readOnly: false` plus an exact origin and field
-allowlist. Inspection omits current field values. Consent requires a separate
-trusted policy setting.
+allowlist, and is restricted in code to loopback fixture pages (`localhost`,
+`127.0.0.1`, `[::1]`). Remote merchant writes remain blocked even if a caller
+sets `readOnly: false`: merchant JavaScript can submit an order from an input
+event. Inspection omits current field values. Consent requires a separate
+trusted policy setting. The toolkit copies its trusted policy at creation;
+changing the caller's policy object cannot widen an existing tool's access.
 
 Each operation gets at most eight seconds, within the worker's 90-second budget.
 One closure allows three observed layouts and 32 mutations. A checkbox is set

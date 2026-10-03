@@ -3,11 +3,13 @@ import { researchTask } from "../browser";
 import type { Lane } from "../shared/contracts";
 import { activity, refresh, runFixture } from "./missions";
 import { beginResearchAttempt, finishResearchAttempt, researchFingerprint, researchGate } from "./research-policy";
+import { assertMissionServicePaymentVerified } from "./service-payment-gate";
 import { acquireLane, getRecord, mutateRecord, releaseLane } from "./store";
 
 export async function runMissionResearch(id: string, workspace: string, onlyTaskId?: string) {
   const initial = await getRecord(id, workspace);
   if (initial.view.mode === "fixture") return (await runFixture(id, workspace)).view;
+  assertMissionServicePaymentVerified(initial);
   const revision = initial.view.revision;
   await Promise.all(initial.view.tasks.filter(x => !onlyTaskId || x.id === onlyTaskId).map(async original => {
     const lane: Lane = original.lane;

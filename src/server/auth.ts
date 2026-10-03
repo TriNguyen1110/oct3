@@ -10,20 +10,23 @@ function cookiePrincipal(request: Request): Principal | null {
   const token = request.headers.get("cookie")?.split(";").map(x => x.trim()).find(x => x.startsWith(`${cookieName}=`))?.slice(cookieName.length + 1);
   const key = process.env.OCT3_MANAGER_TOKEN;
   if (!token || !key) return null;
-  const [payload, signature] = token.split(".");
-  if (!payload || !signature || !equal(signature, createHmac("sha256", key).update(payload).digest("base64url"))) return null;
+  const [payload, signature, extra] = token.split(".");
+  if (!payload || !signature || extra !== undefined || !equal(signature, createHmac("sha256", key).update(payload).digest("base64url"))) return null;
   try {
     const data = JSON.parse(Buffer.from(payload, "base64url").toString());
-    if (data.expires < Date.now() || data.role !== "manager") return null;
+    if (!Number.isSafeInteger(data.expires) || data.expires <= Date.now() || data.role !== "manager") return null;
     return { id: "demo-manager", workspace_id: workspace, role: "manager" };
   } catch { return null; }
 }
 
 export function authenticate(request: Request): Principal | null {
-  const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  const authorization = request.headers.get("authorization");
+  const token = authorization?.match(/^Bearer\s+(\S+)$/i)?.[1];
   if (token && process.env.OCT3_MANAGER_TOKEN && equal(token, process.env.OCT3_MANAGER_TOKEN)) return { id: "demo-manager", workspace_id: workspace, role: "manager" };
   if (token && process.env.OCT3_AGENT_TOKEN && equal(token, process.env.OCT3_AGENT_TOKEN)) return { id: "demo-agent", workspace_id: workspace, role: "agent" };
-  return cookiePrincipal(request);
+  // An explicit invalid credential must never fall back to a manager cookie.
+  // Otherwise a forged Authorization header could bypass the cookie-origin gate.
+  return authorization !== null ? null : cookiePrincipal(request);
 }
 
 export function requireAuth(request: Request, role?: "manager"): Principal {

@@ -6,7 +6,7 @@ import { createComponentTools } from "../src/browser/component-tools";
 import type { ComponentPolicy } from "../src/browser/components";
 
 // Real local DOM only: no merchant page, remote browser or model request.
-const origin = "https://component-fixture.test";
+const origin = "http://127.0.0.1:4317";
 function toolsFor(page: Page, policy: Partial<ComponentPolicy> = {}) {
   const tools = createComponentTools(page, { task_id: "local-fixture", allowedOrigins: [origin], ...policy });
   const invoke = async (name: keyof typeof tools, input: unknown = {}) => {
@@ -50,6 +50,25 @@ test("component tools enforce bounded preparation against an actual local DOM", 
     await page.close();
   });
 
+  await t.test("later policy mutations cannot widen captured origins or field allowlists", async () => {
+    const page = await freshPage('<label>Project<input id="project"></label><label>Notes<input id="notes"></label>');
+    const allowedOrigins = [origin];
+    const allowedFields = [{ id: "project" }];
+    const { invoke } = toolsFor(page, { readOnly: false, allowedOrigins, allowedFields });
+    allowedOrigins.push("http://localhost:4318");
+    allowedFields[0].id = "notes";
+    allowedFields.push({ id: "notes" });
+    const { snapshot } = await invoke("inspect_task_page");
+    const plan = await invoke("plan_task_fields", { snapshot_id: snapshot.snapshot_id, fields: [{ id: "project", value: "Allowed" }, { id: "notes", value: "Blocked" }] });
+    assert.equal(plan.planned.length, 1);
+    assert.equal(plan.planned[0].label, "Project");
+    assert.equal(plan.blocked.length, 1);
+    assert.equal(plan.blocked[0].label, "Notes");
+    await page.goto("http://localhost:4318");
+    assert.equal((await invoke("inspect_task_page")).code, "wrong_origin");
+    await page.close();
+  });
+
   await t.test("sensitive controls are excluded, exact target conjunction enforced, and origin checked", async () => {
     const page = await freshPage('<label>Project<input id="project" value="PRIVATE EXISTING VALUE"></label><label>Notes<input id="notes"></label><label>Password<input id="pw" type="password" required></label><label>Card number<input id="card" autocomplete="cc-number" required></label><label>Agree to terms<input type="checkbox" id="terms" required></label><button type="submit">Buy now</button>');
     const { invoke } = toolsFor(page, { readOnly: false, allowedFields: [{ id: "project", label_exact: "Notes" }, { label_exact: "Note" }, { id: "pw" }, { id: "card" }, { id: "terms" }] });
@@ -61,7 +80,7 @@ test("component tools enforce bounded preparation against an actual local DOM", 
     assert.equal(plan.blocked.length, 2);
     const verified = await invoke("verify_prepared_task", { snapshot_id: inspected.snapshot.snapshot_id });
     assert.equal(verified.fields_ready, false);
-    await page.goto("https://component-fixture.test.attacker.test");
+    await page.goto("http://localhost.attacker.test");
     assert.equal((await invoke("inspect_task_page")).code, "wrong_origin");
     await page.close();
   });

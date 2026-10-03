@@ -1,5 +1,6 @@
 import type { MissionInput, MissionView } from "../shared/contracts";
 import type { BrowserBlockerCode, ResearchTaskResult } from "../browser/types";
+import type { VerifiedServicePaymentProof } from "./service-payments";
 export interface ResearchAttempt {
   revision: number; attempts: number; fingerprint: string;
   last_blocker_code?: BrowserBlockerCode;
@@ -10,6 +11,18 @@ export interface Reservation {
   id: string; task_id: string; proposal_id: string; amount_minor: number;
   state: "reserved" | "committed" | "released" | "uncertain";
 }
+export interface MissionServicePaymentState {
+  external_id?: string;
+  scope?: string;
+  first_credential_attempt_at?: string;
+  proof?: VerifiedServicePaymentProof;
+}
+export interface EveDispatchState {
+  revision: number;
+  state: "claimed" | "sent" | "uncertain";
+  claim_id: string;
+  claimed_at: string;
+}
 export interface MissionRecord {
   id: string; workspace_id: string; idempotency_key: string; request_hash: string;
   version: number; input: MissionInput; view: MissionView; reservations: Reservation[];
@@ -17,5 +30,8 @@ export interface MissionRecord {
   research_claims: Record<string, { revision: number; expires_at: string }>;
   /** Private operational metadata; never included in MissionView or model output. */
   research_attempts?: Record<string, ResearchAttempt>;
+  approved_action_hashes?: Record<string, string>;
+  service_payment?: MissionServicePaymentState;
+  eve_dispatch?: EveDispatchState;
   eve_session_id?: string;
 }

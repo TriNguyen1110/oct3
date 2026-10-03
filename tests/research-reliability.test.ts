@@ -13,6 +13,7 @@ import { getRecord, mutateRecord } from "../src/server/store";
 import type { Principal } from "../src/server/auth";
 import type { MissionInput } from "../src/shared/contracts";
 import type { MissionRecord } from "../src/server/model";
+import { servicePaymentBinding } from "../src/server/service-payments";
 
 const principal: Principal = { id: "verify-manager", workspace_id: "oct3-demo", role: "manager" };
 const input: MissionInput = { objective: "Verify safe retries", currency: "USD", purchase_budget_minor: 90000, deadline: "2026-10-07T12:00:00-07:00", headcount: 6, requirements: { amazon: { category: "booth supplies", delivery_ref: "private-office-ref" }, fiverr: { category: "flyer design", brief: "A5 flyer", due_date: "2026-10-06T12:00:00-07:00" }, event_tickets: { event_url: "https://www.eventbrite.com/e/demo-tickets-123", date: "2026-10-07T12:00:00-07:00", quantity: 6, attendee_ref: "private-team-ref" } } };
@@ -37,8 +38,19 @@ test("independent retry policy and actual endpoint use isolated storage and mock
   const directory = await mkdtemp(join(tmpdir(), "oct3-research-verifier-"));
   env(t, { OCT3_STATE_PATH: join(directory, "state.json"), SUPABASE_URL: undefined, SUPABASE_SERVICE_ROLE_KEY: undefined, VERCEL: undefined, VERCEL_GIT_COMMIT_SHA: "verifier-version-1", OCT3_MANAGER_TOKEN: "verifier-manager-token", OCT3_AGENT_TOKEN: "verifier-agent-token", ANTHROPIC_API_KEY: "fake-local-only-key", SURFSKY_API_KEY: "fake-provider-key", SURFSKY_API_TOKEN: undefined, SURFSKY_API_BASE_URL: "https://region.surfsky.io", SURFSKY_PROXY_COUNTRY: "US" });
   t.after(() => rm(directory, { recursive: true, force: true }));
+  env(t, { MPP_SECRET_KEY: "synthetic-research-proof-binding-secret-32-bytes" });
   let sequence = 0;
-  const fresh = async () => (await createMission(structuredClone(input), principal, `research-verifier-${++sequence}`, "live")).record;
+  const fresh = async () => {
+    const created = (await createMission(structuredClone(input), principal, `research-verifier-${++sequence}`, "live")).record;
+    // These tests cover post-payment retry behavior. Seed only an isolated,
+    // exact server-bound synthetic proof; never weaken the production gate.
+    return mutateRecord(created.id, principal.workspace_id, record => {
+      const binding = servicePaymentBinding({ workspaceId: record.workspace_id, idempotencyKey: record.idempotency_key, requestHash: record.request_hash });
+      record.service_payment = { external_id: binding.externalId, scope: binding.scope, proof: { reference: "pi_synthetic_retry_only", external_id: binding.externalId, amount_minor: 50, currency: "USD", mode: "test", verified_at: new Date().toISOString() } };
+      record.view.service_payment = { status: "paid", reference: "pi_synthetic_retry_only", amount_minor: 50, currency: "USD", mode: "test" };
+      refresh(record);
+    });
+  };
 
   await t.test("cooldown is 429; same technical failure exhausts two attempts; configuration repair respects cooldown", async () => {
     const record = await fresh(), now = Date.now(), taskId = failed(record, now);

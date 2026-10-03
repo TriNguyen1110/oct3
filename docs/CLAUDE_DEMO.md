@@ -8,12 +8,25 @@ This is the target demo. Current verified behavior is research, structured
 status, fixture planning and explicit handoffs. Merchant checkout, Fiverr order
 submission and ticket booking still need implementation and a real rehearsal.
 
-The user selected a small real-spend demonstration: toothpaste, a roughly $5
-beat-making gig, and a free event registration. Use one participant for this
-rehearsal. The six-person $900 expo mission remains a separate fixture for budget
-revision. No final checkout total or paid order has been approved yet.
+Latest direction: make the story approachable and target **$0 in real merchant
+spending**. One request: “Get my team ready for a local event, under $25.” Show
+supplies and freelancer research as two reviewable previews. Aim for one free
+event RSVP as the real completed action only after that adapter is implemented
+and its exact event/form is verified. A planning budget is not purchase approval.
 
-## Small-spend candidates
+Use **Request → Review → Approve → Result** as the visible sequence. The memorable
+moment is a changed budget invalidating an old approval. The existing six-person
+$900 → $650 expo scenario remains a separate, visibly labeled fixture for that
+behavior; its prices are illustrative and spend no real money.
+
+Stripe service-fee demonstration uses the sandbox. The verified 50-cent Payments
+API probe did not move real funds; it is separate from the still-unrehearsed MPP
+flow. Rehearsals should read saved results, not repeatedly start three remote
+browsers or new model runs. Prepare one measured browser run, keep its timestamp
+visible, and refresh only a selected lane if needed. Browser/model usage can
+still cost money or consume credits; $0 refers to merchant purchases.
+
+## Optional paid candidates — outside the default demo
 
 - **Amazon:** one toothpaste tube, aiming below $5 before any delivery/tax.
   An exact available listing and checkout total have not been verified; the
@@ -31,13 +44,14 @@ revision. No final checkout total or paid order has been approved yet.
   selected. No RSVP has been made. Recheck the event's schedule before booking;
   the title and description expose different start times.
 
-Flights are deferred. The current event adapter supports Eventbrite only;
-Luma support is a required implementation change for this chosen demo.
+Flights are deferred. The current event adapter supports Eventbrite only.
+Prefer a verified free Eventbrite event to avoid adding a provider during the
+demo sprint; Luma remains optional and needs an adapter change.
 
 ## Event versus room booking
 
-For today's stage, prefer a free Luma event with immediate confirmation and a
-short form. [Luma's registration guide](https://help.luma.com/p/event-registration-process)
+For today's stage, prefer a free event with immediate confirmation and a
+short form. If using Luma, [its registration guide](https://help.luma.com/p/event-registration-process)
 requires name/email, permits registration without an account, and distinguishes
 immediate confirmation from pending approval. This is platform documentation;
 oct3's actual browser submission still needs implementation and verification.
@@ -86,10 +100,10 @@ merchant action. HTTP configuration and environment substitution follow
 
 Fill in the actual event/date and chosen requirements before rehearsal:
 
-> Use oct3 for three small errands: one tube of toothpaste for my saved
-> destination, the selected $5 Fiverr beat gig with [EXACT BRIEF AND DEADLINE],
-> and one free registration for [LUMA EVENT URL] on [DATE]. The total budget is
-> [APPROVED BUDGET]. Submit this as live research with the stable key
+> Use oct3 to get my team ready for [EVENT URL] on [DATE], with a planning budget
+> of $25. Find useful supplies and an affordable flyer designer, and inspect the
+> free event registration. Show me the options and review links; do not purchase
+> or send freelancer messages. Submit this as live research with the stable key
 > [UNIQUE DEMO KEY]. Keep the mission ID, show me the three workers, and pause
 > for manager approval of any commitment. Report real outcomes and blockers.
 
@@ -103,12 +117,13 @@ returns handoffs instead of completed merchant transactions.
 | --- | --- | --- |
 | 0–15 s | Terminal: open Claude, show `/mcp`, enter the request | An ordinary external agent connects to oct3 |
 | 15–40 s | Claude submits; board shows the same mission and three workers | A durable handle and observed progress |
-| 40–60 s | Board: inspect exact items, dates, quantities and totals; manager approves | Explicit spending decisions |
-| 60–105 s | Actual Fiverr, Amazon and ticket-provider tabs | The verified merchant changes described below |
+| 40–60 s | Board: review options, change the planning budget, show that an old approval is rejected | Code-enforced manager control; fixture labels remain visible where used |
+| 60–105 s | Supplies/freelancer preview links; the selected free event flow if verified | Two clearly labeled previews and, only if completed, one actual RSVP confirmation |
 | 105–120 s | Return to Claude and request status for the same mission | Structured outcomes with source references and remaining work |
 
 These are presentation targets, not a claim that three merchant transactions
-finish in two minutes. Use measured rehearsal to decide whether a completed
+finish in two minutes. Paid supplier orders are outside the default $0 demo.
+Use measured rehearsal to decide whether a completed
 earlier run appears as a clearly identified replay.
 
 ## What counts as a visible result
@@ -130,14 +145,14 @@ view. No synthetic receipt, email or DOM change represents merchant completion.
 ## Build order for this story
 
 1. Verify this real Claude Code → MCP connection.
-2. Obtain the exact item, gig, event/date, account readiness and approved spend.
-3. Add the selected free Luma registration flow with fresh form inspection and
+2. Select the free event/date, required attendee data and two useful supplier previews.
+3. Implement the selected free event registration flow with fresh form inspection and
    distinct confirmed, pending-approval and waitlisted outcomes.
-4. Connect Supabase; implement and exercise the distinct Stripe service fee and
-   merchant authorization paths.
-5. Finish one complete merchant flow, starting with the selected event, then
-   the selected Amazon item and Fiverr order. Reuse observed component tools.
-6. Rehearse approved real actions, record references/latencies, then freeze the
+4. Use the verified Supabase state store; finish the Stripe MPP sandbox rehearsal.
+   Keep its service-fee proof separate from any merchant result.
+5. Finish one free RSVP flow. Keep Amazon and Fiverr at reviewable research for
+   the default demo; final registration needs its own verified execution adapter.
+6. Rehearse the authorized free action once, record references/latencies, then freeze the
    script. Keep current research/hand-off mode as a labeled fallback.
 
 ## User handoff links

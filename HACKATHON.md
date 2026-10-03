@@ -5,11 +5,12 @@ Repository: `oct3`, an independent Git repository at
 `/Users/tringuyen/Developer/.worktrees/oct3`. All product code belongs here.
 The original hacker-kit remains a reusable preparation template.
 
-Latest stage priority: a fresh Claude Code terminal session delegates toothpaste,
-a roughly $5 Fiverr beat gig, and one free Luma RSVP. See
+Latest stage priority: a fresh Claude Code terminal session delegates preparation
+for a low-budget team outing. Default real merchant spend is $0: supplier
+previews, a verified free RSVP if implemented, and a Stripe sandbox demonstration. See
 `docs/CLAUDE_DEMO.md` for the tested launcher, candidate sources and remaining
 merchant-flow work. The six-person expo scenario below remains a labeled budget
-fixture. Luma support is pending; flights stay outside today's build.
+fixture. Eventbrite is the existing adapter; Luma is optional, flights deferred.
 
 ## Team: read this first
 

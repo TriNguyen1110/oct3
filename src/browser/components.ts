@@ -18,7 +18,7 @@ export interface ComponentPolicy {
   allowedOrigins: string[];
   allowedFields?: { id?: string; label_exact?: string; kind?: ComponentKind }[];
   allowConsent?: boolean;
-  /** Omission is read-only; mutation requires explicit false plus an exact allowlist. */
+  /** Writes are only supported on loopback fixture pages, with an exact field allowlist. */
   readOnly?: boolean;
   signal?: AbortSignal;
   controlTimeoutMs?: number;
@@ -37,6 +37,8 @@ const normalLabel = (value: string) => value.replace(/\s+/g," ").trim();
 
 /** All operations share this exact page and its 90-second worker budget. */
 export function createComponentToolkit(page: Page, policy: ComponentPolicy) {
+  // Capture trusted policy once; a later mutation cannot widen this tool closure.
+  policy = { ...policy, allowedOrigins: [...policy.allowedOrigins], allowedFields: policy.allowedFields?.map(field => ({ ...field })) };
   const prefix = randomUUID();
   const signal = AbortSignal.any([AbortSignal.timeout(90_000), ...(policy.signal ? [policy.signal] : [])]);
   const controlTimeout = Math.max(500, Math.min(policy.controlTimeoutMs ?? 8_000,8_000));
@@ -138,7 +140,12 @@ export function createComponentToolkit(page: Page, policy: ComponentPolicy) {
     return snapshot!;
   }
   function permitted(field:ObservedControl) {
-    return policy.readOnly===false && (!field.consent||policy.allowConsent===true) && (policy.allowedFields??[]).some(rule=>Boolean(rule.id||rule.label_exact)&&(!rule.id||rule.id===field.id)&&(!rule.label_exact||normalLabel(rule.label_exact)===field.label)&&(!rule.kind||rule.kind===field.kind));
+    // Even an ordinary input event can submit a merchant order. Until a verified
+    // execution adapter exists, preparation writes are local-fixture-only.
+    const url = new URL(page.url());
+    const localFixture = ["127.0.0.1", "[::1]", "localhost"].includes(url.hostname)
+      && ["http:", "https:"].includes(url.protocol);
+    return localFixture && policy.readOnly===false && (!field.consent||policy.allowConsent===true) && (policy.allowedFields??[]).some(rule=>Boolean(rule.id||rule.label_exact)&&(!rule.id||rule.id===field.id)&&(!rule.label_exact||normalLabel(rule.label_exact)===field.label)&&(!rule.kind||rule.kind===field.kind));
   }
   function checkValue(field:ObservedControl,value:ComponentValue) {
     if(field.kind==="checkbox"||field.kind==="radio"){

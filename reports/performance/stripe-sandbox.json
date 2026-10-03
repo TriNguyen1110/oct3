@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-10-03T19:12:16.691Z",
+  "scope": "Stripe Payments API sandbox probe; not MPP or merchant checkout",
+  "status": "succeeded",
+  "livemode": false,
+  "reference": "pi_3UMYM0AC23aXc4kF1GOruJJ5",
+  "amount": 50,
+  "currency": "usd",
+  "same_reference_on_retry": true,
+  "receipt_available": true
+}

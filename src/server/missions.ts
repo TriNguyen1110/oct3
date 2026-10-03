@@ -4,6 +4,8 @@ import type { Principal } from "./auth";
 import { AppError } from "./errors";
 import { fixtureResearch } from "./fixtures";
 import type { MissionRecord } from "./model";
+import { servicePaymentReadiness } from "./service-payments";
+import { constraintsSchema } from "./schema";
 import { createRecord, findTask, getRecord, mutateRecord } from "./store";
 
 const lanes: Lane[] = ["amazon", "fiverr", "event_tickets"];
@@ -26,6 +28,17 @@ export function refresh(record: MissionRecord) {
   };
   view.evidence = view.tasks.flatMap(x => x.evidence);
   view.blockers = view.tasks.flatMap(x => x.blocker ? [`${x.lane}: ${x.blocker}`] : []);
+  if (view.mode === "live" && view.service_payment.status !== "paid") {
+    const paymentMessage = view.service_payment.status === "not_configured"
+      ? "Stripe MPP setup is required. This mission is saved and browser research has not started."
+      : view.service_payment.status === "pending"
+        ? "Service-payment verification or reconciliation must finish before browser research starts."
+        : "Pay the separate $0.50 test service fee to start this durable mission.";
+    view.blockers.push(`service_payment: ${paymentMessage}`);
+    view.status = "needs_attention";
+    view.next_actions = [paymentMessage];
+    return;
+  }
   const researching = view.tasks.some(x => x.status === "queued" || x.status === "researching");
   view.status = view.tasks.every(x => x.status === "confirmed") ? "completed" : researching ? "running" : view.blockers.length ? "needs_attention" : view.tasks.some(x => x.proposal && x.approval?.state !== "approved") ? "awaiting_approval" : "needs_attention";
   view.next_actions = researching ? ["Workers are comparing available options."] : view.tasks.filter(x => x.status !== "confirmed").map(x => x.blocker || (x.proposal ? `Review ${x.lane} proposal.` : `Choose an option for ${x.lane} and verify its full checkout total.`));
@@ -68,19 +81,24 @@ function planFixture(record: MissionRecord) {
 export async function createMission(input: MissionInput, principal: Principal, key: string, mode: "fixture" | "live") {
   if (!/^[A-Za-z0-9_.:-]{8,160}$/.test(key)) throw new AppError(400, "idempotency_key_required", "Send an Idempotency-Key of 8–160 letters, numbers, dots, colons or dashes.");
   const id = randomUUID(), now = new Date().toISOString();
+  const paymentReady = mode === "live" && servicePaymentReadiness().ready;
   const record: MissionRecord = {
     id, workspace_id: principal.workspace_id, idempotency_key: key,
     request_hash: createHash("sha256").update(JSON.stringify({ input, mode })).digest("hex"), version: 1, input,
-    reservations: [], attempts: {}, research_claims: {},
+    reservations: [], attempts: {}, research_claims: {}, service_payment: {},
     view: {
       mission_id: id, revision: 1, status: "queued", objective: input.objective, deadline: input.deadline,
       headcount: input.headcount, created_at: now, updated_at: now, mode,
       budget: { limit_minor: input.purchase_budget_minor, proposed_minor: 0, reserved_minor: 0, committed_minor: 0, uncertain_minor: 0, available_minor: input.purchase_budget_minor },
-      service_payment: { status: mode === "fixture" ? "waived_fixture" : "not_configured", amount_minor: 50, currency: "USD", mode: mode === "fixture" ? "fixture" : "test" },
+      service_payment: { status: mode === "fixture" ? "waived_fixture" : paymentReady ? "payment_required" : "not_configured", amount_minor: 50, currency: "USD", mode: mode === "fixture" ? "fixture" : "test" },
       tasks: lanes.map(lane => ({ id: `${id}:${lane}`, lane, title: titles[lane], status: "queued", progress: "Waiting to start", options: [], evidence: [] })), evidence: [], blockers: [], next_actions: [], activity: [],
     },
   };
-  activity(record, mode === "fixture" ? "Fixture mission accepted. Service fee waived; all prices are illustrative." : "Mission accepted. Browser research is read-only; Stripe service payment is not configured.");
+  activity(record, mode === "fixture"
+    ? "Fixture mission accepted. Service fee waived; all prices are illustrative."
+    : paymentReady
+      ? "Mission saved. A separate $0.50 Stripe test service fee is required before browser research starts."
+      : "Mission saved. Stripe MPP setup is required before payment or browser research can start.");
   refresh(record);
   return createRecord(record);
 }
@@ -99,36 +117,83 @@ export async function runFixture(id: string, workspace: string) {
 }
 
 export async function reviseMission(id: string, principal: Principal, changes: { expected_revision: number; purchase_budget_minor: number; headcount?: number; deadline?: string }) {
+  if (principal.role !== "manager") throw new AppError(403, "manager_required", "A manager must revise mission constraints.");
+  const validated = constraintsSchema.parse(changes);
   return mutateRecord(id, principal.workspace_id, record => {
-    if (record.view.revision !== changes.expected_revision) throw new AppError(409, "revision_conflict", "This mission has changed. Review the latest revision.");
+    if (record.view.revision !== validated.expected_revision) throw new AppError(409, "revision_conflict", "This mission has changed. Review the latest revision.");
     if (record.view.tasks.some(x => x.status === "executing")) throw new AppError(409, "execution_in_flight", "An approved action is in flight. Reconcile it before changing constraints.");
     const protectedSpend = record.reservations.filter(x => ["committed", "uncertain"].includes(x.state)).reduce((n, x) => n + x.amount_minor, 0);
-    if (changes.purchase_budget_minor < protectedSpend) throw new AppError(409, "allocated_budget", "The new budget is below committed or uncertain spending.");
-    if (changes.headcount && changes.headcount !== record.input.headcount && record.view.tasks.some(x => x.status === "confirmed")) throw new AppError(409, "committed_headcount", "Headcount changes need manual reconciliation after a commitment.");
-    record.input.purchase_budget_minor = changes.purchase_budget_minor;
-    if (changes.headcount) { record.input.headcount = changes.headcount; record.input.requirements.event_tickets.quantity = changes.headcount; record.view.headcount = changes.headcount; }
-    if (changes.deadline) { record.input.deadline = changes.deadline; record.view.deadline = changes.deadline; }
+    if (validated.purchase_budget_minor < protectedSpend) throw new AppError(409, "allocated_budget", "The new budget is below committed or uncertain spending.");
+    if (validated.headcount && validated.headcount !== record.input.headcount && record.view.tasks.some(x => x.status === "confirmed")) throw new AppError(409, "committed_headcount", "Headcount changes need manual reconciliation after a commitment.");
+    record.input.purchase_budget_minor = validated.purchase_budget_minor;
+    if (validated.headcount) { record.input.headcount = validated.headcount; record.input.requirements.event_tickets.quantity = validated.headcount; record.view.headcount = validated.headcount; }
+    if (validated.deadline) { record.input.deadline = validated.deadline; record.view.deadline = validated.deadline; }
     record.view.revision++;
     for (const reservation of record.reservations) if (reservation.state === "reserved") reservation.state = "released";
     for (const task of record.view.tasks) {
       if (task.status === "confirmed" || record.reservations.some(x => x.task_id === task.id && x.state === "uncertain")) continue;
       if (task.approval) task.approval.state = "stale";
+      if (record.approved_action_hashes) delete record.approved_action_hashes[task.id];
       task.proposal = undefined;
       if (record.view.mode === "fixture") {
         const result = fixtureResearch(task.id, task.lane, record.input); task.options = result.options; task.evidence = result.evidence;
       } else { task.status = "queued"; task.progress = "Constraints changed; researching the new revision"; task.blocker = undefined; }
     }
-    activity(record, `Manager revised purchase budget to $${(changes.purchase_budget_minor / 100).toFixed(2)}. All unexecuted approvals invalidated.`, "decision");
+    activity(record, `Manager revised purchase budget to $${(validated.purchase_budget_minor / 100).toFixed(2)}. All unexecuted approvals invalidated.`, "decision");
     if (record.view.mode === "fixture") planFixture(record);
     refresh(record);
   });
 }
 
 function validateProposal(record: MissionRecord, taskId: string, exact: { proposal_id: string; revision: number }) {
-  const task = record.view.tasks.find(x => x.id === taskId)!;
+  const task = record.view.tasks.find(x => x.id === taskId);
+  if (!task) throw new AppError(404, "task_not_found", "Task not found.");
   if (!task.proposal || task.proposal.id !== exact.proposal_id || task.proposal.revision !== exact.revision || record.view.revision !== exact.revision) throw new AppError(409, "stale_proposal", "This proposal is stale. Review the current exact action.");
-  if (Date.parse(task.proposal.expires_at) <= Date.now()) throw new AppError(409, "proposal_expired", "The proposal expired. Recheck its price and availability.");
+  const stored = task.proposal;
+  const expires = Date.parse(stored.expires_at);
+  if (!Number.isFinite(expires)) throw new AppError(409, "invalid_proposal", "The stored proposal expiry is invalid. Research it again.");
+  if (expires <= Date.now()) throw new AppError(409, "proposal_expired", "The proposal expired. Recheck its price and availability.");
+  if (stored.task_id !== task.id || stored.currency !== "USD" || !Number.isSafeInteger(stored.quantity) || stored.quantity <= 0) {
+    throw new AppError(409, "invalid_proposal", "The stored proposal is not bound to this task, currency and quantity.");
+  }
+  const money = [stored.subtotal_minor, stored.tax_minor, stored.shipping_minor, stored.fees_minor, stored.total_minor];
+  if (money.some(amount => !Number.isSafeInteger(amount) || amount < 0)) {
+    throw new AppError(409, "invalid_proposal", "The stored proposal contains an invalid amount.");
+  }
+  const computedTotal = stored.subtotal_minor + stored.tax_minor + stored.shipping_minor + stored.fees_minor;
+  if (!Number.isSafeInteger(computedTotal) || computedTotal !== stored.total_minor) {
+    throw new AppError(409, "invalid_proposal", "The stored proposal total does not match its itemized amounts.");
+  }
   return task;
+}
+
+function exactHeldReservation(record: MissionRecord, taskId: string, proposalId: string, total: number) {
+  const held = record.reservations.filter(reservation => reservation.task_id === taskId
+    && reservation.proposal_id === proposalId
+    && reservation.amount_minor === total
+    && ["reserved", "committed", "uncertain"].includes(reservation.state));
+  return held.length === 1 ? held[0] : undefined;
+}
+
+function exactStoredApproval(task: Task, exact: { proposal_id: string; revision: number }) {
+  return task.approval?.state === "approved"
+    && task.approval.proposal_id === exact.proposal_id
+    && task.approval.revision === exact.revision;
+}
+
+function approvedActionHash(record: MissionRecord, task: Task) {
+  if (!task.proposal) throw new AppError(409, "stale_proposal", "This task has no current proposal.");
+  const proposal = Object.fromEntries(Object.entries(task.proposal).sort(([a], [b]) => a.localeCompare(b)));
+  return createHash("sha256").update(JSON.stringify({
+    workspace_id: record.workspace_id,
+    task_id: task.id,
+    proposal,
+  })).digest("hex");
+}
+
+function exactApprovedAction(record: MissionRecord, task: Task) {
+  const saved = record.approved_action_hashes?.[task.id];
+  return typeof saved === "string" && saved === approvedActionHash(record, task);
 }
 
 export async function decideTask(taskId: string, principal: Principal, exact: { proposal_id: string; revision: number }, decision: "approve" | "reject") {
@@ -139,16 +204,24 @@ export async function decideTask(taskId: string, principal: Principal, exact: { 
     if (task.status === "executing" || task.status === "confirmed" || record.reservations.some(x => x.task_id === taskId && x.state === "uncertain")) throw new AppError(409, "execution_locked", "Reconcile this commitment before changing its approval.");
     if (decision === "reject") {
       if (task.approval) task.approval.state = "rejected";
+      if (record.approved_action_hashes) delete record.approved_action_hashes[taskId];
       record.reservations.filter(x => x.task_id === taskId && x.state === "reserved").forEach(x => { x.state = "released"; });
       task.status = "needs_human"; task.blocker = "Manager rejected this proposal. Revise constraints to prepare a new plan.";
     } else {
-      if (task.approval?.state === "approved") return;
+      if (task.approval?.state === "approved") {
+        if (!exactStoredApproval(task, exact) || !exactApprovedAction(record, task) || !exactHeldReservation(record, taskId, exact.proposal_id, task.proposal!.total_minor)) {
+          throw new AppError(409, "approval_state_invalid", "The saved approval is not backed by one exact held reservation.");
+        }
+        return;
+      }
       if (task.blocker && task.blocker.startsWith("The lowest illustrative")) throw new AppError(409, "plan_infeasible", task.blocker);
       const cost = task.proposal!.total_minor;
       refresh(record);
       if (cost > record.view.budget.available_minor) throw new AppError(409, "budget_exceeded", "The remaining budget cannot cover this action.");
       record.reservations.push({ id: randomUUID(), task_id: taskId, proposal_id: exact.proposal_id, amount_minor: cost, state: "reserved" });
       task.approval = { id: task.approval?.id || randomUUID(), proposal_id: exact.proposal_id, revision: exact.revision, state: "approved", approved_at: new Date().toISOString(), link_state: record.view.mode === "fixture" ? "not_applicable_fixture" : "not_configured" };
+      record.approved_action_hashes ||= {};
+      record.approved_action_hashes[taskId] = approvedActionHash(record, task);
       task.status = "prepared";
       task.progress = "Plan approved; merchant commitment has not occurred";
       task.blocker = record.view.mode === "fixture" ? "Fixture approval recorded. No merchant payment or order will be sent." : "Link Agent Wallet is not connected. Merchant spending requires separate verified Link approval.";
@@ -170,7 +243,9 @@ export async function resumeTask(taskId: string, principal: Principal, exact: { 
       return;
     }
     const task = validateProposal(record, taskId, exact);
-    if (task.approval?.state !== "approved") throw new AppError(409, "approval_required", "A manager must approve the current exact proposal first.");
+    if (!exactStoredApproval(task, exact)) throw new AppError(409, "approval_required", "A manager must approve the current exact proposal first.");
+    if (!exactApprovedAction(record, task)) throw new AppError(409, "approved_action_changed", "The approved action changed after review. Approve the current exact proposal again.");
+    if (!exactHeldReservation(record, taskId, exact.proposal_id, task.proposal!.total_minor)) throw new AppError(409, "reservation_required", "The exact approved amount is not held for this proposal.");
     // Never trust a caller-supplied Link status. No live executor is reached until
     // a provider-verified spend request and tested merchant path are connected.
     task.status = "needs_human";

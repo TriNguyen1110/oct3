@@ -25,8 +25,22 @@ No package has been published to npm.
 `examples/expo.json` is explicitly **fixture mode**. For live read-only research,
 use `"mode": "live"` and supply an actual supported Eventbrite event URL/date.
 Both modes return JSON with `mission_id`, worker states, costs, evidence,
-blockers and next actions. Live service payment is currently **not configured**.
+blockers and next actions. Live research requires a verified 50-cent Stripe
+sandbox service payment. The server first saves the mission, then returns an
+official MPP 402 challenge or an explicit setup blocker. Neither starts browsers.
 No mode claims an order or booking without merchant confirmation.
+
+The CLI preserves the mission/dashboard/result links from payment-response
+headers. A payment-capable caller can pass the standard MPP credential privately
+through `OCT3_PAYMENT_AUTHORIZATION`; the CLI sends it as `Payment-Authorization`
+only on submission. The MCP transport accepts the same header and forwards it
+only to submission. The caller bearer credential remains separate. Neither
+client obtains wallet approval automatically; Link onboarding is still pending.
+Reuse the original mission input and idempotency key after payment approval.
+
+The server uses a durable payment binding and one Stripe idempotency key for the
+mission. A saved verified receipt returns without another charge. An unresolved
+attempt aged 22 hours requires reconciliation; a new request key is not recovery.
 
 Choose one stable idempotency key for each intended mission. If a request times
 out, retry the identical input with the same key; do not generate a new key.

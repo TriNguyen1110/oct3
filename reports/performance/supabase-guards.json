@@ -1,0 +1,15 @@
+{
+  "checked_at": "2026-10-03T19:20:34.484Z",
+  "scope": "Actual Supabase; synthetic fixture data in verification workspace",
+  "mission_id": "e20e700f-7cff-408a-96ee-182fe7d34996",
+  "concurrent_submissions": 4,
+  "unique_missions": 1,
+  "concurrent_approvals": 2,
+  "accepted_approvals": 1,
+  "rejected_approval": "budget_exceeded",
+  "reserved_minor": 20000,
+  "limit_minor": 30000,
+  "database_constraint_rejected_overspend": true,
+  "exclusive_browser_lease": true,
+  "merchant_actions": 0
+}
