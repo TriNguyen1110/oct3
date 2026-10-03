@@ -1,0 +1,14 @@
+.hacker-kit-root
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+.vercel/
+.eve/
+coverage/
+artifacts/private/
+.output/
+*.tsbuildinfo
+.data/
