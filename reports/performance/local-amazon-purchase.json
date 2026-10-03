@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-03T16:10:00-07:00",
+  "mode": "live",
+  "lane": "logistics",
+  "merchant": "Amazon",
+  "item": {
+    "title": "Colgate Cavity Protection Fluoride Toothpaste, Mint, 6 oz",
+    "asin": "B0195UTBKA",
+    "variant": "6 Ounce (Pack of 1)",
+    "quantity": 1
+  },
+  "checkout": {
+    "items_minor": 399,
+    "shipping_minor": 299,
+    "tax_minor": 75,
+    "total_minor": 773,
+    "currency": "USD"
+  },
+  "execution": {
+    "surface": "user-approved local Chrome profile",
+    "manager_confirmation": "explicit at the exact fee-inclusive total",
+    "provider_confirmation_page_observed": true,
+    "provider_confirmation_email_observed": true,
+    "order_reference": "redacted"
+  },
+  "payment": {
+    "source": "Amazon saved payment method",
+    "stored_by_cue": false,
+    "link_wallet_used": false
+  },
+  "claim_limits": [
+    "This proves one Amazon order through the local-browser path, not every merchant workflow.",
+    "The deployed Cue mission runner did not execute the final Amazon click.",
+    "The connected Link wallet remained in test mode and did not fund this order.",
+    "No address, phone number, card digits, full order ID, session URL or receipt token is stored in this artifact."
+  ]
+}
