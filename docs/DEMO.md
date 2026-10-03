@@ -14,8 +14,10 @@ See [sponsor status](SPONSORS.md) for claims that are safe to make today.
 
 Architecture talking point: Supabase persists shared mission state; Queues could
 hold durable browser jobs, and Cron could check stalled work. Queues and Cron are
-planned, not active in this build. Stripe has a verified 50-cent sandbox Payments
-API probe with an idempotent retry; MPP and Link need their own end-to-end evidence.
+planned, not active in this build. Stripe has a verified 50-cent MPP sandbox
+payment gate, persisted Supabase receipt and a replay without another payment
+call. That isolated test did not dispatch browsers. Combined caller-payment-worker
+rehearsal and Link merchant spending still need their own evidence.
 
 ## Timing evidence
 
@@ -110,7 +112,7 @@ user-selected booking. Timings are single local observations, not guarantees.
 | 0–15 s | An external agent calls the CLI or MCP and receives the mission handle. | “An agent delegates one manager task across three browser workers.” |
 | 15–35 s | Three lanes progressing, or the same saved live mission with its observation timestamp visible. | Name which run is live now and which results were prepared earlier. Show grounded Fiverr/Eventbrite results and Amazon's observed blocker if it persists. |
 | 35–60 s | Switch explicitly to the **fixture** planning mission. Lower $900 to $650 while preserving six passes. | “This labeled rehearsal demonstrates shared-budget revision.” The illustrative proposed plan changes from $788 to $588; old approvals become invalid. |
-| 60–75 s | Review an exact proposal, reserved spending, and the handoff state. | “Plan approval reserves budget. It does not claim a purchase.” Stripe/Link are pending; no charge, hire or booking has happened. |
+| 60–75 s | Review an exact proposal, reserved spending, and the handoff state. | “Plan approval reserves budget. It does not claim a purchase.” Show the separate Stripe sandbox service receipt; Link and merchant execution remain unfinished. |
 | 75–90 s | The external agent retrieves structured status, evidence and next actions. | “The caller gets useful results and explicit remaining work.” Show the actual sponsor-use status and stop. |
 
 If a later verified end-to-end live plan replaces the fixture segment, update

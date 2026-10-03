@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-10-03T19:34:42.589Z",
+  "scope": "Willder Stripe sandbox Payments API; distinct from MPP and merchant checkout",
+  "sandbox_profile_saved": true,
+  "status": "succeeded",
+  "livemode": false,
+  "reference": "pi_3UMYhh92qDIKX8Ve15kG60B1",
+  "amount_minor": 50,
+  "currency": "usd",
+  "receipt_available": true,
+  "same_reference_on_retry": true
+}

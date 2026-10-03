@@ -19,9 +19,11 @@ moment is a changed budget invalidating an old approval. The existing six-person
 $900 → $650 expo scenario remains a separate, visibly labeled fixture for that
 behavior; its prices are illustrative and spend no real money.
 
-Stripe service-fee demonstration uses the sandbox. The verified 50-cent Payments
-API probe did not move real funds; it is separate from the still-unrehearsed MPP
-flow. Rehearsals should read saved results, not repeatedly start three remote
+Stripe service-fee demonstration uses the sandbox. Both the ordinary Payments
+API and MPP payment gate are verified: a 50-cent test receipt was saved in
+Supabase and replayed without another charge. That gate test bypassed worker
+dispatch; the combined terminal-payment-browser sequence still needs rehearsal.
+Rehearsals should read saved results, not repeatedly start three remote
 browsers or new model runs. Prepare one measured browser run, keep its timestamp
 visible, and refresh only a selected lane if needed. Browser/model usage can
 still cost money or consume credits; $0 refers to merchant purchases.
@@ -148,7 +150,8 @@ view. No synthetic receipt, email or DOM change represents merchant completion.
 2. Select the free event/date, required attendee data and two useful supplier previews.
 3. Implement the selected free event registration flow with fresh form inspection and
    distinct confirmed, pending-approval and waitlisted outcomes.
-4. Use the verified Supabase state store; finish the Stripe MPP sandbox rehearsal.
+4. Use the verified Supabase state store and MPP sandbox payment gate; rehearse
+   the combined caller-payment-browser sequence.
    Keep its service-fee proof separate from any merchant result.
 5. Finish one free RSVP flow. Keep Amazon and Fiverr at reviewable research for
    the default demo; final registration needs its own verified execution adapter.

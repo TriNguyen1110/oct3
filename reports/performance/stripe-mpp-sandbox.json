@@ -1,0 +1,20 @@
+{
+  "checked_at": "2026-10-03T19:37:09.274Z",
+  "scope": "Real Stripe sandbox MPP client/server payment gate and Supabase persistence; no worker dispatch",
+  "mission_id": "9bcb8817-dbb3-4506-98de-7fafa302ef87",
+  "workspace": "oct3-verification",
+  "initial_status": 402,
+  "payment_status": "succeeded",
+  "reference": "pi_3UMYk392qDIKX8Ve0OhD9UBq",
+  "amount_minor": 50,
+  "currency": "usd",
+  "livemode": false,
+  "service_receipt_verified": true,
+  "stripe_receipt_available": true,
+  "payment_sdk_creates": 1,
+  "replay_additional_payment_calls": 0,
+  "cloud_proof_persisted": true,
+  "browsers_started": 0,
+  "model_calls": 0,
+  "merchant_actions": 0
+}
