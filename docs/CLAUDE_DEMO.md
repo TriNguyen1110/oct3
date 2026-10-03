@@ -7,7 +7,9 @@ the resulting merchant pages. Finish back in Claude with the same mission ID.
 Public dashboard: **https://oct3-five.vercel.app**. A real fresh Claude Code
 caller has submitted sandbox-paid research and read the same hosted mission.
 Fiverr and Luma returned observed options; Amazon returned an explicit HTTP 503
-handoff. One exact $0 Open Together RSVP is now confirmed; Amazon and Fiverr orders have not been completed.
+handoff. Separately, one exact $0 Open Together RSVP and one manager-authorized
+$7.73 local-Chrome Amazon toothpaste order are confirmed. The Amazon final click
+did not run through the deployed Cue mission runner; no Fiverr order was placed.
 
 ## Current rehearsal additions
 
@@ -43,11 +45,14 @@ browsers or new model runs. Prepare one measured browser run, keep its timestamp
 visible, and refresh only a selected lane if needed. Browser/model usage can
 still cost money or consume credits; $0 refers to merchant purchases.
 
-## Optional paid candidates — outside the default demo
+## Merchant candidates and completed proof
 
-- **Amazon:** one toothpaste tube, aiming below $5 before any delivery/tax.
-  An exact available listing and checkout total have not been verified; the
-  public Amazon search could not be retrieved. Do not claim a quoted price.
+- **Amazon:** one Colgate toothpaste tube was observed at $3.99. In the authorized
+  signed-in local profile, Amazon showed $2.99 shipping and $0.75 tax for a $7.73
+  total. The manager approved that exact total; one submission opened Amazon's
+  thank-you page and a matching confirmation email arrived. Present this as
+  separate local-browser execution evidence, not as a deployed Cue-worker order
+  or a Link-funded purchase.
 - **Fiverr:** [Isacandersen's Simple Beat](https://www.fiverr.com/isacandersen/make-a-beat-for-you)
   displayed a $5 basic package and one-day delivery on October 3. The final price
   depends on the selected length and checkout fees/tax. Draft brief: a short
@@ -104,13 +109,24 @@ the visible setup is the agent connecting to the product.
 Read-only preflight, which makes one real Claude call:
 
 ```sh
-node --env-file=.env.local scripts/claude-demo.mjs --check
+OCT3_BASE_URL=https://oct3-five.vercel.app npm run claude:check
 ```
 
 This only calls `list_missions`; it does not submit work or open merchant
 browsers. A successful check proves the Claude Code → MCP connection, not any
 merchant action. HTTP configuration and environment substitution follow
 [Claude Code's MCP documentation](https://code.claude.com/docs/en/mcp).
+
+The repeatable final stage beat reads exactly one saved mission through Claude
+Code and cannot start work:
+
+```sh
+OCT3_BASE_URL=https://oct3-five.vercel.app npm run claude:status -- 421d6be5-462d-4848-bd7a-223cf3dd6cd4
+```
+
+This calls `mission_status` once and verifies that Claude used the supplied ID.
+It reports only whether the exact tool call passed; use the interactive launcher
+when the audience should see Claude's formatted answer and links.
 
 One scripted, live research rehearsal (uses model/browser credits and a sandbox
 service payment, but never commits a merchant action):
@@ -135,7 +151,9 @@ Fill in the actual event/date and chosen requirements before rehearsal:
 > for manager approval of any commitment. Report real outcomes and blockers.
 
 The public tools remain submit/status/list. The board handles approval; do not
-pretend Claude's caller credential can approve spending. Amazon/Fiverr execution remains a handoff. The narrow free-event flow was reviewed, passkey-approved and confirmed once; status reads must not resubmit it.
+pretend Claude's caller credential can approve spending. Deployed Amazon/Fiverr
+execution remains a handoff. The narrow free-event flow was reviewed,
+passkey-approved and confirmed once; status reads must not resubmit it.
 
 ## Target sequence — two minutes, subject to measured rehearsal
 
@@ -178,7 +196,8 @@ view. No synthetic receipt, email or DOM change represents merchant completion.
 4. Use the verified Supabase state store and MPP sandbox payment gate; rehearse
    the combined caller-payment-browser sequence.
    Keep its service-fee proof separate from any merchant result.
-5. Reuse the confirmed free RSVP evidence. Keep Amazon and Fiverr at reviewable research for the default demo.
+5. Reuse the confirmed free RSVP and separate Amazon local-browser evidence. Keep
+   the deployed Amazon/Fiverr workers at reviewable research for the default demo.
 6. Rehearse status reads of the saved confirmed action without resubmitting it. Keep current research/hand-off mode as a labeled fallback.
 
 ## User handoff links
@@ -187,4 +206,6 @@ The caller session is instructed to share the returned dashboard and worker
 review/provider-preview links before any commitment, then recorded confirmation
 and receipt links after completion. The dashboard opens the precise mission and
 worker after manager sign-in. Past missions reopens the saved workspace history.
-The confirmed free event has matching provider evidence but no captured receipt URL. Amazon and Fiverr remain handoffs.
+The confirmed free event has matching provider evidence but no captured receipt
+URL. The deployed Amazon and Fiverr workers remain handoffs; the separate Amazon
+local-browser order has matching provider confirmation.

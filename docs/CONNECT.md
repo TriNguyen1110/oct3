@@ -86,6 +86,22 @@ prompt](CLAUDE_DEMO.md). A fresh Claude Code client has submitted sandbox-paid l
 that same mission through the deployed MCP endpoint; see the hosted evidence
 in the stage runbook.
 
+The shortest safe proof uses Claude Code itself, in a temporary caller directory
+with only Cue's three tools enabled:
+
+```sh
+OCT3_BASE_URL=https://oct3-five.vercel.app npm run claude:check
+OCT3_BASE_URL=https://oct3-five.vercel.app npm run claude:status -- <mission-id>
+```
+
+The first command calls `list_missions` once. The second calls
+`mission_status` once for the exact ID and is explicitly barred from submitting,
+retrying, approving, registering, purchasing, or contacting anyone. Use
+`npm run claude` for the interactive stage session: `/mcp` shows the live Cue
+server, and an ordinary natural-language request can call the same tools. The
+launcher passes only Claude credentials plus `OCT3_AGENT_TOKEN`; provider,
+manager, database, and payment secrets are excluded from the child process.
+
 1. Submit the fixture mission through CLI or MCP, showing the returned mission ID.
 2. Open the manager board; review three workers and revise $900 to $650.
 3. Fetch that same ID from the agent; show revised structured results.
@@ -111,9 +127,11 @@ worker includes:
 Give the user the dashboard/review/provider links before ordering. After completion,
 share only recorded confirmation and receipt links. A null receipt is unavailable;
 it is never permission to invent an invoice or treat the service fee as a purchase.
-Amazon/Fiverr execution still stops at a handoff. The narrow free Luma path has
-passed actual read-only preparation and synthetic execution guard checks, but
-no real RSVP has occurred. Receipt delivery still requires real provider evidence.
+The deployed Amazon/Fiverr mission workers still stop at a handoff. A separate
+manager-authorized local-Chrome run completed one Amazon toothpaste order and
+captured provider confirmation; it did not run through the deployed mission
+executor or Link. The narrow free Luma path has one native-passkey-approved,
+provider-confirmed RSVP. Receipt delivery still requires matching provider evidence.
 
 Set server-only `OCT3_APP_URL` to the deployed public origin for Eve-generated links.
 HTTP results use the request origin when this setting is absent. Links never carry

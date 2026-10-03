@@ -11,6 +11,7 @@ test("caller launcher inherits only allowed runtime and caller credentials", asy
   const directory = await mkdtemp(join(tmpdir(), "cue-caller-env-verifier-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const marker = join(directory, "checked.json");
+  const missionId = "421d6be5-462d-4848-bd7a-223cf3dd6cd4";
   const denied = [
     "STRIPE_SECRET_KEY", "STRIPE_PROFILE_ID", "STRIPE_PUBLISHABLE_KEY", "SURFSKY_API_KEY", "SURFSKY_API_TOKEN",
     "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_ANON_KEY", "DATABASE_URL", "MPP_SECRET_KEY",
@@ -40,7 +41,9 @@ assert.ok(args.includes("--strict-mcp-config"));
 assert.equal(args[args.indexOf("--tools") + 1], "");
 assert.equal(args[args.indexOf("--allowedTools") + 1], "mcp__oct3__submit_mission,mcp__oct3__mission_status,mcp__oct3__list_missions");
 fs.writeFileSync(${JSON.stringify(marker)}, JSON.stringify({ passed: true, checkedBlockedKeys: denied.length }));
-console.log(JSON.stringify({ message: { content: [{ type: "tool_use", id: "synthetic-call", name: "mcp__oct3__list_missions" }] } }));
+const isStatus = args.at(-1).includes("Call mission_status exactly once");
+if (isStatus) assert.ok(args.at(-1).includes(${JSON.stringify(missionId)}));
+console.log(JSON.stringify({ message: { content: [{ type: "tool_use", id: "synthetic-call", name: isStatus ? "mcp__oct3__mission_status" : "mcp__oct3__list_missions", input: isStatus ? { mission_id: ${JSON.stringify(missionId)} } : {} }] } }));
 console.log(JSON.stringify({ message: { content: [{ type: "tool_result", tool_use_id: "synthetic-call", is_error: false }] } }));
 console.log(JSON.stringify({ type: "result", is_error: false }));
 `;
@@ -60,4 +63,12 @@ console.log(JSON.stringify({ type: "result", is_error: false }));
   assert.deepEqual(output.tool_calls, ["mcp__oct3__list_missions"]);
   assert.deepEqual(JSON.parse(await readFile(marker, "utf8")), { passed: true, checkedBlockedKeys: denied.length });
   assert.doesNotMatch(result.stdout + result.stderr, /synthetic-private-|synthetic-caller-(?:anthropic|oauth|agent)/);
+
+  const statusResult = await promisify(execFile)(process.execPath, [launcher, "--status", missionId], { cwd: directory, env, timeout: 10000 });
+  const statusOutput = JSON.parse(statusResult.stdout.trim());
+  assert.equal(statusOutput.passed, true);
+  assert.equal(statusOutput.mission_submitted, false);
+  assert.equal(statusOutput.scope, "read one saved mission; no mutation permitted");
+  assert.deepEqual(statusOutput.tool_calls, ["mcp__oct3__mission_status"]);
+  assert.doesNotMatch(statusResult.stdout + statusResult.stderr, /synthetic-private-|synthetic-caller-(?:anthropic|oauth|agent)/);
 });

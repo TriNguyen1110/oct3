@@ -15,8 +15,16 @@ Dependencies are pinned in package.json and package-lock.json. Put secrets in
 ignored `.env.local`; never in browser code, evidence, commits or model messages.
 Stripe MPP sandbox and the combined hosted Claude terminal/payment/research
 journey are verified; see `reports/performance/hosted-claude-paid-research.json`.
-Real merchant checkout and final registration remain unverified. Fixture mode
-must be explicit throughout the UI. See `docs/CLAUDE_DEMO.md` for current limits.
+One native-passkey-approved free registration and one separate
+manager-authorized local-Chrome Amazon order have provider confirmation. The
+Amazon final click did not run through the deployed Cue mission executor or Link;
+Fiverr and food checkout remain unverified. Fixture mode must be explicit
+throughout the UI. See `docs/CLAUDE_DEMO.md` for current limits.
+
+Claude Code MCP proof against production:
+`OCT3_BASE_URL=https://oct3-five.vercel.app npm run claude:check`.
+Exact saved-mission readback:
+`OCT3_BASE_URL=https://oct3-five.vercel.app npm run claude:status -- <mission-id>`.
 
 Passkey cloud proof (isolated synthetic workspace; creates then removes its own
 test rows, never touches the real manager's credential):

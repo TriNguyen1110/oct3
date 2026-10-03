@@ -14,7 +14,7 @@ handoff. Supabase persists the mission and the saved manager profile.
 [Hosted checks](../reports/performance/hosted-baseline.json) and
 [actual mission](../reports/performance/hosted-claude-paid-research.json).
 
-Historical free-RSVP preparation took 22.580 seconds. A later hosted prepare/review/approval-guard verification cycle took 17.330 seconds and produced a fresh $0 proposal. That measurement includes the prepare POST, review GET and missing-passkey rejection check; it is not isolated preparation latency. The approved action reached matching provider confirmation 27.428 seconds after native-passkey approval. That interval includes manager delay before **Register now**; it is not isolated execution or human-active time. One free RSVP is confirmed. No Amazon purchase or Fiverr order has occurred, and research prices do not become checkout totals.
+Historical free-RSVP preparation took 22.580 seconds. A later hosted prepare/review/approval-guard verification cycle took 17.330 seconds and produced a fresh $0 proposal. That measurement includes the prepare POST, review GET and missing-passkey rejection check; it is not isolated preparation latency. The approved action reached matching provider confirmation 27.428 seconds after native-passkey approval. That interval includes manager delay before **Register now**; it is not isolated execution or human-active time. One free RSVP is confirmed. Separately, one manager-authorized $7.73 Amazon toothpaste order completed through local Chrome and received provider confirmation; the deployed mission runner and Link did not make or fund it. No Fiverr order has occurred, and research prices do not become checkout totals.
 
 **90 seconds is the presentation goal, not an end-to-end runtime guarantee.**
 Replay saved research with its timestamp during repeated rehearsals. The budget
@@ -30,7 +30,7 @@ are not merchant observations. See [sponsor evidence](SPONSORS.md).
 | Budget and exact approval guards | Independent local negative/concurrency checks plus actual Supabase race/overspend checks. Interactive budget planning uses labeled fixtures. |
 | Dashboard payment recovery | Saved mission survives 402/503; explicit sandbox-payment action resumes that same mission. Mocked rendered recovery checks passed. |
 | Free event preparation and registration | Fresh hosted $0 proposal, native-passkey approval, and matching Luma confirmation verified. One actual free RSVP; no receipt URL was captured. |
-| Amazon/Fiverr purchase and receipts | Still handoffs. Both latest preflights were signed out; exact fee-inclusive totals and orders remain unverified. |
+| Amazon/Fiverr purchase and receipts | Deployed workers remain handoffs. A separate signed-in local-Chrome Amazon run completed one $7.73 order with confirmation; no Fiverr order. |
 | Food pickup | Latest selected-state smoke ended `merchant_changed` after 25.665 s because Potrero was absent. No cart or checkout; keep it labeled a handoff. |
 | Link merchant wallet | Account connection and one saved method verified. A synthetic 50-cent test request was created, read back and canceled without requesting approval or credentials. Guarded product request flow is separate from merchant execution; no paid checkout is proven. |
 | Hosted Vercel/Eve | Public dashboard, authenticated readiness/profile and Eve health all HTTP 200; actual hosted Eve research dispatch verified. |

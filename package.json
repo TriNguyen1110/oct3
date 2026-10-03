@@ -9,7 +9,11 @@
     "start": "next start --hostname 127.0.0.1 --port 3003",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
-    "cli": "node --env-file-if-exists=.env.local cli/oct3.mjs"
+    "cli": "node --env-file-if-exists=.env.local cli/oct3.mjs",
+    "claude": "node --env-file-if-exists=.env.local scripts/claude-demo.mjs",
+    "claude:check": "node --env-file-if-exists=.env.local scripts/claude-demo.mjs --check",
+    "claude:status": "node --env-file-if-exists=.env.local scripts/claude-demo.mjs --status",
+    "claude:rehearse": "node --env-file-if-exists=.env.local scripts/claude-demo.mjs --rehearse"
   },
   "engines": {
     "node": "24.x"

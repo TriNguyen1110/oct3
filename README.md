@@ -9,11 +9,15 @@ manager approvals. The food demo focuses on one boba for pickup near the venue.
 Public demo: **https://oct3-five.vercel.app**. Today’s lanes use Fiverr, Amazon
 and event-ticket research. The hosted Claude → Stripe sandbox → Surfsky →
 Supabase research flow is verified: Fiverr and Luma returned options, while
-Amazon returned an access blocker. The narrow free Luma registration adapter has
-passed guard checks, read-only preparation, and an actual $0 registration after
+Amazon returned an access blocker. A separate manager-authorized local-Chrome
+run completed one $7.73 Amazon toothpaste order and captured Amazon's thank-you
+page plus confirmation email; the deployed Cue mission runner did not make that
+final click. The narrow free Luma registration adapter has passed guard checks,
+read-only preparation, and an actual $0 registration after
 the manager enrolled a native passkey and approved the exact action. Matching
-Luma confirmation is saved; a separate receipt link was not captured. Boba Guys' official pickup form is reachable; final food checkout
-and paid merchant transactions remain unverified. New live approvals require
+Luma confirmation is saved; a separate receipt link was not captured. Boba Guys'
+official pickup form is reachable; final food checkout and Fiverr ordering remain
+unverified. New live approvals require
 the manager's device passkey. Native setup and one exact signed live approval
 are verified; test authenticators never enroll in their account.
 
