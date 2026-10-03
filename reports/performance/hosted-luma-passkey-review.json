@@ -10,7 +10,7 @@
   "proposal": {
     "id": "054c3386-f598-438e-8bab-ba12834fa308",
     "revision": 1,
-    "title": "Open Together: AI Builders Unite — Standard",
+    "title": "Open Together: AI Builders Unite \u2014 Standard",
     "total_minor": 0,
     "expires_at": "2026-10-03T21:47:59.450Z",
     "action_type": "free_registration"
@@ -21,5 +21,6 @@
   "error_code": null,
   "blocker": null,
   "merchant_actions": 0,
-  "registration_submitted": false
+  "registration_submitted": false,
+  "elapsed_scope": "Total verification cycle: POST prepare-registration, GET registration-review, and missing-passkey approval rejection (HTTP403). Not isolated proposal preparation, browser-adapter, or execution latency."
 }

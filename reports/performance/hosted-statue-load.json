@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-10-03T21:31:56.181Z",
+  "mode": "one_cold_headless_chrome_mobile_viewport",
+  "viewport": {
+    "width": 390,
+    "height": 1000
+  },
+  "network_throttling": "none",
+  "cache": "fresh_browser_context",
+  "dom_content_loaded_ms": 271,
+  "load_event_ms": 271,
+  "statue_fetch_complete_ms": 166,
+  "statue_transfer_bytes": 9578,
+  "statue_encoded_body_bytes": 9278,
+  "statue_decode_observed_ms": 321,
+  "overflow": false,
+  "page_errors": 0,
+  "limitations": [
+    "One synthetic navigation, not percentile or real-user metrics.",
+    "Measured on verification machine, not representative of mobile device CPU/network."
+  ]
+}

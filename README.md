@@ -53,7 +53,7 @@ import remains unimplemented.
 Short voice notes can draft the brief, budget and food request for explicit
 review. Actual Gemini audio-to-draft inference passed with a 4.842-second
 synthetic spoken request in 2.088 seconds. The real hosted browser-to-Gemini
-flow also passed in 3.042 seconds, with explicit draft application and no mission
+flow most recently passed in 3.238 seconds, with explicit draft application and no mission
 submission. Typed briefs remain usable.
 No voice result submits a mission or approves an action, and Cue does not save
 recordings.
@@ -78,13 +78,11 @@ runtime or component subscription was added. The original components take
 pattern inspiration from 21st.dev's [spotlight guidance](https://docs.21st.dev/blog/react-spotlight-effect-components)
 and [card collection guide](https://docs.21st.dev/blog/react-card-components).
 
-The cinematic hero adapts the MIT-licensed
-[Kokonut Shape Hero](https://github.com/kokonut-labs/kokonutui/blob/main/components/kokonutui/shape-hero.tsx)
-found on [21st.dev](https://21st.dev/@kokonutd/components/shape-landing-hero),
-with CSS lighting and an original ivory Art Deco concierge statue. It uses a
-responsive raster asset, not WebGL. [Asset](public/images/cue-concierge-statue.png),
-[image prompt](public/images/cue-concierge-statue.prompt.txt),
-[component license](components/cinematic-hero.LICENSE.txt).
+The cinematic hero uses a still, close-up museum photograph of Hermes: a Roman marble
+adaptation of a Classical Greek work. The Met provides the photograph under
+CC0. The original photograph stays intact; the page supplies responsive framing.
+[Asset](public/images/cue-hermes-marble.jpg),
+[source and license](public/images/cue-hermes-marble.source.txt).
 
 ## Stack and boundaries
 

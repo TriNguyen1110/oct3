@@ -62,8 +62,6 @@
       "historical_failed_resume_source": "reports/performance/luma-registration-live.json",
       "historical_failed_resume_wall_ms": 48852,
       "historical_failed_resume_status": "needs_human",
-      "confirmed_run_proposal_source": "reports/performance/hosted-luma-passkey-review.json",
-      "confirmed_run_proposal_wall_ms": 17330,
       "confirmed_run_proposal_status": "awaiting_approval",
       "confirmed_run_source": "reports/performance/native-passkey-live-event.json",
       "native_passkey_enrolled": true,
@@ -73,7 +71,10 @@
       "confirmed_total_minor": 0,
       "matching_provider_confirmation": true,
       "confirmed_free_registrations": 1,
-      "timing_caveat": "Approval-to-confirmation includes manager delay before Register now; it is not isolated execution latency or human-active time. Do not sum timings across these separate trials."
+      "timing_caveat": "The 17330ms cycle includes preparation, review retrieval and missing-passkey rejection checks. Approval-to-confirmation includes manager delay before Register now. Neither measures isolated adapter latency or human-active time; do not sum these separate scopes.",
+      "confirmed_run_prepare_review_guard_cycle_source": "reports/performance/hosted-luma-passkey-review.json",
+      "confirmed_run_prepare_review_guard_cycle_ms": 17330,
+      "prepare_review_guard_elapsed_scope": "Total verification cycle: POST prepare-registration, GET registration-review, and missing-passkey approval rejection (HTTP403). Not isolated proposal preparation, browser-adapter, or execution latency."
     },
     "concurrency_and_integrity": {
       "source": "reports/performance/supabase-guards.json",
@@ -120,17 +121,6 @@
     "browser_provider_cost_usd": null,
     "coordinator_model_cost_usd": null,
     "production_infrastructure_cost_usd": null,
-    "hosted_voice_draft": {
-      "source": "reports/performance/hosted-voice-proof.json",
-      "roundtrip_ms": 3042,
-      "audio_seconds": 4.842,
-      "synthetic_microphone": true,
-      "actual_hosted_browser": true,
-      "actual_provider": true,
-      "mission_submission_count": 0,
-      "merchant_actions": 0,
-      "limitation": "Editable draft only; no real user microphone, mission submission, approval, or merchant action."
-    },
     "food_release_smoke": {
       "source": "reports/verification/food-readback-live.json",
       "wall_ms": 25665,
@@ -140,6 +130,34 @@
       "merchant_actions": 0,
       "cleanup_confirmed": true,
       "status": "handoff"
+    },
+    "hosted_voice_draft_historical": {
+      "source": "reports/performance/hosted-voice-proof.json",
+      "roundtrip_ms": 3042,
+      "audio_seconds": 4.842,
+      "synthetic_microphone": true,
+      "actual_hosted_browser": true,
+      "actual_provider": true,
+      "mission_submission_count": 0,
+      "merchant_actions": 0,
+      "limitation": "Editable draft only; no real user microphone, mission submission, approval, or merchant action.",
+      "historical": true
+    },
+    "hosted_voice_draft": {
+      "source": "reports/performance/hosted-voice-stable-release.json",
+      "roundtrip_ms": 3238,
+      "audio_seconds": 4.842,
+      "synthetic_microphone": true,
+      "actual_hosted_browser": true,
+      "actual_provider": true,
+      "mission_submission_count": 0,
+      "merchant_actions": 0,
+      "limitation": "Editable draft only; no real user microphone, mission submission, approval, or merchant action.",
+      "historical": false,
+      "source_revision": "d144a094f980a78d684352bbd210669346415453",
+      "checked_at": "2026-10-03T21:31:04.399Z",
+      "elapsed_scope": "Hosted browser voice round trip including upload/server/provider/response/UI handling; not isolated Gemini latency. Synthetic4.842s recording duration is separate.",
+      "delayed_mission_preserves_dialog_and_recording": true
     }
   },
   "derived": {
@@ -198,5 +216,5 @@
     "Production completion rate and handoff resolution rate",
     "Multi-user tests only after team RBAC exists"
   ],
-  "independently_verified_at": "2026-10-03T21:15:34.984675+00:00"
+  "independently_verified_at": "2026-10-03T21:38:19.694939+00:00"
 }

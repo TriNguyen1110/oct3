@@ -4,7 +4,7 @@ The public demo is **https://oct3-five.vercel.app**. The stage starts with a
 fresh Claude Code terminal connected to Cue's MCP endpoint, then shows the same
 saved mission in the dashboard. See [the terminal runbook](CLAUDE_DEMO.md).
 
-**Current verified source: `1ae1ba0`, October 3.** The Cue **ivory statue** hero, native-passkey approval, voice draft, and free RSVP flow are deployed. The real manager enrolled a native passkey, approved the exact $0 Open Together action, and Cue recorded matching Luma confirmation. [Native passkey and event evidence](../reports/performance/native-passkey-live-event.json).
+**Functional baseline: `d144a09`, October 3.** Native-passkey approval, voice draft, and free RSVP flow are deployed. The real manager enrolled a native passkey, approved the exact $0 Open Together action, and Cue recorded matching Luma confirmation. [Native passkey and event evidence](../reports/performance/native-passkey-live-event.json). The updated hero uses a close-up museum photograph of Hermes; its source and CC0 license are retained with the asset.
 
 **Verified hosted research baseline: `21377a8`, October 3.** A real Claude Code caller
 submitted one live research mission with explicit Stripe sandbox payment and
@@ -14,7 +14,7 @@ handoff. Supabase persists the mission and the saved manager profile.
 [Hosted checks](../reports/performance/hosted-baseline.json) and
 [actual mission](../reports/performance/hosted-claude-paid-research.json).
 
-Historical free-RSVP preparation took 22.580 seconds. The successful hosted run prepared a fresh $0 proposal in 17.330 seconds, required the native passkey, and reached matching provider confirmation 27.428 seconds after approval. That interval includes manager delay before **Register now**; it is not isolated execution or human-active time. One free RSVP is confirmed. No Amazon purchase or Fiverr order has occurred, and research prices do not become checkout totals.
+Historical free-RSVP preparation took 22.580 seconds. A later hosted prepare/review/approval-guard verification cycle took 17.330 seconds and produced a fresh $0 proposal. That measurement includes the prepare POST, review GET and missing-passkey rejection check; it is not isolated preparation latency. The approved action reached matching provider confirmation 27.428 seconds after native-passkey approval. That interval includes manager delay before **Register now**; it is not isolated execution or human-active time. One free RSVP is confirmed. No Amazon purchase or Fiverr order has occurred, and research prices do not become checkout totals.
 
 **90 seconds is the presentation goal, not an end-to-end runtime guarantee.**
 Replay saved research with its timestamp during repeated rehearsals. The budget
@@ -70,8 +70,8 @@ cleanup, not percentiles or measurements of the deployed application.
 | Real CLI/MCP verification journey | Auth, submit, dedupe, reads, revision, approval boundaries | **7.14 s** |
 | Combined local sandbox payment → Eve → research | Handle in 5.390 s; settled with two initial blockers | **27.428 s** |
 | Hosted fresh Claude caller → sandbox-paid research | Submission/status verified; Fiverr and Luma results, Amazon handoff | End-to-end latency not separately measured |
-| Hosted Gemini voice → editable draft | Actual browser/provider; 4.842 s synthetic microphone fixture; no submission | **3.042 s** |
-| Hosted fresh free-event proposal | Exact $0 Open Together proposal; no registration yet | **17.330 s** |
+| Hosted Gemini voice → editable draft | Latest actual browser/provider run; 4.842 s synthetic microphone fixture; no submission | **3.238 s** |
+| Hosted free-event prepare/review/guard cycle | Prepare POST + review GET + missing-passkey rejection check; no registration in that cycle | **17.330 s** |
 | Native-passkey approval → matching Luma confirmation | One actual $0 RSVP; interval includes manager Register-now delay | **27.428 s** |
 
 The three browser probes ran concurrently. Do not add their times and describe
@@ -146,7 +146,7 @@ user-selected booking. Timings are single local observations, not guarantees.
 
 | Time | Show | Say only what the screen and evidence support |
 |---|---|---|
-| 0–15 s | Open the Cue ivory-statue home screen, then show an external agent calling CLI or MCP. | “An agent delegates one manager task across browser workers.” |
+| 0–15 s | Open the Cue marble-portrait home screen, then show an external agent calling CLI or MCP. | “An agent delegates one manager task across browser workers.” |
 | 15–35 s | Three lanes progressing, or the same saved live mission with its observation timestamp visible. | Name which run is live now and which results were prepared earlier. Show grounded Fiverr/Eventbrite results and Amazon's observed blocker if it persists. |
 | 35–60 s | Switch explicitly to the **fixture** planning mission. Lower $900 to $650 while preserving six passes. | “This labeled rehearsal demonstrates shared-budget revision.” The illustrative proposed plan changes from $788 to $588; old approvals become invalid. |
 | 60–75 s | Show the saved native-passkey approval and matching Open Together confirmation. | “This exact $0 action was approved on-device and confirmed by Luma.” Keep the Stripe sandbox service receipt separate. |

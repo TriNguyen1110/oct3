@@ -1,0 +1,20 @@
+{
+  "checked_at": "2026-10-03T21:32:14.971Z",
+  "source_commit": "d144a094f980a78d684352bbd210669346415453",
+  "origin": "https://oct3-five.vercel.app",
+  "page_http": 200,
+  "new_statue_referenced": true,
+  "old_robot_referenced": false,
+  "asset_http": 200,
+  "asset_sha256": "c77624b44170f021e314c6ad5841cf49b93ff996e17934a91866acc6d27d9d8e",
+  "matches_local_asset": true,
+  "eve_health_http": 200,
+  "full_suite": {
+    "passed": 160,
+    "failed": 0,
+    "opt_in_skipped": 8,
+    "duration_ms": 15365.727125
+  },
+  "separate_initial_modal_ui_checks": 5,
+  "merchant_actions": 0
+}
