@@ -86,3 +86,19 @@ The corresponding implementation lives in [components.ts](../src/browser/compone
 [research.ts](../src/server/research.ts) and [surfsky.ts](../src/browser/surfsky.ts).
 Independent checks and their exact scope are recorded under
 [verification reports](../reports/verification/).
+
+
+## Narrow free-event execution
+
+The selected OpenTogether adapter is separate from generic form components.
+It pins one event, date, free ticket and attendee snapshot; the server binds
+approval to that private action and a zero-dollar reservation. Preparation
+blocks remote mutations and only opens the blank form. Execution reacquires the
+shared browser lease, checks the unchanged profile/proposal, claims one attempt,
+and permits at most one exact zero-dollar registration request. An uncertain
+provider result cannot be retried or overwritten by a new preparation.
+
+Independent synthetic execution checks passed; actual read-only preparation and
+the private review also passed. No real RSVP is claimed. See the
+[free-registration report](../reports/verification/free-registration.md) for
+coverage and the reproduced races that were corrected.

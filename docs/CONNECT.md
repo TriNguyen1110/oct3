@@ -16,14 +16,16 @@ npm run cli -- list
 ```
 
 The npm command reads the ignored `.env.local`. Set `OCT3_BASE_URL` to the
-deployed origin when available; the default is `http://127.0.0.1:3003`.
+deployed origin `https://oct3-five.vercel.app` for the public demo; the default
+is `http://127.0.0.1:3003`.
 `OCT3_AGENT_TOKEN` authenticates the caller. Never put its value in committed
 examples or command-line arguments. The executable is also available as `oct3`
 after a local `npm link`; it reads those variables from the environment.
 No package has been published to npm.
 
 `examples/expo.json` is explicitly **fixture mode**. For live read-only research,
-use `"mode": "live"` and supply an actual supported Eventbrite event URL/date.
+use `examples/team-outing.json` for the selected Luma OpenTogether event, or
+supply a supported Eventbrite/Luma URL with its matching date in live mode.
 Both modes return JSON with `mission_id`, worker states, costs, evidence,
 blockers and next actions. Live research requires a verified 50-cent Stripe
 sandbox service payment. The server first saves the mission, then returns an
@@ -34,8 +36,11 @@ The CLI preserves the mission/dashboard/result links from payment-response
 headers. A payment-capable caller can pass the standard MPP credential privately
 through `OCT3_PAYMENT_AUTHORIZATION`; the CLI sends it as `Payment-Authorization`
 only on submission. The MCP transport accepts the same header and forwards it
-only to submission. The caller bearer credential remains separate. Neither
-client obtains wallet approval automatically; Link onboarding is still pending.
+only to submission. The caller bearer credential remains separate. Neither client obtains a real merchant wallet approval automatically; Link
+onboarding is still pending. For explicit sandbox rehearsal, CLI `--pay-test`
+or MCP `pay_test_service_fee: true` uses the developer-supplied Stripe test
+method through the real MPP gate before dispatch. Normal calls retain the 402
+challenge. Sandbox service payment is not merchant payment.
 Reuse the original mission input and idempotency key after payment approval.
 
 The server uses a durable payment binding and one Stripe idempotency key for the
@@ -50,7 +55,7 @@ out, retry the identical input with the same key; do not generate a new key.
 Connect a Streamable HTTP MCP client to:
 
 ```text
-http://127.0.0.1:3003/api/mcp
+https://oct3-five.vercel.app/api/mcp
 ```
 
 Use the deployed HTTPS origin for remote callers. Configure an
@@ -59,7 +64,7 @@ configuration. Header support is required; this slice has no OAuth onboarding.
 
 | Tool | Input | Result |
 |---|---|---|
-| `submit_mission` | `mission` object matching the example; stable `idempotency_key` | Durable mission handle and initial state |
+| `submit_mission` | `mission` object matching the example; stable `idempotency_key`; optional `pay_test_service_fee` | Durable mission handle and initial state |
 | `mission_status` | `mission_id` | Current workers, approvals, evidence and outcomes |
 | `list_missions` | `{}` | Recent missions in the caller workspace |
 
@@ -77,8 +82,9 @@ are not retained between requests. The implementation uses Vercel's
 ## Small demo
 
 For a real Claude Code terminal session, use the [stage launcher and
-prompt](CLAUDE_DEMO.md). Its read-only connection check has exercised
-`list_missions` through the actual Claude Code client.
+prompt](CLAUDE_DEMO.md). A fresh Claude Code client has submitted sandbox-paid live research and read
+that same mission through the deployed MCP endpoint; see the hosted evidence
+in the stage runbook.
 
 1. Submit the fixture mission through CLI or MCP, showing the returned mission ID.
 2. Open the manager board; review three workers and revise $900 to $650.
@@ -105,17 +111,18 @@ worker includes:
 Give the user the dashboard/review/provider links before ordering. After completion,
 share only recorded confirmation and receipt links. A null receipt is unavailable;
 it is never permission to invent an invoice or treat the service fee as a purchase.
-The current merchant executor still stops at a handoff; receipt delivery is wired
-for future verified provider evidence, not a completed live transaction.
+Amazon/Fiverr execution still stops at a handoff. The narrow free Luma path has
+passed actual read-only preparation and synthetic execution guard checks, but
+no real RSVP has occurred. Receipt delivery still requires real provider evidence.
 
 Set server-only `OCT3_APP_URL` to the deployed public origin for Eve-generated links.
 HTTP results use the request origin when this setting is absent. Links never carry
 an access key; managers sign in through the normal dashboard access dialog.
 
 **Past missions** reopens the latest 20 stored missions, including their available
-evidence and receipts. This uses the configured storage; local development history
-is not evidence of Supabase cloud persistence. Preference memory and external
-merchant-history imports remain stretch items.
+evidence and receipts. This now uses verified Supabase cloud storage. The manager profile saves name,
+email, company and role for form defaults; it never grants standing approval.
+External merchant-history imports remain unimplemented.
 
 ## Local verification of handoff links
 
@@ -131,5 +138,6 @@ the provider-page action, and reopened saved history after reload at mobile size
 Missing mission IDs showed an explicit error without loading another stored job.
 The first missing-ID assertion used an incorrect descendant locator; a corrected
 scoped check passed. Desktop review and mobile history screenshots were inspected.
-This validates links and history; Supabase cloud persistence and merchant receipt
-capture remain unverified.
+This historical check validates links and history. Later Supabase cloud checks
+and hosted research are recorded in the demo runbook; actual merchant receipt
+capture remains unverified.
