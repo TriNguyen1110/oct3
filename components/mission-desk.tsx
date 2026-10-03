@@ -29,9 +29,20 @@ const safeUrl = (value?: string) => { try { const url = new URL(value ?? ""); re
 
 function WorkerArt({ lane }: { lane: Lane }) {
   return <div className={`worker-art ${lane}`} aria-hidden="true">
-    <span className="art-grid"/>
-    {lane === "amazon" ? <svg viewBox="0 0 240 130"><ellipse cx="121" cy="112" rx="68" ry="9" fill="#dacbb7" opacity=".55"/><path d="m48 53 45-22 47 23-47 24-45-25Z" fill="#e8cda6" stroke="#a98e6d"/><path d="M48 53v43l45 23V78L48 53Z" fill="#c6a174" stroke="#a98e6d"/><path d="m93 78 47-24v43l-47 22V78Z" fill="#dfb988" stroke="#a98e6d"/><path d="m67 43 47 24v16l-10 5V72L58 48" fill="#f4e5ca"/><path d="m128 36 29-14 35 18-30 15-34-19Z" fill="#f2dfbf" stroke="#a98e6d"/><path d="M128 36v40l34 17V55l-34-19Z" fill="#d7b786" stroke="#a98e6d"/><path d="m162 55 30-15v39l-30 14V55Z" fill="#e8cda6" stroke="#a98e6d"/><path d="m151 28 30 17v11l-8 4V48l-30-16" fill="#f9edd7"/><path d="M106 96c6 1 14-1 21-6" fill="none" stroke="#80684b" strokeWidth="2.3" strokeLinecap="round"/><path d="m122 89 6 .5-1 6" fill="none" stroke="#80684b" strokeWidth="2"/></svg> : lane === "fiverr" ? <svg viewBox="0 0 240 130"><rect x="70" y="25" width="104" height="97" rx="2" fill="#bac5ad" transform="rotate(10 122 70)"/><rect x="63" y="13" width="104" height="106" rx="2" fill="#f9f9ed" stroke="#c7cbb7" transform="rotate(-7 115 66)"/><g transform="rotate(-7 115 66)"><path d="M76 29h39" stroke="#4c613e" strokeWidth="3"/><path d="M76 37h24" stroke="#9dba80" strokeWidth="3"/><path d="M133 51c15-10 25 8 12 20-6 6-12 10-12 18-1-8-7-12-13-18-12-12-2-30 13-20Z" fill="#c2d6a4"/><path d="m82 54 19 30H65l17-30Z" fill="#495c3f"/><circle cx="106" cy="74" r="17" fill="#e4bd76"/><path d="M76 98h70m-70 6h45" stroke="#77836b" strokeWidth="2"/></g><path d="m174 51 8 5-29 51-8 6 1-12 28-50Z" fill="#566c47"/><path d="m174 51 3-5c3-5 11 0 8 5l-3 5" fill="#ddc2a8"/></svg> : <svg viewBox="0 0 240 130"><g transform="rotate(10 132 74)"><path d="M62 40h132v20a8 8 0 0 0 0 16v22H62V76a8 8 0 0 0 0-16V40Z" fill="#b4c5d3" stroke="#90a5b7"/></g><g transform="rotate(-8 119 69)"><path d="M44 31h145v22a8 8 0 0 0 0 16v26H44V69a8 8 0 0 0 0-16V31Z" fill="#f5f8f6" stroke="#a8b8bd"/><path d="M147 31v64" stroke="#a4b7bf" strokeDasharray="3 4"/><path d="M59 45h47m-47 7h30" stroke="#64838e" strokeWidth="2.5"/><text x="59" y="79" fontSize="20" fontFamily="Georgia,serif" fill="#355463">ALL IN.</text><path d="M157 44v37m4-37v37m5-37v37m3-37v37m5-37v37" stroke="#4b6e7b" strokeWidth="2"/></g><circle cx="182" cy="99" r="17" fill="#355663"/><text x="182" y="104" textAnchor="middle" fill="#fff" fontSize="13" fontFamily="sans-serif">×6</text></svg>}
-    <span className="art-caption">{lane === "amazon" ? "The little things, sorted." : lane === "fiverr" ? "Good work finds good people." : "Room for the whole team."}</span>
+    <svg viewBox="0 0 240 110" fill="none" stroke="#80786b" strokeWidth="1.1" strokeLinejoin="round">
+      {lane === "amazon" ? <>
+        <path d="m52 42 39-20 45 22-40 21-44-23Z" fill="#38332c"/><path d="M52 42v38l44 24V65L52 42Z" fill="#262622"/><path d="m96 65 40-21v38l-40 22V65Z" fill="#2e2c27"/><path d="m70 33 45 23v13l-10 5V60L60 38" fill="#5b5140" stroke="none"/>
+        <path d="m134 26 26-12 31 16-26 14-31-18Z" fill="#3b342a"/><path d="M134 26v34l31 17V44l-31-18Z" fill="#292720"/><path d="m165 44 26-14v32l-26 15V44Z" fill="#302c24"/><path d="m148 19 31 18v10l-8 4V42l-31-19" fill="#645643" stroke="none"/>
+        <path d="M107 84c5 1 10-1 17-5m-5-1 6 .5-1 5" stroke="#bcae95"/>
+      </> : lane === "fiverr" ? <>
+        <path d="m84 13 77 7-8 88-77-7 8-88Z" fill="#292923" stroke="#5d5b51"/><path d="m72 8 77 2-3 91-77-2 3-91Z" fill="#262621" stroke="#9f9785"/>
+        <path d="m81 23 40 1m-40 7 25 1" stroke="#ac9f88"/><path d="m94 45 17 30H77l17-30Z" fill="#7e705b" stroke="none"/><circle cx="121" cy="65" r="15" fill="#464335" stroke="#8c8069"/><path d="m80 84 53 1" stroke="#b2a58c"/>
+        <path d="m167 27 6 3-23 61-6 6 1-9 22-61Z" fill="#695e49" stroke="#a99672"/>
+      </> : <>
+        <g transform="rotate(8 123 57)"><path d="M56 28h135v19a7 7 0 0 0 0 14v24H56V61a7 7 0 0 0 0-14V28Z" fill="#272722" stroke="#5e5b51"/></g>
+        <g transform="rotate(-7 119 57)"><path d="M44 21h143v21a7 7 0 0 0 0 14v26H44V56a7 7 0 0 0 0-14V21Z" fill="#242620" stroke="#958c77"/><path d="M148 21v61" stroke="#706957" strokeDasharray="2 4"/><path d="M58 34h43m-43 7h28" stroke="#a9997c"/><text x="58" y="68" stroke="none" fill="#baae93" fontSize="22" fontFamily="Georgia,serif">ALL IN.</text><path d="M158 32v38m4-38v38m5-38v38m3-38v38m5-38v38" stroke="#a3967c"/></g>
+      </>}
+    </svg>
   </div>;
 }
 
