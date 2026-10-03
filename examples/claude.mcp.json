@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "oct3": {
+      "type": "http",
+      "url": "${OCT3_BASE_URL:-http://127.0.0.1:3003}/api/mcp",
+      "headers": {
+        "Authorization": "Bearer ${OCT3_AGENT_TOKEN}"
+      }
+    }
+  }
+}

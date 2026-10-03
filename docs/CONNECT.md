@@ -62,6 +62,10 @@ are not retained between requests. The implementation uses Vercel's
 
 ## Small demo
 
+For a real Claude Code terminal session, use the [stage launcher and
+prompt](CLAUDE_DEMO.md). Its read-only connection check has exercised
+`list_missions` through the actual Claude Code client.
+
 1. Submit the fixture mission through CLI or MCP, showing the returned mission ID.
 2. Open the manager board; review three workers and revise $900 to $650.
 3. Fetch that same ID from the agent; show revised structured results.

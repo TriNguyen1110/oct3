@@ -5,6 +5,12 @@ Repository: `oct3`, an independent Git repository at
 `/Users/tringuyen/Developer/.worktrees/oct3`. All product code belongs here.
 The original hacker-kit remains a reusable preparation template.
 
+Latest stage priority: a fresh Claude Code terminal session delegates toothpaste,
+a roughly $5 Fiverr beat gig, and one free Luma RSVP. See
+`docs/CLAUDE_DEMO.md` for the tested launcher, candidate sources and remaining
+merchant-flow work. The six-person expo scenario below remains a labeled budget
+fixture. Luma support is pending; flights stay outside today's build.
+
 ## Team: read this first
 
 **Theme: Make Something Agents Want**, as confirmed by the user.

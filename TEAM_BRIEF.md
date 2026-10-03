@@ -56,6 +56,14 @@ Category-specific payouts and eligibility rules are not yet established.
 
 ## Stage story
 
+Latest user direction: open Claude Code in the terminal, connect oct3 during the
+presentation, and follow the resulting merchant pages. Use a small real-spend
+run: toothpaste, a roughly $5 beat-making gig and one free Luma registration.
+See [the stage runbook](docs/CLAUDE_DEMO.md). Luma and completed merchant flows
+are implementation targets, not current capabilities. Flights remain deferred.
+
+The earlier expo scenario remains the labeled budget-revision fixture:
+
 “Prepare six people for an expo: Amazon supplies, a Fiverr flyer designer and six
 event passes. Purchase budget $900.” Three workers propose a plan. Before
 commitments, lower the budget to $650 and keep six passes. Show revised
