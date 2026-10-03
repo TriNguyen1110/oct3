@@ -2,7 +2,8 @@
 name: verifier
 description: Independently verifies DATA, BROWSER, SCREEN or JOURNEY scope; alone marks implementation items done.
 tools: Read, Write, Edit, Grep, Glob, Bash
-model: inherit
+model: claude-opus-5-5
+effort: high
 maxTurns: 30
 color: green
 ---

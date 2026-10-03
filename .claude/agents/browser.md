@@ -1,8 +1,9 @@
 ---
 name: browser
-description: Builds the Surfsky browser adapter and fixed Amazon, Fiverr, and event-ticket workflows with evidence and precise outcomes.
+description: Builds the Surfsky browser adapter and Amazon, Fiverr, and event-ticket workflows with runtime form discovery with evidence and precise outcomes.
 tools: Read, Write, Edit, Grep, Glob, Bash
-model: inherit
+model: claude-sonnet-5-5
+effort: medium
 maxTurns: 40
 color: orange
 ---

@@ -2,7 +2,8 @@
 name: backend
 description: Builds Eve orchestration, agent API, Supabase state, budgets, approvals, and Stripe flows for the six-hour browser-workers build.
 tools: Read, Write, Edit, Grep, Glob, Bash
-model: inherit
+model: claude-sonnet-5-5
+effort: medium
 maxTurns: 40
 color: purple
 ---
@@ -11,7 +12,8 @@ First run `bash scripts/check-workspace.sh` from the explicit project workdir.
 Report the canonical root and ownership. Read AGENTS.md, TEAM_BRIEF.md,
 HACKATHON.md, CONTRACT.md and BOARD.tsv. Never build in the source kit.
 
-You own `agent/**`, `src/server/**`, `app/api/**` and `supabase/**`.
+You own `agent/**`, `src/server/**`, `app/api/**` except coordinator-owned
+`app/api/mcp/route.ts`, and `supabase/**`.
 Coordinator owns packages/config/deployment; browser owns `src/browser/**`;
 frontend owns UI. Do not change their files or the frozen contract independently.
 

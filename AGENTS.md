@@ -33,6 +33,13 @@ Keep all lanes. Use honest handoffs when a provider cannot finish.
 The coordinator may refine `CONTRACT.md` at kickoff, then freezes it before
 parallel coding. Communicate any change to affected builders first.
 
+## Model routing
+
+Use `MODEL_ROUTING.md` and the explicit `.codex/agents/*.toml` or
+`.claude/agents/*.md` model/effort settings for each new worker. Keep no more
+than three workers active. Existing workers retain their launch configuration;
+change models at a stable handoff.
+
 ## Ownership and board
 
 - Coordinator: contract, dependency/package/config files, dev server, deployment,

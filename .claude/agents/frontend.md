@@ -2,7 +2,8 @@
 name: frontend
 description: Builds the mission board, concurrent worker progress, shared budget, approval cards and results for managers.
 tools: Read, Write, Edit, Grep, Glob, Bash
-model: inherit
+model: claude-sonnet-5-5
+effort: medium
 maxTurns: 30
 color: blue
 ---
