@@ -139,7 +139,7 @@ pretend Claude's caller credential can approve spending. Amazon/Fiverr execution
 
 ## Target sequence — two minutes, subject to measured rehearsal
 
-Begin on the Cue **marble portrait** home screen before moving to the terminal and saved mission.
+Begin on the Cue **cinematic portrait** home screen before moving to the terminal and saved mission.
 
 | Time | Screen | Visible proof |
 | --- | --- | --- |

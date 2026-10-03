@@ -4,7 +4,7 @@ The public demo is **https://oct3-five.vercel.app**. The stage starts with a
 fresh Claude Code terminal connected to Cue's MCP endpoint, then shows the same
 saved mission in the dashboard. See [the terminal runbook](CLAUDE_DEMO.md).
 
-**Functional baseline: `d144a09`, October 3.** Native-passkey approval, voice draft, and free RSVP flow are deployed. The real manager enrolled a native passkey, approved the exact $0 Open Together action, and Cue recorded matching Luma confirmation. [Native passkey and event evidence](../reports/performance/native-passkey-live-event.json). The updated hero uses a close-up museum photograph of Hermes; its source and CC0 license are retained with the asset.
+**Functional baseline: `d144a09`, October 3.** Native-passkey approval, voice draft, and free RSVP flow are deployed. The real manager enrolled a native passkey, approved the exact $0 Open Together action, and Cue recorded matching Luma confirmation. [Native passkey and event evidence](../reports/performance/native-passkey-live-event.json). The updated hero uses a real Tom Cruise portrait as cinema inspiration; its photographer credit, source and CC BY-SA license are displayed and retained with the asset.
 
 **Verified hosted research baseline: `21377a8`, October 3.** A real Claude Code caller
 submitted one live research mission with explicit Stripe sandbox payment and
@@ -146,7 +146,7 @@ user-selected booking. Timings are single local observations, not guarantees.
 
 | Time | Show | Say only what the screen and evidence support |
 |---|---|---|
-| 0–15 s | Open the Cue marble-portrait home screen, then show an external agent calling CLI or MCP. | “An agent delegates one manager task across browser workers.” |
+| 0–15 s | Open the Cue cinematic home screen, then show an external agent calling CLI or MCP. | “An agent delegates one manager task across browser workers.” |
 | 15–35 s | Three lanes progressing, or the same saved live mission with its observation timestamp visible. | Name which run is live now and which results were prepared earlier. Show grounded Fiverr/Eventbrite results and Amazon's observed blocker if it persists. |
 | 35–60 s | Switch explicitly to the **fixture** planning mission. Lower $900 to $650 while preserving six passes. | “This labeled rehearsal demonstrates shared-budget revision.” The illustrative proposed plan changes from $788 to $588; old approvals become invalid. |
 | 60–75 s | Show the saved native-passkey approval and matching Open Together confirmation. | “This exact $0 action was approved on-device and confirmed by Luma.” Keep the Stripe sandbox service receipt separate. |

@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-10-03T21:47:18.041651+00:00",
+  "scope": "One user-requested Surfsky Amazon login retry after phone-number update",
+  "initial_http": 200,
+  "code_button": {
+    "visible": true,
+    "enabled": true,
+    "unobstructed": true,
+    "pointer_events": "auto",
+    "submission_type": "native form POST",
+    "automation_click_count": 1,
+    "result": "same login stage; no code input or visible error observed after click",
+    "response_http": "not_captured"
+  },
+  "authenticated_checkout": "unverified",
+  "merchant_orders": 0,
+  "credentials_entered_by_automation": false,
+  "session_end": "ten-minute time limit",
+  "cleanup": "confirmed",
+  "lane_released": true,
+  "private_session_or_account_data_in_report": false
+}

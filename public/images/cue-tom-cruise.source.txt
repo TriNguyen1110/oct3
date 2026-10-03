@@ -1,0 +1,12 @@
+Tom Cruise at the Mission: Impossible premiere, Cannes 2025.
+Photo: Harald Krichel / WikiPortraits
+License: CC BY-SA 4.0
+https://creativecommons.org/licenses/by-sa/4.0/
+Source: https://commons.wikimedia.org/wiki/File:Tom_Cruise-2428.jpg
+Original: https://upload.wikimedia.org/wikipedia/commons/b/b5/Tom_Cruise-2428.jpg
+
+Original 2615 x 3920 raster preserved byte-for-byte. The presentation crops the
+portrait and applies CSS grayscale, brightness, contrast and edge masking.
+The photograph and this adapted photographic presentation are provided under
+CC BY-SA 4.0. Next.js generates responsive optimized image versions.
+Cinema inspiration only; no endorsement or affiliation is asserted.

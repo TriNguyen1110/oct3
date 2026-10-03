@@ -79,11 +79,12 @@ runtime or component subscription was added. The original components take
 pattern inspiration from 21st.dev's [spotlight guidance](https://docs.21st.dev/blog/react-spotlight-effect-components)
 and [card collection guide](https://docs.21st.dev/blog/react-card-components).
 
-The cinematic hero uses a still, close-up museum photograph of Hermes: a Roman marble
-adaptation of a Classical Greek work. The Met provides the photograph under
-CC0. The original photograph stays intact; the page supplies responsive framing.
-[Asset](public/images/cue-hermes-marble.jpg),
-[source and license](public/images/cue-hermes-marble.source.txt).
+The cinematic hero uses a real close-up photograph of Tom Cruise at Cannes,
+credited to Harald Krichel / WikiPortraits under CC BY-SA 4.0. The source image
+stays intact; CSS supplies monochrome presentation and responsive framing.
+The photo is presented as cinema inspiration, with visible source and license
+links. [Asset](public/images/cue-tom-cruise.jpg),
+[source, presentation changes and license](public/images/cue-tom-cruise.source.txt).
 
 ## Stack and boundaries
 

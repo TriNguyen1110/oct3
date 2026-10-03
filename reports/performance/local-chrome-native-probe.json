@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-10-03T21:47:18.042010+00:00",
+  "source_commit": "7a2e95c",
+  "scope": "Actual consent-only local Chrome probe, no merchant integration",
+  "readiness_marker": "present_at_probe",
+  "native_permission_prompt_observed": true,
+  "probe_result": "permission_or_connection_failed",
+  "owned_tab_creation": "not_started",
+  "lease_released": true,
+  "native_attach_proven": false,
+  "note": "The native Allow prompt remained visible when inspected after the bounded connection attempt. Waiting for user to accept before retry."
+}
