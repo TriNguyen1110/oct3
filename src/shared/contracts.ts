@@ -62,9 +62,9 @@ export interface MissionInput {
   objective: string; currency: "USD"; purchase_budget_minor: number;
   deadline: string; headcount: number;
   requirements: {
-    amazon: { category: string; delivery_ref: string };
-    fiverr: { category: string; brief: string; due_date: string };
-    event_tickets: { event_url: string; date: string; quantity: number; attendee_ref: string };
+    amazon?: { category: string; delivery_ref: string };
+    fiverr?: { category: string; brief: string; due_date: string };
+    event_tickets?: { event_url: string; date: string; quantity: number; attendee_ref: string };
     food?: { query: string; fulfillment: "pickup" | "delivery"; location: string; quantity: number };
   };
 }

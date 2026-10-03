@@ -16,6 +16,11 @@ import { FoodMissionFields, defaultFoodRequest } from "@/components/food-mission
 import { PasskeyControl, confirmProposalWithPasskey, passkeyError } from "@/components/passkey-control";
 
 type IconName = "grid" | "arrow" | "chevron" | "check" | "clock" | "people" | "plus" | "sliders" | "link" | "code" | "activity" | "close" | "external" | "copy" | "shield" | "spark" | "box" | "ticket" | "design" | "warning";
+type MissionDraft = MissionInput & { requirements: MissionInput["requirements"] & {
+  amazon: NonNullable<MissionInput["requirements"]["amazon"]>;
+  fiverr: NonNullable<MissionInput["requirements"]["fiverr"]>;
+  event_tickets: NonNullable<MissionInput["requirements"]["event_tickets"]>;
+} };
 function Icon({ name, size = 18, className = "" }: { name: IconName; size?: number; className?: string }) {
   const paths: Record<IconName, React.ReactNode> = {
     grid: <><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></>,
@@ -53,7 +58,7 @@ export default function MissionDesk() {
   const [modal, setModal] = useState<"auth" | "new" | "budget" | "connections" | "result" | "connect" | "task" | "history" | "profile" | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [token, setToken] = useState("");
-  const [draft, setDraft] = useState<MissionInput>(() => ({ ...defaultInput, requirements: { ...defaultInput.requirements, food: defaultInput.requirements.food ?? { ...defaultFoodRequest } } }));
+  const [draft, setDraft] = useState<MissionDraft>(() => ({ ...defaultInput, requirements: { ...defaultInput.requirements, food: defaultInput.requirements.food ?? { ...defaultFoodRequest } } }));
   const [budget, setBudget] = useState("650");
   const [busy, setBusy] = useState(false);
   const [voiceBusy, setVoiceBusy] = useState(false);

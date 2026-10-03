@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { Evidence, Lane, MissionInput, Option } from "../shared/contracts";
 
 export function fixtureResearch(taskId: string, lane: Lane, input: MissionInput): { options: Option[]; evidence: Evidence[] } {
-  const source = lane === "amazon" ? "https://www.amazon.com/" : lane === "fiverr" ? "https://www.fiverr.com/" : lane === "food" ? "https://www.doordash.com/" : input.requirements.event_tickets.event_url;
+  const source = lane === "amazon" ? "https://www.amazon.com/" : lane === "fiverr" ? "https://www.fiverr.com/" : lane === "food" ? "https://www.doordash.com/" : input.requirements.event_tickets!.event_url;
   const templates: Record<Lane, Array<{ title: string; description: string; amount: number }>> = {
     amazon: [
       { title: "Complete booth supply kit", description: "Display stand, table cover, badge holders and print sleeves.", amount: 21800 },

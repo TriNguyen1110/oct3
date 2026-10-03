@@ -1,6 +1,6 @@
 import type { MissionInput, MissionView, Task } from "@/src/shared/contracts";
 
-export const defaultInput: MissionInput = {
+export const defaultInput: MissionInput & { requirements: Required<MissionInput["requirements"]> } = {
   objective: "Get our six-person team ready for the expo. Find booth supplies, a flyer designer, six event passes, and an inexpensive food pickup.",
   currency: "USD",
   purchase_budget_minor: 90000,

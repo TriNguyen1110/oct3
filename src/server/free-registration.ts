@@ -70,7 +70,7 @@ export function assertPreparedFreeRegistration(record: MissionRecord, task: Task
     || prepared.action_hash !== actionHash(record, task, proposal.id, prepared.snapshot, prepared.attendee, prepared.profile_hash)) {
     throw new AppError(409, "registration_action_changed", "The prepared registration no longer matches the exact private action reviewed by the manager.");
   }
-  assertSnapshot(prepared.snapshot, record.input.requirements.event_tickets.date);
+  assertSnapshot(prepared.snapshot, record.input.requirements.event_tickets!.date);
   return prepared;
 }
 
@@ -92,7 +92,7 @@ export async function prepareFreeRegistrationTask(taskId: string, principal: Pri
   assertMissionServicePaymentVerified(found);
   const task = found.view.tasks.find(item => item.id === taskId)!;
   if (found.view.mode !== "live" || found.view.revision !== expectedRevision || task.lane !== "event_tickets"
-    || found.input.requirements.event_tickets.event_url !== FREE_REGISTRATION_EVENT_URL
+    || found.input.requirements.event_tickets?.event_url !== FREE_REGISTRATION_EVENT_URL
     || found.input.requirements.event_tickets.quantity !== 1 || found.input.requirements.event_tickets.attendee_ref !== "manager") {
     throw new AppError(409, "registration_not_eligible", "This action requires the current paid live one-person OpenTogether mission and manager profile.");
   }
@@ -113,7 +113,7 @@ export async function prepareFreeRegistrationTask(taskId: string, principal: Pri
   if (!await acquireLane(principal.workspace_id, "event_tickets", owner)) throw new AppError(409, "registration_browser_busy", "The event browser is already in use.");
   try {
     const attemptKey = `${found.id}:${expectedRevision}:${taskId}:prepare:${randomUUID()}`;
-    const result = await prepareFreeRegistration({ task_id: taskId, source_url: FREE_REGISTRATION_EVENT_URL, attempt_key: attemptKey, expected_event_date: found.input.requirements.event_tickets.date });
+    const result = await prepareFreeRegistration({ task_id: taskId, source_url: FREE_REGISTRATION_EVENT_URL, attempt_key: attemptKey, expected_event_date: found.input.requirements.event_tickets!.date });
     if (!result.snapshot) {
       return await mutateRecord(found.id, principal.workspace_id, record => {
         if (record.view.revision !== expectedRevision) throw new AppError(409, "revision_conflict", "The mission changed while registration was inspected.");
@@ -218,7 +218,7 @@ export async function resumeFreeRegistrationTask(taskId: string, principal: Prin
     let result;
     try {
       result = await executeFreeRegistration({
-        task_id: taskId, source_url: FREE_REGISTRATION_EVENT_URL, expected_event_date: claimedRecord.input.requirements.event_tickets.date,
+        task_id: taskId, source_url: FREE_REGISTRATION_EVENT_URL, expected_event_date: claimedRecord.input.requirements.event_tickets!.date,
         attempt_key: attemptKey, snapshot: prepared.snapshot, attendee: prepared.attendee,
         authorization: { approved: true, proposal_id: exact.proposal_id, revision: exact.revision, reservation_id: held.id, attempt_key: attemptKey, action_hash: prepared.action_hash, expires_at: current.proposal!.expires_at },
       });

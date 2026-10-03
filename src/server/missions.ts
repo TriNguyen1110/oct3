@@ -51,7 +51,7 @@ function proposal(record: MissionRecord, task: Task, optionId: string): Proposal
   return {
     id: randomUUID(), task_id: task.id, revision: record.view.revision, option_id: option.id,
     merchant: option.merchant, title: option.title, source_url: option.source_url, quantity: option.quantity,
-    recipient_ref: task.lane === "amazon" ? record.input.requirements.amazon.delivery_ref : task.lane === "event_tickets" ? record.input.requirements.event_tickets.attendee_ref : "manager-brief",
+    recipient_ref: task.lane === "amazon" ? record.input.requirements.amazon!.delivery_ref : task.lane === "event_tickets" ? record.input.requirements.event_tickets!.attendee_ref : "manager-brief",
     deadline: record.input.deadline, subtotal_minor: option.amount_minor, tax_minor: 0, shipping_minor: 0, fees_minor: 0,
     total_minor: option.amount_minor, currency: "USD", expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
   };
@@ -92,7 +92,7 @@ export async function createMission(input: MissionInput, principal: Principal, k
       headcount: input.headcount, created_at: now, updated_at: now, mode,
       budget: { limit_minor: input.purchase_budget_minor, proposed_minor: 0, reserved_minor: 0, committed_minor: 0, uncertain_minor: 0, available_minor: input.purchase_budget_minor },
       service_payment: { status: mode === "fixture" ? "waived_fixture" : paymentReady ? "payment_required" : "not_configured", amount_minor: 50, currency: "USD", mode: mode === "fixture" ? "fixture" : "test" },
-      tasks: lanes.filter(lane => lane !== "food" || input.requirements.food).map(lane => ({ id: `${id}:${lane}`, lane, title: titles[lane], status: "queued", progress: "Waiting to start", options: [], evidence: [] })), evidence: [], blockers: [], next_actions: [], activity: [],
+      tasks: lanes.filter(lane => input.requirements[lane]).map(lane => ({ id: `${id}:${lane}`, lane, title: titles[lane], status: "queued", progress: "Waiting to start", options: [], evidence: [] })), evidence: [], blockers: [], next_actions: [], activity: [],
     },
   };
   activity(record, mode === "fixture"
@@ -128,7 +128,7 @@ export async function reviseMission(id: string, principal: Principal, changes: {
     if (validated.purchase_budget_minor < protectedSpend) throw new AppError(409, "allocated_budget", "The new budget is below committed or uncertain spending.");
     if (validated.headcount && validated.headcount !== record.input.headcount && record.view.tasks.some(x => x.status === "confirmed")) throw new AppError(409, "committed_headcount", "Headcount changes need manual reconciliation after a commitment.");
     record.input.purchase_budget_minor = validated.purchase_budget_minor;
-    if (validated.headcount) { record.input.headcount = validated.headcount; record.input.requirements.event_tickets.quantity = validated.headcount; record.view.headcount = validated.headcount; }
+    if (validated.headcount) { record.input.headcount = validated.headcount; if (record.input.requirements.event_tickets) record.input.requirements.event_tickets.quantity = validated.headcount; record.view.headcount = validated.headcount; }
     if (validated.deadline) { record.input.deadline = validated.deadline; record.view.deadline = validated.deadline; }
     record.view.revision++;
     for (const reservation of record.reservations) if (reservation.state === "reserved") reservation.state = "released";
