@@ -50,9 +50,32 @@ export async function researchDoorDash(input:ResearchTaskInput):Promise<Research
     await input.onProgress?.({task_id:input.task_id,lane:"food",at:new Date().toISOString(),message:"Opening Boba Guys' official Order Ahead page in the persistent food browser."});
     const run=await withSurfskyPage("food",signalFor(input),async page=>{
       await restrictFoodToReadOnly(page);
-      const visible=async(locator:Locator)=>{for(const candidate of await locator.all())if(await candidate.isVisible().catch(()=>false))return candidate;return undefined;};
+      const visible=async(locator:Locator)=>{
+        let fallback:Locator|undefined;
+        for(const candidate of await locator.all()){
+          if(!await candidate.isVisible().catch(()=>false))continue;
+          fallback??=candidate;
+          const onScreen=await candidate.evaluate(element=>{const box=element.getBoundingClientRect();return box.width>0&&box.height>0&&box.right>0&&box.bottom>0&&box.left<innerWidth&&box.top<innerHeight;}).catch(()=>false);
+          if(onScreen)return candidate;
+        }
+        return fallback;
+      };
       const waitVisible=async(locator:Locator,timeout=8_000)=>{const deadline=Date.now()+timeout;do{const candidate=await visible(locator);if(candidate)return candidate;await page.waitForTimeout(250);}while(Date.now()<deadline);return undefined;};
       const selectAndReadBack=async(label:RegExp)=>{
+        for(const select of await page.locator("select").all()){
+          if(!await select.isVisible().catch(()=>false))continue;
+          const option=await select.locator("option").evaluateAll((options,source)=>options.map(node=>({label:(node as HTMLOptionElement).label,value:(node as HTMLOptionElement).value})).find(option=>new RegExp(source,"i").test(option.label)),label.source);
+          if(!option)continue;
+          await select.selectOption({value:option.value});
+          if(await select.inputValue()!==option.value)throw new BrowserIssue("merchant_changed",`Square did not retain the observed ${label.source} selection.`);
+          return;
+        }
+        const control=await visible(page.getByRole("checkbox",{name:label}).or(page.getByRole("radio",{name:label})));
+        if(control){
+          if(!await control.isChecked())await control.check();
+          if(!await control.isChecked())throw new BrowserIssue("merchant_changed",`Square did not retain the observed ${label.source} selection.`);
+          return;
+        }
         const text=await waitVisible(page.getByText(label));if(!text)throw new BrowserIssue("merchant_changed",`The Classic Black form no longer exposes the observed ${label.source} choice.`);
         const semantic=text.locator("xpath=ancestor-or-self::*[@role='radio' or @role='checkbox' or @aria-pressed][1]");
         const field=text.locator("xpath=ancestor::label[.//input[@type='radio' or @type='checkbox']][1]").locator("input[type='radio'],input[type='checkbox']").first();
@@ -79,6 +102,8 @@ export async function researchDoorDash(input:ResearchTaskInput):Promise<Research
       if(await target.isVisible().catch(()=>false)){
         finderOpen=true;
         await target.fill(requirement.location);
+        const addressSuggestion=await waitVisible(page.getByText("580 20th Street, San Francisco, California, USA",{exact:true}),3_000);
+        if(addressSuggestion)await addressSuggestion.click();
       }
       if(!finderOpen)throw new BrowserIssue("merchant_changed","The location picker must be open so the exact Potrero address and selected store can be verified.");
       const potrero=await waitVisible(page.getByText("Boba Guys Potrero",{exact:true}));
@@ -90,11 +115,11 @@ export async function researchDoorDash(input:ResearchTaskInput):Promise<Research
         if(!await radio.isChecked().catch(()=>false))throw new BrowserIssue("merchant_changed","Square did not retain Boba Guys Potrero as the selected store.");
         const confirm=await waitVisible(page.getByRole("button",{name:/^(?:Confirm location|Update changes)$/}),3_000);if(!confirm)throw new BrowserIssue("merchant_changed","The location picker did not expose its observed confirmation control.");await confirm.click();
       }
-      let item=await waitVisible(page.getByText("Classic Black",{exact:true}),8_000);
-      if(!item){const category=await waitVisible(page.getByText("Build Your Drink",{exact:true}),2_000);if(category){await category.click();item=await waitVisible(page.getByText("Classic Black",{exact:true}),4_000);}}
+      let item=await visible(page.getByText("Classic Black",{exact:true}));
+      if(!item){const category=await waitVisible(page.getByText("Build Your Drink",{exact:true}),2_000);if(category){await category.click();item=await waitVisible(page.getByText("Classic Black",{exact:true}),8_000);}}
       if(!item)throw new BrowserIssue("merchant_changed","The official Potrero menu did not expose the observed Classic Black item.");
       await item.click();await page.waitForTimeout(1_000);
-      for(const choice of [/16oz ICED/i,/^Boba(?:\s|$)/i,/Organic Half \+ Half \(Clover\)/i,/50% \(recommended\)/i]){
+      for(const choice of [/16oz ICED/i,/^\s*Boba(?:\s|$)/i,/Organic Half \+ Half \(Clover\)/i,/50% \(recommended\)/i]){
         await selectAndReadBack(choice);
       }
       const add=await waitVisible(page.getByRole("button",{name:/Add to order\s+\$6\.60/i}),3_000);
@@ -102,11 +127,11 @@ export async function researchDoorDash(input:ResearchTaskInput):Promise<Research
       const menuProof=evidence(input,storeUrl,"Official Boba Guys pickup controls observed",`The page exposed the exact Boba Guys Potrero address and selected radio state, then the Classic Black form. The worker read back selected states for the requested controls and observed “Add to order $6.60”, without activating it. No prepared cart or checkout is claimed.`);observations.push(menuProof);
       const proof=evidence(input,storeUrl,"Classic Black item estimate",`Selected-state readback passed for 16oz ICED, Boba, Organic Half + Half (Clover), and 50% sweetness (recommended). The Add to order control displayed $6.60. Tax, final total, pickup time and availability require review.`);observations.push(proof);
       const total=configuredItemMinor*requirement.quantity;
-      const options:Option[]=[{id:id(input.task_id,storeUrl,"Classic Black",String(total)),title:"Classic Black",description:`Official Boba Guys pickup form showed a $6.60 item estimate. Suggested recipe: 16oz iced Classic Black with boba, Organic Half + Half (Clover), and 50% sweetness. Confirm the selected store, modifiers, tax, final total, availability and pickup time. This worker cannot place an order.`,source_url:storeUrl,merchant:"Boba Guys",amount_minor:total,currency:"USD",quantity:requirement.quantity,recommended:true,reason:"Observed menu controls and item estimate; selected-state and checkout verification remain incomplete.",evidence_ids:[menuProof.id,proof.id]}];
+      const options:Option[]=[{id:id(input.task_id,storeUrl,"Classic Black",String(total)),title:"Classic Black",description:`Official Boba Guys pickup form showed a $6.60 item estimate. Suggested recipe: 16oz iced Classic Black with boba, Organic Half + Half (Clover), and 50% sweetness. Confirm the selected store, modifiers, tax, final total, availability and pickup time. This worker cannot place an order.`,source_url:storeUrl,merchant:"Boba Guys",amount_minor:total,currency:"USD",quantity:requirement.quantity,recommended:true,reason:"Observed selected store, recipe controls and item estimate; cart, taxes and final checkout remain unverified.",evidence_ids:[menuProof.id,proof.id]}];
       return {options};
     });
     const message="Observed Classic Black pickup controls and a $6.60 item estimate. Confirm the selected store and modifiers; no cart or checkout was prepared.";
     await input.onProgress?.({task_id:input.task_id,lane:"food",at:new Date().toISOString(),message});
-    return {...run.value,evidence:observations,progress:message,elapsed_ms:Date.now()-started,cleanup:run.cleanup,blocker:"Selected drink options and final checkout need manager verification. Automatic food ordering is not implemented.",blocker_code:"checkout_handoff",...(run.cleanup==="unconfirmed"?{blocker:"Browser cleanup could not be confirmed. Reconcile the food worker before retrying.",blocker_code:"provider_error" as const}:{})};
+    return {...run.value,evidence:observations,progress:message,elapsed_ms:Date.now()-started,cleanup:run.cleanup,blocker:"Drink options prepared for review. Final checkout needs manager verification. Automatic food ordering is not implemented.",blocker_code:"checkout_handoff",...(run.cleanup==="unconfirmed"?{blocker:"Browser cleanup could not be confirmed. Reconcile the food worker before retrying.",blocker_code:"provider_error" as const}:{})};
   }catch(error){const issue=error instanceof BrowserIssue?error:new BrowserIssue(input.signal?.aborted?"cancelled":"provider_error","Boba Guys pickup preparation could not finish.");observations.push(evidence(input,storeUrl,"Boba Guys pickup needs attention",`${issue.message} No checkout, order or payment action was submitted. DoorDash fallback source: ${doorDashUrl}`));return {options:[],evidence:observations,blocker:issue.message,blocker_code:issue.code,progress:issue.message,elapsed_ms:Date.now()-started,cleanup:issue.cleanup};}
 }

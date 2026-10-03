@@ -402,6 +402,7 @@ function TaskDetail({ task, mission, onPrepare, preview, mode, busy, onAction }:
   const [passkeyReady, setPasskeyReady] = useState(false);
   const proposal = task.proposal;
   const freeRegistration = proposal?.action_type === "free_registration";
+  const confirmationEmailObserved = task.status === "confirmed" && !!task.confirmation_ref && task.evidence.some(item => item.kind === "observation" && item.mode === "live" && item.title === "Luma confirmation email received" && item.proposal_id === proposal?.id && item.revision === proposal?.revision && item.confirmation_ref === task.confirmation_ref);
   const knownEvent = [proposal?.source_url, task.links?.preview_url, ...task.options.map(option => option.source_url), ...task.evidence.map(item => item.source_url)].includes(FREE_REGISTRATION_EVENT_URL);
   const canPrepare = !preview && mode === "live" && mission.service_payment.status === "paid" && task.lane === "event_tickets" && mission.headcount === 1 && knownEvent && !["researching", "executing", "confirmed"].includes(task.status) && !(freeRegistration && task.status === "needs_human") && mission.budget.uncertain_minor === 0;
   const providerPreview = safeUrl(task.links?.preview_url ?? (preview ? proposal?.source_url ?? task.options[0]?.source_url : undefined));
@@ -413,7 +414,7 @@ function TaskDetail({ task, mission, onPrepare, preview, mode, busy, onAction }:
     </div>
     {task.lane === "food" && <p className="field-hint food-research-note">Food research only. Menu prices are estimates, and checkout totals and availability are not verified. Opening a menu does not place an order.</p>}
     {providerPreview && task.status !== "confirmed" && <p className="field-hint">{task.links?.preview_kind === "checkout_preview" ? "Review the prepared checkout and exact plan before approving." : "This opens the provider page. It is not a confirmed order or a prepared checkout."} The provider may ask you to sign in.</p>}
-    {mode === "live" && freeRegistration && task.status === "confirmed" && <p className="field-hint">Luma reported an approved ticket. Confirmation email delivery has not been verified. The event link opens the public event page, not your personal ticket.</p>}
+    {mode === "live" && freeRegistration && task.status === "confirmed" && <p className="field-hint">{confirmationEmailObserved ? "Luma approved your ticket, and its confirmation email was found in your inbox. Open that email for your personal ticket." : "Luma reported an approved ticket. Confirmation email delivery has not been verified. The event link opens the public event page, not your personal ticket."}</p>}
     {task.status === "confirmed" && !task.links?.receipt_url && <p className="field-hint">{mode !== "live" ? "Example outcome. No real merchant receipt exists." : "A merchant receipt link has not been captured yet."}</p>}
     {task.blocker && <div className="inline-notice error"><Icon name="warning" size={18}/><span>{task.blocker}</span></div>}
     {canPrepare && <div className="registration-prepare"><button className="button secondary full" disabled={busy} onClick={() => void onPrepare()}>{busy ? "Preparing free RSVP…" : "Prepare free RSVP"}</button><p className="field-hint">Read-only preparation for one free ticket at OpenTogether. No attendee fields are filled and no registration is submitted.</p></div>}

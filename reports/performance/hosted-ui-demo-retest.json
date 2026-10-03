@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-10-03T21:58:51.632Z",
+  "scope": "Real hosted authenticated read-only UI",
+  "viewports": [
+    {
+      "width": 1440,
+      "elapsed_ms": 3606,
+      "review_opened": true,
+      "history_count": 5,
+      "history_selection": true,
+      "overflow": false,
+      "page_errors": 0
+    },
+    {
+      "width": 390,
+      "elapsed_ms": 2458,
+      "review_opened": true,
+      "history_count": 5,
+      "history_selection": true,
+      "overflow": false,
+      "page_errors": 0
+    }
+  ],
+  "mutations": 0
+}

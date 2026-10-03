@@ -1,0 +1,21 @@
+Apollo Lykeios, SMK accession KAS607
+SMK — National Gallery of Denmark, Royal Cast Collection
+Plaster cast of a classical sculpture. Museum attribution: Unknown.
+
+Object: https://open.smk.dk/artwork/image/KAS607
+Museum API: https://api.smk.dk/api/v1/art/?object_number=KAS607
+Original 3D scan: https://api.smk.dk/api/v1/download-3d/m900p030d_KAS607_small.stl
+Preview photograph: https://iip-thumb.smk.dk/iiif/jp2/9g54xn351_KAS607_-_Bust_of_the_Apollo_Lykeios.tif.jp2/full/!1024,/0/default.jpg
+Museum rights: public_domain=true
+Public Domain Mark 1.0: https://creativecommons.org/publicdomain/mark/1.0/
+
+This is an actual volumetric museum scan, not a photograph on a plane.
+Original scan: 200000 vertices / 399996 triangles, 19999884 bytes.
+Presentation derivative: quadric simplification to65000 triangles /32502 vertices,
+rotated from Z-up to Y-up, centered and normalized to2.8units tall, exported GLB.
+Local tooling: trimesh + fast-simplification. Geometry is rendered using Three.js;
+cream material and cinematic lights are app presentation, not museum texture.
+No synthetic face generation or celebrity likeness was used.
+Original SHA256: bf367ca2bd3362b40c9f4621fc8bb8c38c736197b810dd4ece43105bd703163e
+Derivative SHA256: d71b1b8b79d3208ccdb99b71edca58d1b6bfa238c86e5e827ddd35bd4f4fd222
+GLB bytes: 1170804

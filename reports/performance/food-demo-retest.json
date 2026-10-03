@@ -1,0 +1,200 @@
+{
+  "acquired": true,
+  "result": {
+    "options": [],
+    "evidence": [
+      {
+        "id": "c4b4809d47c9ff64e6258b2e",
+        "task_id": "food-release-smoke",
+        "source_url": "https://boba-guys.square.site/",
+        "observed_at": "2026-10-03T21:58:43.675Z",
+        "title": "Boba Guys pickup needs attention",
+        "detail": "The location search did not expose the observed Boba Guys Potrero result. No checkout, order or payment action was submitted. DoorDash fallback source: https://www.doordash.com/store/boba-guys-san-francisco-880283/?pickup=true",
+        "mode": "live",
+        "kind": "observation"
+      }
+    ],
+    "blocker": "The location search did not expose the observed Boba Guys Potrero result.",
+    "blocker_code": "merchant_changed",
+    "progress": "The location search did not expose the observed Boba Guys Potrero result.",
+    "elapsed_ms": 29888,
+    "cleanup": "confirmed"
+  },
+  "lease_released": true,
+  "stopped": {
+    "confirmed": true,
+    "detail": "The exact saved lane profile is stopped."
+  },
+  "checked_at": "2026-10-03T21:59:45.266088+00:00",
+  "scope": "Actual bounded Surfsky food adapter, one boba pickup near58020th Street",
+  "safety": {
+    "strict_read_only_guard": true,
+    "cart_checkout_payment_actions": 0
+  },
+  "after_fix_actual": {
+    "acquired": true,
+    "result": {
+      "options": [],
+      "evidence": [
+        {
+          "id": "dd4c5412c9f11dee8aabba11",
+          "task_id": "food-release-smoke",
+          "source_url": "https://boba-guys.square.site/",
+          "observed_at": "2026-10-03T22:00:53.699Z",
+          "title": "Boba Guys pickup needs attention",
+          "detail": "The merchant navigation or page inspection failed. No checkout, order or payment action was submitted. DoorDash fallback source: https://www.doordash.com/store/boba-guys-san-francisco-880283/?pickup=true",
+          "mode": "live",
+          "kind": "observation"
+        }
+      ],
+      "blocker": "The merchant navigation or page inspection failed.",
+      "blocker_code": "provider_error",
+      "progress": "The merchant navigation or page inspection failed.",
+      "elapsed_ms": 51052,
+      "cleanup": "confirmed"
+    },
+    "lease_released": true,
+    "stopped": {
+      "confirmed": true,
+      "detail": "The exact saved lane profile is stopped."
+    }
+  },
+  "diagnosis": {
+    "http_status": 200,
+    "exact_address_suggestion_observed": true,
+    "suggestion": "580 20th Street, San Francisco, California, USA",
+    "root_cause": "Address autocomplete suggestion was left unselected, retaining distant unsorted store list.",
+    "cleanup": "confirmed"
+  },
+  "fix": {
+    "exact_suggestion_selection": true,
+    "strict_network_guard_changed": false,
+    "selected_state_regression_passed": 5
+  },
+  "instrumented_final_actual": {
+    "stage": {
+      "proof_stage": "item",
+      "error_kind": "TimeoutError"
+    },
+    "acquired": true,
+    "result": {
+      "options": [],
+      "evidence": [
+        {
+          "id": "a0bffc8ff58ac47a34716520",
+          "task_id": "food-release-smoke",
+          "source_url": "https://boba-guys.square.site/",
+          "observed_at": "2026-10-03T22:02:06.576Z",
+          "title": "Boba Guys pickup needs attention",
+          "detail": "The merchant navigation or page inspection failed. No checkout, order or payment action was submitted. DoorDash fallback source: https://www.doordash.com/store/boba-guys-san-francisco-880283/?pickup=true",
+          "mode": "live",
+          "kind": "observation"
+        }
+      ],
+      "blocker": "The merchant navigation or page inspection failed.",
+      "blocker_code": "provider_error",
+      "progress": "The merchant navigation or page inspection failed.",
+      "elapsed_ms": 50336,
+      "cleanup": "confirmed"
+    },
+    "lease_released": true,
+    "stopped": {
+      "confirmed": true,
+      "detail": "The exact saved lane profile is stopped."
+    }
+  },
+  "conclusion": "Actual selected store and four recipe controls verified; one $6.60 item estimate prepared. Add to order was not clicked; no cart, checkout, payment or order. Final checkout remains an explicit manager handoff.",
+  "responsive_category_fix": {
+    "cause": "CSS-visible duplicate category was outside viewport and never became actionable. Prefer viewport matching element before fallback.",
+    "regression_checks_passed": 6,
+    "actual": {
+      "acquired": true,
+      "result": {
+        "options": [],
+        "evidence": [
+          {
+            "id": "641397086905786e46554b87",
+            "task_id": "food-release-smoke",
+            "source_url": "https://boba-guys.square.site/",
+            "observed_at": "2026-10-03T22:06:01.904Z",
+            "title": "Boba Guys pickup needs attention",
+            "detail": "The Classic Black form no longer exposes the observed 16oz ICED choice. No checkout, order or payment action was submitted. DoorDash fallback source: https://www.doordash.com/store/boba-guys-san-francisco-880283/?pickup=true",
+            "mode": "live",
+            "kind": "observation"
+          }
+        ],
+        "blocker": "The Classic Black form no longer exposes the observed 16oz ICED choice.",
+        "blocker_code": "merchant_changed",
+        "progress": "The Classic Black form no longer exposes the observed 16oz ICED choice.",
+        "elapsed_ms": 54186,
+        "cleanup": "confirmed"
+      },
+      "lease_released": true,
+      "stopped": {
+        "confirmed": true,
+        "detail": "The exact saved lane profile is stopped."
+      }
+    }
+  },
+  "final_actual_success": {
+    "acquired": true,
+    "result": {
+      "options": [
+        {
+          "id": "529bf388026aa382a66e3a76",
+          "title": "Classic Black",
+          "description": "Official Boba Guys pickup form showed a $6.60 item estimate. Suggested recipe: 16oz iced Classic Black with boba, Organic Half + Half (Clover), and 50% sweetness. Confirm the selected store, modifiers, tax, final total, availability and pickup time. This worker cannot place an order.",
+          "source_url": "https://boba-guys.square.site/",
+          "merchant": "Boba Guys",
+          "amount_minor": 660,
+          "currency": "USD",
+          "quantity": 1,
+          "recommended": true,
+          "reason": "Observed menu controls and item estimate; selected-state and checkout verification remain incomplete.",
+          "evidence_ids": [
+            "5fb7e0285e5f55010aa2b908",
+            "9c66473007d4c3953838c2e3"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "5fb7e0285e5f55010aa2b908",
+          "task_id": "food-release-smoke",
+          "source_url": "https://boba-guys.square.site/",
+          "observed_at": "2026-10-03T22:11:00.711Z",
+          "title": "Official Boba Guys pickup controls observed",
+          "detail": "The page exposed the exact Boba Guys Potrero address and selected radio state, then the Classic Black form. The worker read back selected states for the requested controls and observed \u201cAdd to order $6.60\u201d, without activating it. No prepared cart or checkout is claimed.",
+          "mode": "live",
+          "kind": "observation"
+        },
+        {
+          "id": "9c66473007d4c3953838c2e3",
+          "task_id": "food-release-smoke",
+          "source_url": "https://boba-guys.square.site/",
+          "observed_at": "2026-10-03T22:11:00.712Z",
+          "title": "Classic Black item estimate",
+          "detail": "Selected-state readback passed for 16oz ICED, Boba, Organic Half + Half (Clover), and 50% sweetness (recommended). The Add to order control displayed $6.60. Tax, final total, pickup time and availability require review.",
+          "mode": "live",
+          "kind": "observation"
+        }
+      ],
+      "progress": "Observed Classic Black pickup controls and a $6.60 item estimate. Confirm the selected store and modifiers; no cart or checkout was prepared.",
+      "elapsed_ms": 52971,
+      "cleanup": "confirmed",
+      "blocker": "Selected drink options and final checkout need manager verification. Automatic food ordering is not implemented.",
+      "blocker_code": "checkout_handoff"
+    },
+    "lease_released": true,
+    "stopped": {
+      "confirmed": true,
+      "detail": "The exact saved lane profile is stopped."
+    }
+  },
+  "regression": {
+    "selected_state_checks": 8,
+    "duration_ms": 46447,
+    "typecheck": "passed",
+    "strict_network_guard": "unchanged"
+  }
+}

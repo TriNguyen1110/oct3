@@ -24,7 +24,7 @@
   "attempt_state": "finished",
   "receipt_state": "not_captured",
   "receipt_present": false,
-  "email_delivery_verified": false,
+  "email_delivery_verified": true,
   "provider_email_status_stored": false,
   "provider_read_only": {
     "http": 200,
@@ -50,5 +50,41 @@
     "cleanup": "confirmed",
     "profile_stopped": true,
     "lease_released": true
-  }
+  },
+  "gmail_profile_check": {
+    "checked_at": "2026-10-03T22:07:16.987Z",
+    "profile_read": true,
+    "matches_luma_recipient": true,
+    "matches_amazon_screenshot_account": false,
+    "message_reads": 0,
+    "mailbox_searches": 0
+  },
+  "gmail_scoped_lookup": {
+    "checked_at": "2026-10-03T22:07:47.205Z",
+    "window_start": "2026-10-03T21:22:00.000Z",
+    "window_end": "2026-10-03T22:07:47.205Z",
+    "max_results": 10,
+    "queries": 1,
+    "metadata_reads": 1,
+    "body_reads": 1,
+    "pagination_used": false,
+    "more_results": false,
+    "relevant_messages": [
+      {
+        "event_title": "Open Together",
+        "received_at": "2026-10-03T21:23:08.000Z",
+        "sender_luma_domain": true,
+        "in_inbox": true,
+        "in_spam": false,
+        "in_trash": false,
+        "classification": "registration_confirmation_received",
+        "body_checked": true
+      }
+    ],
+    "noneligible_count": 0,
+    "external_actions": 0
+  },
+  "email_delivery_verified_at_initial_database_check": false,
+  "email_delivery_verified_at": "2026-10-03T22:07:47.205Z",
+  "cue_email_observation_persisted": true
 }
