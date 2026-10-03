@@ -82,3 +82,16 @@ If no plan fits, say so. A Fiverr shortlist is not a hire; a cart is not an orde
 authorization is not a booking. Capture provider evidence before claiming
 completion. Label fixtures, replays and test transactions. Preserve the last hour
 for verification, rehearsal and submission.
+
+## Latest product commitments
+
+Give the caller a dashboard link and each worker’s review/provider-preview link
+before ordering. Return observed confirmation and merchant receipt links after
+completion; missing evidence stays explicit. Local receipt presentation is wired,
+but live merchant execution/receipt capture is still unfinished.
+
+The site now exposes saved mission history through the existing authenticated
+workspace store. Once Supabase credentials and schema are ready, the same view
+reads cloud history. Stretch only: manager-editable saved preferences (usual
+budgets, preferred vendors, private delivery reference), then explicit import of
+past merchant data. Do not infer standing purchase approval from preferences.

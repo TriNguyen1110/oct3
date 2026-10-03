@@ -7,6 +7,9 @@ export interface Evidence {
   id: string; task_id: string; source_url: string; observed_at: string;
   title: string; detail: string; mode: EvidenceMode;
   artifact_url?: string; confirmation_ref?: string;
+  /** Set only by an adapter after observing the corresponding provider page. */
+  kind?: "observation" | "checkout_preview" | "merchant_confirmation" | "merchant_receipt";
+  proposal_id?: string; revision?: number;
 }
 export interface Option {
   id: string; title: string; description: string; source_url: string; merchant: string;
@@ -25,10 +28,19 @@ export interface Approval {
   state: "pending" | "approved" | "rejected" | "stale";
   approved_at?: string; link_state?: string; link_approval_url?: string;
 }
+export interface TaskLinks {
+  review_url: string;
+  preview_url: string | null;
+  preview_kind: "provider_page" | "checkout_preview" | "unavailable";
+  confirmation_url: string | null;
+  receipt_url: string | null;
+  receipt_state: "not_ready" | "available" | "not_captured" | "example";
+}
 export interface Task {
   id: string; lane: Lane; title: string; status: TaskStatus; progress: string;
   options: Option[]; proposal?: Proposal; approval?: Approval; evidence: Evidence[];
   blocker?: string; confirmation_ref?: string; started_at?: string; completed_at?: string;
+  links?: TaskLinks;
 }
 export interface Budget {
   limit_minor: number; proposed_minor: number; reserved_minor: number;
@@ -58,5 +70,6 @@ export interface MissionView {
   mode: EvidenceMode; budget: Budget; service_payment: ServicePayment;
   tasks: Task[]; evidence: Evidence[]; blockers: string[]; next_actions: string[];
   activity: Activity[];
+  dashboard_url?: string; result_url?: string;
 }
 export interface RuntimeReadiness { service: string; ready: boolean; detail: string }

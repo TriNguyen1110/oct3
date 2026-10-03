@@ -1,3 +1,4 @@
+import { presentMission } from "../../src/server/presentation";
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { runMissionResearch } from "../../src/server/research";
@@ -10,6 +11,6 @@ export default defineTool({
     const workspace = ctx.session.auth.current?.attributes.workspace_id;
     if (typeof workspace !== "string") throw new Error("Authenticated workspace required");
     const record = await findTask(task_id, workspace);
-    return runMissionResearch(record.id, workspace, task_id);
+    return presentMission(await runMissionResearch(record.id, workspace, task_id));
   },
 });

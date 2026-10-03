@@ -139,3 +139,12 @@ view. No synthetic receipt, email or DOM change represents merchant completion.
    the selected Amazon item and Fiverr order. Reuse observed component tools.
 6. Rehearse approved real actions, record references/latencies, then freeze the
    script. Keep current research/hand-off mode as a labeled fallback.
+
+## User handoff links
+
+The caller session is instructed to share the returned dashboard and worker
+review/provider-preview links before any commitment, then recorded confirmation
+and receipt links after completion. The dashboard opens the precise mission and
+worker after manager sign-in. Past missions reopens the saved workspace history.
+Missing receipt links remain explicit; current merchant execution is still a
+handoff and cannot produce a real receipt yet.

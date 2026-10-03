@@ -59,7 +59,7 @@ export default function MissionDesk() {
   const [mission, setMission] = useState<MissionView>(() => createPreview());
   const [authenticated, setAuthenticated] = useState(false);
   const [services, setServices] = useState<RuntimeReadiness[]>([]);
-  const [modal, setModal] = useState<"auth" | "new" | "budget" | "connections" | "result" | "connect" | "task" | null>(null);
+  const [modal, setModal] = useState<"auth" | "new" | "budget" | "connections" | "result" | "connect" | "task" | "history" | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [token, setToken] = useState("");
   const [draft, setDraft] = useState<MissionInput>(defaultInput);
@@ -71,6 +71,10 @@ export default function MissionDesk() {
   const [createMode, setCreateMode] = useState<"fixture" | "live">("fixture");
   const [copied, setCopied] = useState(false);
   const pendingSubmission = useRef<{ body: string; key: string } | null>(null);
+  const landing = useRef<{ missionId: string; taskId: string | null } | null>(null);
+  const [linkedRevision, setLinkedRevision] = useState<number | null>(null);
+  const [missionError, setMissionError] = useState<string | null>(null);
+  const [history, setHistory] = useState<MissionView[]>([]);
   const preview = mission.mission_id.startsWith("preview-");
   const selectedTask = mission.tasks.find(task => task.id === selectedTaskId);
 
@@ -78,31 +82,54 @@ export default function MissionDesk() {
     try { const response = await api<{ services: RuntimeReadiness[] }>("/api/readiness"); setServices(response.services ?? []); } catch { /* The access screen explains unconfigured connections. */ }
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    api<{ authenticated: boolean; role?: string }>("/api/auth").then(async result => {
-      if (!active || !result.authenticated) return;
-      setAuthenticated(true);
-      void refreshServices();
-      const latest = await api<{ mission: MissionView | null }>("/api/missions?latest=1");
-      if (active && latest.mission) setMission(latest.mission);
-    }).catch(() => {});
-    return () => { active = false; };
-  }, [refreshServices]);
+  const loadLandingMission = useCallback(async () => {
+    const target = landing.current;
+    const next = target
+      ? await api<MissionView>(`/api/missions/${encodeURIComponent(target.missionId)}`)
+      : (await api<{ mission: MissionView | null }>("/api/missions?latest=1")).mission;
+    if (!next) return false;
+    setMission(next); setMissionError(null);
+    if (target?.taskId) {
+      if (next.tasks.some(task => task.id === target.taskId)) {
+        setSelectedTaskId(target.taskId); setModal("task");
+      } else { setModal(null); setMissionError("This worker link is not part of the requested mission. Choose a worker below."); }
+    } else setModal(null);
+    return true;
+  }, []);
 
   useEffect(() => {
-    if (!authenticated) return;
+    let active = true;
+    const params = new URLSearchParams(window.location.search);
+    const missionId = params.get("mission");
+    if (missionId) {
+      if (!/^[a-f0-9-]{36}$/i.test(missionId)) { setMissionError("This mission link is invalid."); return; }
+      landing.current = { missionId, taskId: params.get("task") };
+      const revision = Number(params.get("revision"));
+      if (Number.isSafeInteger(revision) && revision > 0) setLinkedRevision(revision);
+    }
+    api<{ authenticated: boolean; role?: string }>("/api/auth").then(async result => {
+      if (!active) return;
+      if (!result.authenticated) { if (landing.current) setModal("auth"); return; }
+      setAuthenticated(true); void refreshServices();
+      await loadLandingMission();
+    }).catch(cause => { if (active) setMissionError(cause instanceof Error ? cause.message : "Couldn't open this mission."); });
+    return () => { active = false; };
+  }, [refreshServices, loadLandingMission]);
+
+  useEffect(() => {
+    if (!authenticated || missionError) return;
     let active = true;
     const refresh = async () => {
       try {
-        const fresh = preview ? (await api<{ mission: MissionView | null }>("/api/missions?latest=1")).mission : await api<MissionView>(`/api/missions/${encodeURIComponent(mission.mission_id)}`);
+        const targetId = preview ? landing.current?.missionId : mission.mission_id;
+        const fresh = targetId ? await api<MissionView>(`/api/missions/${encodeURIComponent(targetId)}`) : (await api<{ mission: MissionView | null }>("/api/missions?latest=1")).mission;
         if (active && fresh) { setMission(previous => previous.mission_id !== fresh.mission_id || fresh.revision > previous.revision || (fresh.revision === previous.revision && fresh.updated_at >= previous.updated_at) ? fresh : previous); setOnline(true); }
       }
       catch (cause) { if (active) { setOnline(false); if (cause instanceof ApiError && cause.status === 401) setAuthenticated(false); } }
     };
     const timer = setInterval(refresh, 3000);
     return () => { active = false; clearInterval(timer); };
-  }, [mission.mission_id, preview, authenticated]);
+  }, [mission.mission_id, preview, authenticated, missionError]);
 
   useEffect(() => { if (!toast) return; const timeout = setTimeout(() => setToast(null), 5500); return () => clearTimeout(timeout); }, [toast]);
   const open = (next: typeof modal) => { setError(null); setModal(next); };
@@ -114,8 +141,7 @@ export default function MissionDesk() {
     try {
       await api("/api/auth", { method: "POST", body: JSON.stringify({ token, role: "manager" }) });
       setToken(""); setAuthenticated(true); await refreshServices();
-      const latest = await api<{ mission: MissionView | null }>("/api/missions?latest=1");
-      if (latest.mission) { setMission(latest.mission); setModal(null); } else setModal("new");
+      if (!await loadLandingMission()) setModal("new");
       setToast("Manager access connected.");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn't connect manager access."); }
     finally { setBusy(false); }
@@ -130,7 +156,7 @@ export default function MissionDesk() {
       if (!pendingSubmission.current || pendingSubmission.current.body !== body) pendingSubmission.current = { body, key: crypto.randomUUID() };
       const created = await api<MissionView>("/api/missions", { method: "POST", headers: { "Idempotency-Key": pendingSubmission.current.key }, body });
       pendingSubmission.current = null;
-      setMission(created); setModal(null); setToast(createMode === "fixture" ? "Preview run created. All results will be labeled as examples." : "Mission dispatched. Your workers are on it.");
+      selectMission(created); setToast(createMode === "fixture" ? "Preview run created. All results will be labeled as examples." : "Mission dispatched. Your workers are on it.");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn't start this mission."); }
     finally { setBusy(false); }
   }
@@ -158,6 +184,28 @@ export default function MissionDesk() {
     finally { setBusy(false); }
   }
 
+  function selectMission(next: MissionView) {
+    landing.current = null; setLinkedRevision(null); setMissionError(null);
+    setMission(next); setSelectedTaskId(null); setModal(null);
+    const url = new URL(window.location.href);
+    url.search = new URLSearchParams({ mission: next.mission_id }).toString();
+    window.history.replaceState(null, "", url);
+  }
+
+  async function openHistory() {
+    if (!authenticated) { open("auth"); return; }
+    open("history"); setBusy(true);
+    try { setHistory((await api<{ missions: MissionView[] }>("/api/missions")).missions); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn't load past missions."); }
+    finally { setBusy(false); }
+  }
+
+  async function copyDashboard() {
+    if (!mission.dashboard_url) return;
+    try { await navigator.clipboard.writeText(mission.dashboard_url); setToast("Dashboard link copied. Manager sign-in is required."); }
+    catch { setToast("Copy is unavailable. Your agent result includes the dashboard link."); }
+  }
+
   async function copyResult() {
     try { await navigator.clipboard.writeText(JSON.stringify(mission, null, 2)); setCopied(true); setTimeout(() => setCopied(false), 2000); }
     catch { setError("Copy isn't available in this browser. Select the result text below."); }
@@ -177,6 +225,7 @@ export default function MissionDesk() {
       <nav aria-label="Main navigation">
         <button className="nav-item active" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><Icon name="grid"/>Mission desk<span className="nav-count">1</span></button>
         <button className="nav-item" onClick={() => document.getElementById("activity")?.scrollIntoView({ behavior: "smooth", block: "center" })}><Icon name="activity"/>Activity</button>
+        <button className="nav-item" onClick={() => void openHistory()}><Icon name="clock"/>Past missions</button>
         <button className="nav-item" onClick={() => open("connect")}><Icon name="code"/>Connect your agent<Icon name="external" size={12}/></button>
       </nav>
       <div className="sidebar-note"><div className="note-symbol"><Icon name="spark" size={21}/></div><p>A brief from your agent.<br/>A team to get it done.</p><span>Three workers. One shared plan.</span></div>
@@ -199,10 +248,14 @@ export default function MissionDesk() {
           <li className="capability capability-travel"><Icon name="ticket" size={20}/><div><strong>Travel</strong><span>Events &amp; tickets</span></div></li>
         </ul>
 
+        {missionError && <div className="inline-notice error" role="alert"><Icon name="warning" size={17}/>{missionError}</div>}
+        {linkedRevision !== null && !preview && linkedRevision !== mission.revision && <div className="inline-notice" role="status"><Icon name="warning" size={17}/>This link was for revision {linkedRevision}. You’re reviewing the current plan, revision {mission.revision}.</div>}
+        {landing.current && preview && !authenticated && <div className="inline-notice"><Icon name="shield" size={17}/>Sign in to view the mission your agent shared.</div>}
+
         <section className="mission-brief" aria-labelledby="mission-title">
           <div className="mission-heading"><div className="mission-symbol"><Icon name="spark" size={22}/></div><div><div className="brief-eyebrow">{preview ? "EXAMPLE MISSION" : "CURRENT MISSION"}<span>REV {String(mission.revision).padStart(2, "0")}</span></div><h2 id="mission-title">{/\bexpo\b/i.test(mission.objective) ? "Get the team expo-ready." : "Your mission, in motion."}</h2></div><span className="mission-status"><span className={workingCount > 0 ? "pulse" : ""}/>{mission.status === "completed" ? "Mission complete" : workingCount ? `${workingCount} workers active` : mission.status === "needs_attention" ? "Needs your attention" : needsReview ? "Ready for your review" : "In progress"}</span></div>
           <p className="mission-objective">{mission.objective}</p>
-          <div className="mission-facts"><span><Icon name="people" size={15}/>{mission.headcount} teammates</span><span><Icon name="clock" size={15}/>By {readableDate(mission.deadline)}</span><span><Icon name="shield" size={15}/>You approve every commitment</span><button onClick={() => { setBudget(String(mission.budget.limit_minor / 100)); open("budget"); }}><Icon name="sliders" size={14}/>Edit constraints</button></div>
+          <div className="mission-facts"><span><Icon name="people" size={15}/>{mission.headcount} teammates</span><span><Icon name="clock" size={15}/>By {readableDate(mission.deadline)}</span><span><Icon name="shield" size={15}/>You approve every commitment</span>{!preview && mission.dashboard_url && <button onClick={() => void copyDashboard()}><Icon name="link" size={14}/>Copy dashboard link</button>}<button onClick={() => { setBudget(String(mission.budget.limit_minor / 100)); open("budget"); }}><Icon name="sliders" size={14}/>Edit constraints</button></div>
         </section>
 
         {!online && <div className="inline-notice error"><Icon name="warning" size={17}/>Updates paused. Showing the last saved mission state.</div>}
@@ -242,6 +295,8 @@ export default function MissionDesk() {
 
     {modal === "new" && <Modal title="What needs doing?" onClose={close} wide><p className="modal-description">One brief for three workers. Set the boundaries, then let them find a plan.</p><form onSubmit={createMission}><label className="field">The brief<textarea value={draft.objective} onChange={event => setDraft({ ...draft, objective: event.target.value })} rows={3} required/></label><div className="form-row"><label className="field">Purchase budget · USD<input type="number" min="1" step="0.01" value={draft.purchase_budget_minor / 100} onChange={event => setDraft({ ...draft, purchase_budget_minor: Math.round(Number(event.target.value) * 100) })} required/></label><label className="field">Team size<input type="number" min="1" max="50" value={draft.headcount} onChange={event => setDraft({ ...draft, headcount: Number(event.target.value) })} required/></label></div><label className="field">Event page URL<input type="url" value={draft.requirements.event_tickets.event_url} placeholder="https://eventbrite.com/e/your-event" onChange={event => setDraft({ ...draft, requirements: { ...draft.requirements, event_tickets: { ...draft.requirements.event_tickets, event_url: event.target.value } } })} required={createMode === "live"}/></label><div className="form-row"><label className="field">Supplies to find<input value={draft.requirements.amazon.category} onChange={event => setDraft({ ...draft, requirements: { ...draft.requirements, amazon: { ...draft.requirements.amazon, category: event.target.value } } })} required/></label><label className="field">Needed by<input type="date" value={draft.deadline.slice(0, 10)} onChange={event => setDraft({ ...draft, deadline: `${event.target.value}T09:00:00-07:00`, requirements: { ...draft.requirements, event_tickets: { ...draft.requirements.event_tickets, date: `${event.target.value}T09:00:00-07:00` } } })} required/></label></div><div className="mode-picker" role="group" aria-label="Mission mode"><button type="button" className={createMode === "fixture" ? "selected" : ""} onClick={() => setCreateMode("fixture")}><strong>Example run</strong><span>Explore the flow with labeled fixtures</span></button><button type="button" className={createMode === "live" ? "selected" : ""} onClick={() => setCreateMode("live")}><strong>Live workers</strong><span>Research the actual sites</span></button></div><p className="field-hint">{createMode === "fixture" ? "Example data only. No actual site activity or purchases." : "Research does not purchase anything. Every commitment requires your review."} The service fee is separate from your purchase budget.</p>{error && <p className="form-error" role="alert">{error}</p>}<button className="button primary full" type="submit" disabled={busy}>{busy ? "Starting mission…" : createMode === "fixture" ? "Start example mission" : "Send in the workers"}<Icon name="arrow" size={16}/></button></form></Modal>}
 
+    {modal === "history" && <Modal title="The work so far" onClose={close} wide><p className="modal-description">Your workspace’s latest 20 missions, with their plans, evidence, and recorded receipts.</p>{busy ? <p className="field-hint">Loading past missions…</p> : history.length ? <div className="mission-history">{history.map(item => <button className="history-item" key={item.mission_id} onClick={() => selectMission(item)}><div><span className="mode-tag">{item.mode === "fixture" ? "EXAMPLE" : item.mode.toUpperCase()}</span><time>{readableDate(item.created_at)}</time></div><strong>{item.objective}</strong><span>{item.tasks.filter(task => task.status === "confirmed").length} of {item.tasks.length} confirmed · {item.tasks.filter(task => task.links?.receipt_state === "available").length} receipts <Icon name="arrow" size={16}/></span></button>)}</div> : <p className="field-hint">Your first mission will appear here once it’s saved.</p>}{error && <p className="form-error" role="alert">{error}</p>}</Modal>}
+
     {modal === "budget" && <Modal title="A change of plans?" onClose={close}><p className="modal-description">Give the workers a new spending limit. The team still needs {mission.headcount} event passes.</p><form onSubmit={reviseBudget}><label className="field">New purchase budget · USD<div className="money-input"><span>$</span><input type="number" value={budget} min="1" step="0.01" onChange={event => setBudget(event.target.value)} autoFocus required/></div></label><div className="budget-suggestion"><Icon name="spark" size={17}/><span>Try <button type="button" onClick={() => setBudget("650")}>$650</button> and keep all six tickets.</span></div><p className="field-hint">Uncommitted plans will need fresh approval. Existing purchases and funds awaiting confirmation stay protected.{preview && " This updates the example only; no workers will run."}</p>{error && <p className="form-error" role="alert">{error}</p>}<button className="button primary full" type="submit" disabled={busy}>{busy ? "Updating plan…" : preview ? "Revise example plan" : "Update budget & replan"}<Icon name="arrow" size={16}/></button></form></Modal>}
 
     {modal === "connections" && <Modal title="The team behind the work" onClose={close}><p className="modal-description">Live missions need a connected browser, shared workspace, and payment setup.</p><div className="connection-list">{services.length ? services.map(service => <div className="connection-row" key={service.service}><span className={`connection-service-icon ${service.ready ? "ready" : ""}`}><Icon name={service.ready ? "check" : "link"} size={18}/></span><div><strong>{service.service}</strong><p>{service.detail}</p></div><span className={service.ready ? "ready-label" : "pending-label"}>{service.ready ? "Ready" : "Pending"}</span></div>) : <div className="empty-state"><Icon name="link" size={28}/><h3>{authenticated ? "Connection status isn't available yet" : "Connect manager access first"}</h3><p>{authenticated ? "The workspace is being prepared. You can still explore the example mission." : "Your workspace connections are visible after you sign in."}</p></div>}</div>{!authenticated && <button className="button primary full" onClick={() => open("auth")}>Connect workspace<Icon name="arrow" size={16}/></button>}</Modal>}
@@ -259,7 +314,15 @@ npm run cli -- list`}</pre><p className="field-hint">The example runs with label
 
 function TaskDetail({ task, preview, mode, busy, onAction }: { task: Task; preview: boolean; mode: MissionView["mode"]; busy: boolean; onAction: (action: "approve" | "reject" | "resume") => Promise<void> }) {
   const proposal = task.proposal;
+  const providerPreview = safeUrl(task.links?.preview_url ?? (preview ? proposal?.source_url ?? task.options[0]?.source_url : undefined));
   return <div className="task-detail"><div className="detail-title"><span className={`merchant-icon ${task.lane}`}><Icon name={laneMeta[task.lane].icon} size={23}/></span><div><span className="eyebrow">{laneMeta[task.lane].label.toUpperCase()}</span><h3>{proposal?.title ?? task.title}</h3></div></div><div className="detail-status"><span className={`status-dot ${task.status}`}/>{preview ? "Example plan — not researched or purchased" : statusText[task.status]}<span className="mode-tag">{mode === "fixture" ? "EXAMPLE DATA" : mode.toUpperCase()}</span></div><p className="modal-description">{task.progress}</p>
+    <div className="review-links">
+      {providerPreview && <a className="button secondary" href={providerPreview} target="_blank" rel="noopener noreferrer">{preview ? "Example provider page" : task.links?.preview_kind === "checkout_preview" ? "Preview checkout" : "View provider page"}<Icon name="external" size={15}/></a>}
+      {safeUrl(task.links?.confirmation_url ?? undefined) && <a className="button secondary" href={task.links!.confirmation_url!} target="_blank" rel="noopener noreferrer">View confirmation<Icon name="external" size={15}/></a>}
+      {safeUrl(task.links?.receipt_url ?? undefined) && <a className="button primary" href={task.links!.receipt_url!} target="_blank" rel="noopener noreferrer">Open receipt<Icon name="external" size={15}/></a>}
+    </div>
+    {providerPreview && task.status !== "confirmed" && <p className="field-hint">{task.links?.preview_kind === "checkout_preview" ? "Review the prepared checkout and exact plan before approving." : "This opens the provider page. It is not a confirmed order or a prepared checkout."} The provider may ask you to sign in.</p>}
+    {task.status === "confirmed" && !task.links?.receipt_url && <p className="field-hint">{mode !== "live" ? "Example outcome. No real merchant receipt exists." : "A merchant receipt link has not been captured yet."}</p>}
     {task.blocker && <div className="inline-notice error"><Icon name="warning" size={18}/><span>{task.blocker}</span></div>}
     {proposal && <><div className="proposal-details"><div><span>Merchant</span><strong>{proposal.merchant}</strong></div><div><span>Quantity</span><strong>{proposal.quantity}</strong></div><div><span>For</span><strong>{proposal.recipient_ref.replaceAll("-", " ")}</strong></div><div><span>Needed by</span><strong>{readableDateTime(proposal.deadline)}</strong></div></div><dl className="approval-costs"><div><dt>Items / service</dt><dd>{money(proposal.subtotal_minor)}</dd></div><div><dt>Tax</dt><dd>{money(proposal.tax_minor)}</dd></div><div><dt>Shipping</dt><dd>{money(proposal.shipping_minor)}</dd></div><div><dt>Provider fees</dt><dd>{money(proposal.fees_minor)}</dd></div><div className="approval-total"><dt>Exact amount to approve</dt><dd>{money(proposal.total_minor)} <small>USD</small></dd></div></dl><div className="approval-binding"><Icon name="shield" size={16}/><span>Approval applies to this item, recipient, quantity, deadline, and exact total in revision {proposal.revision}. Changes need a new decision. Review expires {readableDateTime(proposal.expires_at)}.</span></div></>}
     {!proposal && task.options.length > 0 && <div className="research-options"><div className="evidence-heading"><h4>Options to consider</h4><span>{task.options.length} found</span></div>{task.options.map(option => <div className="research-option" key={option.id}><div><h4>{option.title}</h4><strong>{option.amount_minor > 0 ? money(option.amount_minor) : "Price to confirm"}</strong></div><p>{option.description}</p><p>{option.reason}</p>{safeUrl(option.source_url) && <a href={safeUrl(option.source_url)} target="_blank" rel="noopener noreferrer">View option<Icon name="external" size={12}/></a>}</div>)}<p className="field-hint">These are research results. A final checkout total and exact plan are needed before a purchase can be approved.</p></div>}

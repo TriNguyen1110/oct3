@@ -1,3 +1,4 @@
+import { presentMission } from "../../src/server/presentation";
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { getRecord } from "../../src/server/store";
@@ -8,6 +9,6 @@ export default defineTool({
   async execute({ mission_id }, ctx) {
     const workspace = ctx.session.auth.current?.attributes.workspace_id;
     if (typeof workspace !== "string") throw new Error("Authenticated workspace required");
-    return (await getRecord(mission_id, workspace)).view;
+    return presentMission((await getRecord(mission_id, workspace)).view);
   },
 });

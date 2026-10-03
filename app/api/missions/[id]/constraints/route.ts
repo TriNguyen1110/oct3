@@ -1,3 +1,4 @@
+import { presentMission } from "@/src/server/presentation";
 import { requireAuth } from "@/src/server/auth";
 import { dispatchMission } from "@/src/server/dispatch";
 import { handle } from "@/src/server/errors";
@@ -10,6 +11,6 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const principal = requireAuth(request, "manager");
     const record = await reviseMission((await context.params).id, principal, constraintsSchema.parse(await request.json()));
     const view = record.view.mode === "live" ? await dispatchMission(record.id, principal.workspace_id, new URL(request.url).origin) : record.view;
-    return Response.json(view);
+    return Response.json(presentMission(view, new URL(request.url).origin), { headers: { "cache-control": "no-store" } });
   });
 }

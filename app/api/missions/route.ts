@@ -1,3 +1,4 @@
+import { presentMission } from "@/src/server/presentation";
 import { requireAuth } from "@/src/server/auth";
 import { dispatchMission } from "@/src/server/dispatch";
 import { handle } from "@/src/server/errors";
@@ -10,8 +11,8 @@ export const maxDuration = 60;
 export async function GET(request: Request) {
   return handle(async () => {
     const principal = requireAuth(request);
-    const missions = (await listRecords(principal.workspace_id)).map(x => x.view);
-    return Response.json({ mission: missions[0] || null, missions });
+    const missions = (await listRecords(principal.workspace_id)).map(x => presentMission(x.view, new URL(request.url).origin));
+    return Response.json({ mission: missions[0] || null, missions }, { headers: { "cache-control": "no-store" } });
   });
 }
 export async function POST(request: Request) {
@@ -21,6 +22,6 @@ export async function POST(request: Request) {
     const { mode = process.env.OCT3_DEMO_MODE === "true" ? "fixture" : "live", ...input } = parsed;
     const result = await createMission(input, principal, request.headers.get("Idempotency-Key") || "", mode);
     const view = result.created ? await dispatchMission(result.record.id, principal.workspace_id, new URL(request.url).origin) : result.record.view;
-    return Response.json({ ...view, result_url: `/api/missions/${view.mission_id}` }, { status: result.created ? 202 : 200, headers: { "cache-control": "no-store" } });
+    return Response.json(presentMission(view, new URL(request.url).origin), { status: result.created ? 202 : 200, headers: { "cache-control": "no-store" } });
   });
 }

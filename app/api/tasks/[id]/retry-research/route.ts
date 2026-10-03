@@ -1,3 +1,4 @@
+import { presentMission } from "@/src/server/presentation";
 import { z } from "zod";
 import { verifyLaneStopped } from "@/src/browser";
 import { requireAuth } from "@/src/server/auth";
@@ -43,6 +44,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       activity(mission, `${task.lane}: ${principal.role} requested read-only research again. Other workers are unchanged.`, "info", task.lane); refresh(mission);
     });
     const view = record.view.mode === "fixture" ? record.view : await dispatchMission(record.id, principal.workspace_id, new URL(request.url).origin, taskId);
-    return Response.json(view, { status: 202 });
+    return Response.json(presentMission(view, new URL(request.url).origin), { status: 202, headers: { "cache-control": "no-store" } });
   });
 }

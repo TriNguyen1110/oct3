@@ -70,3 +70,15 @@ main{padding:44px 44px 30px;max-width:1760px}.page-heading{margin-bottom:34px}.e
 @media(max-width:800px){.brand{margin:0 auto 35px;gap:0}.brand-wordmark{display:none}.brand .cue-mark{width:36px;height:36px}.capability-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:28px}}
 @media(max-width:590px){.brand .cue-mark{width:33px;height:33px}.capability{padding:13px 10px;gap:9px}.capability>svg{width:17px;height:17px}.capability strong{font-size:13px}.capability span{font-size:11px}.worker-card-top>div>span{max-width:180px}}
 @media(prefers-reduced-motion:reduce){.brand .cue-mark{transition:none}.brand:hover .cue-mark,.brand:focus-visible .cue-mark{transform:none}.brand .cue-arrow{animation:none!important}}
+
+/* Shareable review and past missions. */
+.review-links{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 10px}
+.review-links .button{min-height:44px;font-size:14px}
+.mission-history{display:grid;gap:12px}
+.history-item{display:grid;gap:13px;text-align:left;padding:20px;border:1px solid #ffffff1b;border-radius:16px;background:#ffffff04;color:var(--ink);cursor:pointer;transition:border-color .2s,background .2s}
+.history-item:hover,.history-item:focus-visible{border-color:#e8c39c77;background:#ffffff09}
+.history-item>div{display:flex;align-items:center;gap:12px}
+.history-item time,.history-item>span{font-size:13px;color:var(--muted)}
+.history-item>strong{font-size:17px;font-weight:500;line-height:1.6}
+.history-item>span{display:flex;justify-content:space-between;align-items:center;gap:10px}
+@media(max-width:590px){.review-links .button{width:100%}.history-item{padding:16px}}

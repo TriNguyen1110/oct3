@@ -35,6 +35,14 @@ locally; live provider verification is separate. Supabase project setup and Stri
 configuration are pending. Fixture data and test payments must be labeled;
 neither proves a merchant order, freelancer hire, or ticket booking.
 
+## Review and history
+
+Agent results include a dashboard link and per-worker review/provider-preview
+links. Confirmation and receipt links appear only from matching live provider
+evidence; current merchant execution still ends at a handoff. **Past missions**
+reopens the latest 20 workspace missions from the configured store. Saved user
+preferences and external history import remain stretch work.
+
 ## Agent connections and evidence
 
 - [Connect with CLI or MCP](docs/CONNECT.md)

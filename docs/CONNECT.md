@@ -74,3 +74,48 @@ prompt](CLAUDE_DEMO.md). Its read-only connection check has exercised
 
 See [sponsor evidence](SPONSORS.md) and [demo runbook](DEMO.md) for verified
 integration status, measured timing, and remaining setup.
+
+## Links to give the manager
+
+Every submitted/status/listed mission now includes `dashboard_url` and `result_url`.
+The dashboard URL opens that exact mission, even if a newer mission exists. Each
+worker includes:
+
+- `links.review_url`: the exact worker’s review dialog; manager sign-in is required.
+- `links.preview_url`: the observed provider page, or a prepared checkout only when
+  `preview_kind` explicitly says `checkout_preview`.
+- `links.confirmation_url`: an observed provider confirmation page, when recorded.
+- `links.receipt_url`: an observed merchant receipt, when recorded.
+- `links.receipt_state`: `not_ready`, `available`, `not_captured`, or `example`.
+
+Give the user the dashboard/review/provider links before ordering. After completion,
+share only recorded confirmation and receipt links. A null receipt is unavailable;
+it is never permission to invent an invoice or treat the service fee as a purchase.
+The current merchant executor still stops at a handoff; receipt delivery is wired
+for future verified provider evidence, not a completed live transaction.
+
+Set server-only `OCT3_APP_URL` to the deployed public origin for Eve-generated links.
+HTTP results use the request origin when this setting is absent. Links never carry
+an access key; managers sign in through the normal dashboard access dialog.
+
+**Past missions** reopens the latest 20 stored missions, including their available
+evidence and receipts. This uses the configured storage; local development history
+is not evidence of Supabase cloud persistence. Preference memory and external
+merchant-history imports remain stretch items.
+
+## Local verification of handoff links
+
+On October 3, the production build and typecheck passed. Independent synthetic
+verification passed 11 focused checks for receipt provenance, modes, URL safety,
+and exact mission/task/revision links; see
+[the scoped report](../reports/verification/cue-links.md). A real local CLI/MCP
+fixture journey passed in 3.52 seconds without merchant activity.
+
+Coordinator Chrome checks opened an older mission’s review link through manager
+sign-in, retained the selected worker, displayed a stale-revision notice, opened
+the provider-page action, and reopened saved history after reload at mobile size.
+Missing mission IDs showed an explicit error without loading another stored job.
+The first missing-ID assertion used an incorrect descendant locator; a corrected
+scoped check passed. Desktop review and mobile history screenshots were inspected.
+This validates links and history; Supabase cloud persistence and merchant receipt
+capture remain unverified.

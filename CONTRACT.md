@@ -135,3 +135,28 @@ additional workflow builder is included. Browser Assist is deferred by the user.
 
 Measure actual run/replan duration. Use targeted invariant tests and one
 complete journey. Record untested merchant paths instead of claiming reliability.
+
+## Additive result links — user-requested after kickoff
+
+API, CLI, MCP and Eve results include absolute `dashboard_url` and `result_url`.
+Each task has `links.review_url` (mission/task/current revision), `preview_url`,
+`preview_kind`, `confirmation_url`, `receipt_url`, and `receipt_state`.
+Review links open the exact persisted mission after manager sign-in. A stale
+revision link shows the current revision with a visible notice; it never approves
+anything. Links contain no caller/manager credential. Reads remain authenticated.
+
+`provider_page` is a research/source page, not a prepared checkout. An observed
+`checkout_preview` must bind to the exact task, proposal and revision. Merchant
+confirmation/receipt links additionally require confirmed task status, a matching
+provider confirmation reference, live mission/evidence, and a supported provider
+URL. Browser-session links and unknown query credentials are excluded. Evidence
+kinds are authored by the provider adapter, never accepted from caller input.
+
+A receipt is not generated from a proposal or a Stripe service payment. Unavailable
+URLs are null. `receipt_state` is `not_ready`, `available`, `not_captured`, or
+`example`; fixtures, tests and replays cannot produce real merchant receipt links.
+Current merchant execution remains a handoff, so no live receipt capture is claimed.
+
+The dashboard can reopen the latest 20 workspace-owned missions from existing
+storage. Supabase provides the same history once configured and migrated. External
+merchant-history imports and saved preferences are separate stretch work.
