@@ -4,9 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Lane, MissionInput, MissionView, RuntimeReadiness, Task, TaskStatus } from "@/src/shared/contracts";
 import { api, ApiError } from "@/src/client/api";
 import { createPreview, defaultInput } from "@/src/client/preview";
+import { FreeRegistrationReview } from "@/components/free-registration-review";
+import { FREE_REGISTRATION_EVENT_URL } from "@/src/shared/registration";
 import { SavedProfile } from "@/components/saved-profile";
 import type { PreferencesView } from "@/src/shared/preferences";
 import { CueMark } from "@/components/cue-mark";
+import { WorkerArt } from "@/components/worker-art";
 
 type IconName = "grid" | "arrow" | "chevron" | "check" | "clock" | "people" | "plus" | "sliders" | "link" | "code" | "activity" | "close" | "external" | "copy" | "shield" | "spark" | "box" | "ticket" | "design" | "warning";
 function Icon({ name, size = 18, className = "" }: { name: IconName; size?: number; className?: string }) {
@@ -29,25 +32,6 @@ const money = (amount: number) => new Intl.NumberFormat("en-US", { style: "curre
 const readableDate = (value: string) => { const date = new Date(value); return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Los_Angeles" }); };
 const readableDateTime = (value: string) => { const date = new Date(value); return Number.isNaN(date.getTime()) ? value : `${date.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/Los_Angeles" })} PT`; };
 const safeUrl = (value?: string) => { try { const url = new URL(value ?? ""); return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : undefined; } catch { return undefined; } };
-
-function WorkerArt({ lane }: { lane: Lane }) {
-  return <div className={`worker-art ${lane}`} aria-hidden="true">
-    <svg viewBox="0 0 240 110" fill="none" stroke="#80786b" strokeWidth="1.1" strokeLinejoin="round">
-      {lane === "amazon" ? <>
-        <path d="m52 42 39-20 45 22-40 21-44-23Z" fill="#38332c"/><path d="M52 42v38l44 24V65L52 42Z" fill="#262622"/><path d="m96 65 40-21v38l-40 22V65Z" fill="#2e2c27"/><path d="m70 33 45 23v13l-10 5V60L60 38" fill="#5b5140" stroke="none"/>
-        <path d="m134 26 26-12 31 16-26 14-31-18Z" fill="#3b342a"/><path d="M134 26v34l31 17V44l-31-18Z" fill="#292720"/><path d="m165 44 26-14v32l-26 15V44Z" fill="#302c24"/><path d="m148 19 31 18v10l-8 4V42l-31-19" fill="#645643" stroke="none"/>
-        <path d="M107 84c5 1 10-1 17-5m-5-1 6 .5-1 5" stroke="#bcae95"/>
-      </> : lane === "fiverr" ? <>
-        <path d="m84 13 77 7-8 88-77-7 8-88Z" fill="#292923" stroke="#5d5b51"/><path d="m72 8 77 2-3 91-77-2 3-91Z" fill="#262621" stroke="#9f9785"/>
-        <path d="m81 23 40 1m-40 7 25 1" stroke="#ac9f88"/><path d="m94 45 17 30H77l17-30Z" fill="#7e705b" stroke="none"/><circle cx="121" cy="65" r="15" fill="#464335" stroke="#8c8069"/><path d="m80 84 53 1" stroke="#b2a58c"/>
-        <path d="m167 27 6 3-23 61-6 6 1-9 22-61Z" fill="#695e49" stroke="#a99672"/>
-      </> : <>
-        <g transform="rotate(8 123 57)"><path d="M56 28h135v19a7 7 0 0 0 0 14v24H56V61a7 7 0 0 0 0-14V28Z" fill="#272722" stroke="#5e5b51"/></g>
-        <g transform="rotate(-7 119 57)"><path d="M44 21h143v21a7 7 0 0 0 0 14v26H44V56a7 7 0 0 0 0-14V21Z" fill="#242620" stroke="#958c77"/><path d="M148 21v61" stroke="#706957" strokeDasharray="2 4"/><path d="M58 34h43m-43 7h28" stroke="#a9997c"/><text x="58" y="68" stroke="none" fill="#baae93" fontSize="22" fontFamily="Georgia,serif">ALL IN.</text><path d="M158 32v38m4-38v38m5-38v38m3-38v38m5-38v38" stroke="#a3967c"/></g>
-      </>}
-    </svg>
-  </div>;
-}
 
 function Modal({ children, title, onClose, wide = false }: { children: React.ReactNode; title: string; onClose: () => void; wide?: boolean }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -229,13 +213,24 @@ export default function MissionDesk() {
     finally { setBusy(false); }
   }
 
+  async function prepareRegistration() {
+    if (!selectedTask || busy) return;
+    setBusy(true); setError(null);
+    try {
+      const next = await api<MissionView>(`/api/tasks/${encodeURIComponent(selectedTask.id)}/prepare-registration`, { method: "POST", body: JSON.stringify({ expected_revision: mission.revision }) });
+      setMission(next);
+      setToast(next.tasks.find(task => task.id === selectedTask.id)?.proposal?.action_type === "free_registration" ? "Free RSVP prepared. Review the pinned attendee and event before approving." : "Preparation returned a handoff. Review the worker’s blocker before continuing.");
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not prepare the RSVP. No registration is confirmed."); }
+    finally { setBusy(false); }
+  }
+
   async function taskAction(action: "approve" | "reject" | "resume") {
     if (!selectedTask?.proposal || preview) return;
     setBusy(true); setError(null);
     try {
       const next = await api<MissionView>(`/api/tasks/${selectedTask.id}/${action}`, { method: "POST", body: JSON.stringify({ proposal_id: selectedTask.proposal.id, revision: selectedTask.proposal.revision }) });
       setMission(next);
-      setToast(action === "approve" ? "Plan decision saved. Payment approval may still be required." : action === "reject" ? "Plan declined. No new purchase was authorized." : "Approval checked. Worker status is updating.");
+      setToast(action === "approve" ? selectedTask.proposal.action_type === "free_registration" ? "Free RSVP approved. Review the pinned details, then choose Register now." : "Plan decision saved. Payment approval may still be required." : action === "reject" ? "Plan declined. No new purchase was authorized." : "Approval checked. Worker status is updating.");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn't save this decision."); }
     finally { setBusy(false); }
   }
@@ -279,8 +274,8 @@ export default function MissionDesk() {
       <div className="workspace-picker"><span className="workspace-icon">S</span><span><strong>Studio workspace</strong><small>Your work, in good hands</small></span></div>
       <div className="nav-label">WORKSPACE</div>
       <nav aria-label="Main navigation">
-        <button className="nav-item active" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><Icon name="grid"/>Mission desk<span className="nav-count">1</span></button>
-        <button className="nav-item" onClick={() => document.getElementById("activity")?.scrollIntoView({ behavior: "smooth", block: "center" })}><Icon name="activity"/>Activity</button>
+        <button className="nav-item active" onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })}><Icon name="grid"/>Mission desk<span className="nav-count">1</span></button>
+        <button className="nav-item" onClick={() => document.getElementById("activity")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "center" })}><Icon name="activity"/>Activity</button>
         <button className="nav-item" onClick={() => void openHistory()}><Icon name="clock"/>Past missions</button>
         <button className="nav-item" onClick={() => open("connect")}><Icon name="code"/>Connect your agent<Icon name="external" size={12}/></button>
       </nav>
@@ -296,7 +291,7 @@ export default function MissionDesk() {
       <header className="topbar"><div className="breadcrumb">Workspace <span>/</span> <strong>Mission desk</strong></div><div className="topbar-right"><span className="today">SAT, OCT 03</span><span className={`environment-pill ${mission.mode === "live" ? "live" : ""}`}><span/>{preview ? "Preview workspace" : mission.mode === "live" ? "Live mission" : `${mission.mode === "fixture" ? "Example" : mission.mode} mission`}</span></div></header>
 
       <main>
-        <div className="page-heading"><div><p className="eyebrow">CUE · YOUR AGENT’S EXTRA HANDS</p><h1>Good help. <em>On demand.</em></h1></div><button className="button primary" onClick={() => open(authenticated ? "new" : "auth")}><Icon name="plus" size={16}/>New mission</button></div>
+        <div className="page-heading"><div className="hero-copy"><p className="eyebrow"><span/> YOUR AGENT’S EXTRA HANDS</p><h1>Consider it<br/><em>in good hands.</em></h1><p className="hero-description">A little less managing.<br/>A lot more getting things done.</p></div><div className="concierge-command"><div className="command-stamp"><CueMark/><span>THE CUE DESK<small>One brief. A team behind it.</small></span></div><p>Find the people.<br/>Handle the logistics.<br/><em>Make it happen.</em></p><button className="button primary" onClick={() => open(authenticated ? "new" : "auth")}><Icon name="plus" size={18}/>New mission<Icon name="arrow" size={19}/></button><span className="command-footnote"><Icon name="shield" size={13}/> Every commitment is your call.</span></div></div>
 
         <ul className="capability-strip" aria-label="What Cue helps with">
           <li className="capability capability-hiring"><Icon name="people" size={20}/><div><strong>Hiring</strong><span>Talent &amp; services</span></div></li>
@@ -334,7 +329,14 @@ export default function MissionDesk() {
         <div className="desk-grid">
           <div className="work-column">
             <div className="section-heading"><h3>Your workers <span>03</span></h3><div className="parallel-label"><span className="parallel-lines">≋</span>Working together, in parallel</div></div>
-            <section className="worker-grid" aria-label="Browser workers">
+            <section className="worker-grid" aria-label="Browser workers" onPointerMove={event => {
+              if (event.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+              const card = (event.target as HTMLElement).closest<HTMLElement>(".worker-card");
+              if (!card) return;
+              const bounds = card.getBoundingClientRect();
+              card.style.setProperty("--spot-x", `${event.clientX - bounds.left}px`);
+              card.style.setProperty("--spot-y", `${event.clientY - bounds.top}px`);
+            }}>
               {mission.tasks.map(task => {
                 const meta = laneMeta[task.lane]; const option = task.options.find(item => item.id === task.proposal?.option_id) ?? task.options[0];
                 return <article className={`worker-card lane-${task.lane}`} data-running={!preview && (task.status === "researching" || task.status === "executing")} key={task.id}>
@@ -379,13 +381,16 @@ npm run cli -- list`}</pre><p className="field-hint">The example runs with label
 
     {modal === "result" && <Modal title="A useful answer for your agent" onClose={close} wide><p className="modal-description">One structured result: plans, actual outcomes, costs, evidence, and anything that still needs a hand.</p><div className="result-summary"><span className={`environment-pill ${mission.mode === "live" ? "live" : ""}`}><span/>{preview ? "Preview data" : `${mission.mode} data`}</span><span>{mission.tasks.length} workers · revision {mission.revision}</span><button className="text-button" onClick={copyResult}><Icon name={copied ? "check" : "copy"} size={15}/>{copied ? "Copied" : "Copy JSON"}</button></div><pre className="result-code" tabIndex={0}>{JSON.stringify(mission, null, 2)}</pre>{error && <p className="form-error" role="alert">{error}</p>}<p className="field-hint">{preview ? "This is an example response, not evidence of browser work or completed purchases." : "The caller can retrieve this result from the authenticated mission endpoint."}</p></Modal>}
 
-    {modal === "task" && selectedTask && <Modal title={laneMeta[selectedTask.lane].role} onClose={close} wide><TaskDetail task={selectedTask} preview={preview} mode={mission.mode} busy={busy} onAction={taskAction}/>{error && <p className="form-error" role="alert">{error}</p>}</Modal>}
+    {modal === "task" && selectedTask && <Modal title={laneMeta[selectedTask.lane].role} onClose={close} wide><TaskDetail task={selectedTask} mission={mission} onPrepare={prepareRegistration} preview={preview} mode={mission.mode} busy={busy} onAction={taskAction}/>{error && <p className="form-error" role="alert">{error}</p>}</Modal>}
     {toast && <div className="toast" role="status"><Icon name="check" size={17}/><span>{toast}</span><button aria-label="Dismiss notification" onClick={() => setToast(null)}><Icon name="close" size={15}/></button></div>}
   </div>;
 }
 
-function TaskDetail({ task, preview, mode, busy, onAction }: { task: Task; preview: boolean; mode: MissionView["mode"]; busy: boolean; onAction: (action: "approve" | "reject" | "resume") => Promise<void> }) {
+function TaskDetail({ task, mission, onPrepare, preview, mode, busy, onAction }: { task: Task; mission: MissionView; onPrepare: () => Promise<void>; preview: boolean; mode: MissionView["mode"]; busy: boolean; onAction: (action: "approve" | "reject" | "resume") => Promise<void> }) {
   const proposal = task.proposal;
+  const freeRegistration = proposal?.action_type === "free_registration";
+  const knownEvent = [proposal?.source_url, task.links?.preview_url, ...task.options.map(option => option.source_url), ...task.evidence.map(item => item.source_url)].includes(FREE_REGISTRATION_EVENT_URL);
+  const canPrepare = !preview && mode === "live" && mission.service_payment.status === "paid" && task.lane === "event_tickets" && mission.headcount === 1 && knownEvent && !["researching", "executing", "confirmed"].includes(task.status) && !(freeRegistration && task.status === "needs_human") && mission.budget.uncertain_minor === 0;
   const providerPreview = safeUrl(task.links?.preview_url ?? (preview ? proposal?.source_url ?? task.options[0]?.source_url : undefined));
   return <div className="task-detail"><div className="detail-title"><span className={`merchant-icon ${task.lane}`}><Icon name={laneMeta[task.lane].icon} size={23}/></span><div><span className="eyebrow">{laneMeta[task.lane].label.toUpperCase()}</span><h3>{proposal?.title ?? task.title}</h3></div></div><div className="detail-status"><span className={`status-dot ${task.status}`}/>{preview ? "Example plan — not researched or purchased" : statusText[task.status]}<span className="mode-tag">{mode === "fixture" ? "EXAMPLE DATA" : mode.toUpperCase()}</span></div><p className="modal-description">{task.progress}</p>
     <div className="review-links">
@@ -396,10 +401,12 @@ function TaskDetail({ task, preview, mode, busy, onAction }: { task: Task; previ
     {providerPreview && task.status !== "confirmed" && <p className="field-hint">{task.links?.preview_kind === "checkout_preview" ? "Review the prepared checkout and exact plan before approving." : "This opens the provider page. It is not a confirmed order or a prepared checkout."} The provider may ask you to sign in.</p>}
     {task.status === "confirmed" && !task.links?.receipt_url && <p className="field-hint">{mode !== "live" ? "Example outcome. No real merchant receipt exists." : "A merchant receipt link has not been captured yet."}</p>}
     {task.blocker && <div className="inline-notice error"><Icon name="warning" size={18}/><span>{task.blocker}</span></div>}
+    {canPrepare && <div className="registration-prepare"><button className="button secondary full" disabled={busy} onClick={() => void onPrepare()}>{busy ? "Preparing free RSVP…" : "Prepare free RSVP"}</button><p className="field-hint">Read-only preparation for one free ticket at OpenTogether. No attendee fields are filled and no registration is submitted.</p></div>}
+    {freeRegistration && task.status !== "confirmed" && <FreeRegistrationReview key={proposal!.id} task={task} busy={busy} onAction={onAction}/>}
     {proposal && <><div className="proposal-details"><div><span>Merchant</span><strong>{proposal.merchant}</strong></div><div><span>Quantity</span><strong>{proposal.quantity}</strong></div><div><span>For</span><strong>{proposal.recipient_ref.replaceAll("-", " ")}</strong></div><div><span>Needed by</span><strong>{readableDateTime(proposal.deadline)}</strong></div></div><dl className="approval-costs"><div><dt>Items / service</dt><dd>{money(proposal.subtotal_minor)}</dd></div><div><dt>Tax</dt><dd>{money(proposal.tax_minor)}</dd></div><div><dt>Shipping</dt><dd>{money(proposal.shipping_minor)}</dd></div><div><dt>Provider fees</dt><dd>{money(proposal.fees_minor)}</dd></div><div className="approval-total"><dt>Exact amount to approve</dt><dd>{money(proposal.total_minor)} <small>USD</small></dd></div></dl><div className="approval-binding"><Icon name="shield" size={16}/><span>Approval applies to this item, recipient, quantity, deadline, and exact total in revision {proposal.revision}. Changes need a new decision. Review expires {readableDateTime(proposal.expires_at)}.</span></div></>}
     {!proposal && task.options.length > 0 && <div className="research-options"><div className="evidence-heading"><h4>Options to consider</h4><span>{task.options.length} found</span></div>{task.options.map(option => <div className="research-option" key={option.id}><div><h4>{option.title}</h4><strong>{option.amount_minor > 0 ? money(option.amount_minor) : "Price to confirm"}</strong></div><p>{option.description}</p><p>{option.reason}</p>{safeUrl(option.source_url) && <a href={safeUrl(option.source_url)} target="_blank" rel="noopener noreferrer">View option<Icon name="external" size={12}/></a>}</div>)}<p className="field-hint">These are research results. A final checkout total and exact plan are needed before a purchase can be approved.</p></div>}
     {task.confirmation_ref && <div className="confirmation"><Icon name="check"/><div><strong>Provider confirmation</strong><code>{task.confirmation_ref}</code></div></div>}
     <div className="evidence-heading"><h4>{preview ? "About this example" : "What the worker found"}</h4><span>{task.evidence.length} {task.evidence.length === 1 ? "source" : "sources"}</span></div><div className="evidence-list">{task.evidence.length ? task.evidence.map(evidence => <div className="evidence-item" key={evidence.id}><div><strong>{evidence.title}</strong><span className="mode-tag">{evidence.mode === "fixture" ? "EXAMPLE" : evidence.mode.toUpperCase()}</span></div><p>{evidence.detail}</p>{safeUrl(evidence.source_url) && <a href={safeUrl(evidence.source_url)} target="_blank" rel="noopener noreferrer">{preview ? "Visit provider" : "Open source"}<Icon name="external" size={12}/></a>}<time>{new Date(evidence.observed_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/Los_Angeles" })} PT</time></div>) : <p className="field-hint">Evidence will appear here as the worker makes progress.</p>}</div>
-    {proposal && task.status !== "confirmed" && <div className="approval-actions">{preview ? <p className="preview-approval"><Icon name="shield" size={17}/>Example plans can't authorize a purchase. Start a mission to review real work.</p> : task.approval?.state === "approved" ? <><div className="approved-status"><Icon name="check" size={18}/><span>Plan approved{task.approval.link_state ? ` · Payment ${task.approval.link_state.replaceAll("_", " ")}` : ""}</span></div>{safeUrl(task.approval.link_approval_url) && <a href={safeUrl(task.approval.link_approval_url)} className="button primary full" target="_blank" rel="noopener noreferrer">Review payment with Link<Icon name="external" size={16}/></a>}<button className="button secondary full" disabled={busy || task.status === "executing"} onClick={() => void onAction("resume")}>{busy ? "Checking…" : task.status === "executing" ? "Worker is executing" : "Check approval & continue"}<Icon name="arrow" size={16}/></button></> : <><p className="field-hint">{mode === "fixture" ? "This example approval only updates fixture state. It cannot purchase, hire, or book anything." : "Approving reserves this amount. A separate payment approval may be needed before the worker can commit."}</p><div className="action-row"><button className="button secondary" disabled={busy} onClick={() => void onAction("reject")}>Decline plan</button><button className="button primary" disabled={busy || task.approval?.state === "rejected"} onClick={() => void onAction("approve")}>{busy ? "Saving…" : task.approval?.state === "rejected" ? "Plan declined" : `${mode === "fixture" ? "Approve example" : "Approve"} · ${money(proposal.total_minor)}`}<Icon name="check" size={16}/></button></div></>}</div>}
+    {proposal && !freeRegistration && task.status !== "confirmed" && <div className="approval-actions">{preview ? <p className="preview-approval"><Icon name="shield" size={17}/>Example plans can't authorize a purchase. Start a mission to review real work.</p> : task.approval?.state === "approved" ? <><div className="approved-status"><Icon name="check" size={18}/><span>Plan approved{task.approval.link_state ? ` · Payment ${task.approval.link_state.replaceAll("_", " ")}` : ""}</span></div>{safeUrl(task.approval.link_approval_url) && <a href={safeUrl(task.approval.link_approval_url)} className="button primary full" target="_blank" rel="noopener noreferrer">Review payment with Link<Icon name="external" size={16}/></a>}<button className="button secondary full" disabled={busy || task.status === "executing"} onClick={() => void onAction("resume")}>{busy ? "Checking…" : task.status === "executing" ? "Worker is executing" : "Check approval & continue"}<Icon name="arrow" size={16}/></button></> : <><p className="field-hint">{mode === "fixture" ? "This example approval only updates fixture state. It cannot purchase, hire, or book anything." : "Approving reserves this amount. A separate payment approval may be needed before the worker can commit."}</p><div className="action-row"><button className="button secondary" disabled={busy} onClick={() => void onAction("reject")}>Decline plan</button><button className="button primary" disabled={busy || task.approval?.state === "rejected"} onClick={() => void onAction("approve")}>{busy ? "Saving…" : task.approval?.state === "rejected" ? "Plan declined" : `${mode === "fixture" ? "Approve example" : "Approve"} · ${money(proposal.total_minor)}`}<Icon name="check" size={16}/></button></div></>}</div>}
   </div>;
 }

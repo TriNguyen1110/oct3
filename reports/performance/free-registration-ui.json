@@ -1,10 +1,12 @@
 {
-  "checked_at": "2026-10-03T20:09:37.410Z",
-  "scope": "Actual local rendered saved Luma preparation, read-only UI",
+  "checked_at": "2026-10-03T20:13:55.441Z",
+  "scope": "Actual local rendered saved Luma preparation after concierge visual redesign; read-only UI",
   "attendee_matches_saved_profile": true,
   "approval_button_enabled": true,
   "desktop_overflow": false,
   "mobile_overflow": false,
   "page_errors": 0,
-  "merchant_actions": 0
+  "merchant_actions": 0,
+  "final_opacity_checked": true,
+  "live_worker_cards": 3
 }

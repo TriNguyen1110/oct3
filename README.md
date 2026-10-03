@@ -55,6 +55,16 @@ import remains unimplemented.
 - [Coding team models and thinking levels](MODEL_ROUTING.md)
 - [Independent local verification](reports/verification/passed-local.md)
 
+## Interface
+
+Cue uses a dark concierge-desk composition: warm black, champagne and sea glass,
+editorial serif headings, translucent command surfaces, and original SVG worker
+illustrations. Spotlight hover writes CSS variables without React re-renders;
+touch and reduced-motion users receive static affordances. No new animation
+runtime or component subscription was added. The original components take
+pattern inspiration from 21st.dev's [spotlight guidance](https://docs.21st.dev/blog/react-spotlight-effect-components)
+and [card collection guide](https://docs.21st.dev/blog/react-card-components).
+
 ## Stack and boundaries
 
 Next.js and Eve on Vercel, Claude for coordination, remote Surfsky browsers,
