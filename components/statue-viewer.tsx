@@ -90,7 +90,6 @@ float cnoise(vec3 P) {
 
 export function StatueViewer() {
   const host = useRef<HTMLDivElement>(null);
-  const turn = useRef<(delta: number, reset?: boolean) => void>(() => {});
   const [status, setStatus] = useState<"loading" | "ready" | "fallback">("loading");
 
   useEffect(() => {
@@ -157,34 +156,70 @@ export function StatueViewer() {
         scene.add(new THREE.HemisphereLight(0xf0e4d1,0x161817,.5));
         const key = new THREE.DirectionalLight(0xffedcf,3);key.position.set(-3,4,5);scene.add(key);
         const rim = new THREE.DirectionalLight(0x83cab6,2);rim.position.set(3,1,-2);scene.add(rim);
-        let frame = 0;
-        const render = () => { if (!frame) frame = requestAnimationFrame(() => { frame = 0; if (!cancelled) renderer.render(scene, camera); }); };
-        turn.current = (delta, reset) => { group.rotation.y = reset ? -.18 : THREE.MathUtils.clamp(group.rotation.y + delta, -.8, .8); element!.dataset.rotation = group.rotation.y.toFixed(3); render(); };
-        const resize = () => { const { width, height } = element!.getBoundingClientRect(); if (!width || !height) return; renderer.setSize(width, height); camera.aspect = width / height; camera.updateProjectionMatrix(); render(); };
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        let frame = 0, visible = true;
+        const draw = (time = 0) => {
+          if (!reducedMotion.matches) {
+            const seconds = time / 1000;
+            group.rotation.y = -.18 + (seconds * .18) % (Math.PI * 2);
+            group.rotation.x = Math.sin(seconds * .43) * .045;
+            model.position.y = Math.sin(seconds * .72) * .055;
+            model.rotation.z = Math.sin(seconds * .31) * .025;
+            ring.rotation.z = -.42 + seconds * .08;
+            orbit.rotation.x = .25 + Math.sin(seconds * .27) * .12;
+            satellite.position.y = .42 + Math.sin(seconds * 1.05) * .09;
+            element!.dataset.rotation = group.rotation.y.toFixed(3);
+          }
+          renderer.render(scene, camera);
+        };
+        const animate = (time: number) => {
+          frame = 0;
+          if (cancelled) return;
+          draw(time);
+          if (visible && document.visibilityState === "visible" && !reducedMotion.matches) frame = requestAnimationFrame(animate);
+        };
+        const resume = () => {
+          if (!frame && visible && document.visibilityState === "visible" && !reducedMotion.matches) frame = requestAnimationFrame(animate);
+          else if (reducedMotion.matches) draw();
+        };
+        const resize = () => { const { width, height } = element!.getBoundingClientRect(); if (!width || !height) return; renderer.setSize(width, height); camera.aspect = width / height; camera.updateProjectionMatrix(); draw(reducedMotion.matches ? 0 : performance.now()); resume(); };
         const resizeObserver = new ResizeObserver(resize); resizeObserver.observe(element!);
-        let pointer: number | null = null, previousX = 0;
-        const down = (event: PointerEvent) => { pointer = event.pointerId; previousX = event.clientX; renderer.domElement.setPointerCapture(pointer); };
-        const move = (event: PointerEvent) => { if (pointer !== event.pointerId) return; turn.current((event.clientX - previousX) * .008); previousX = event.clientX; };
-        const up = () => { pointer = null; };
+        const visibilityObserver = new IntersectionObserver(entries => {
+          visible = entries.some(entry => entry.isIntersecting);
+          if (!visible && frame) { cancelAnimationFrame(frame); frame = 0; }
+          else resume();
+        }, { rootMargin: "80px" });
+        visibilityObserver.observe(element!);
+        const visibilityChange = () => {
+          if (document.visibilityState !== "visible" && frame) { cancelAnimationFrame(frame); frame = 0; }
+          else resume();
+        };
+        const motionChange = () => {
+          if (reducedMotion.matches && frame) { cancelAnimationFrame(frame); frame = 0; draw(); }
+          else resume();
+        };
         const lost = (event: Event) => { event.preventDefault(); if (!cancelled) setStatus("fallback"); };
-        renderer.domElement.addEventListener("pointerdown", down); renderer.domElement.addEventListener("pointermove", move); renderer.domElement.addEventListener("pointerup", up); renderer.domElement.addEventListener("pointercancel", up); renderer.domElement.addEventListener("webglcontextlost", lost);
+        document.addEventListener("visibilitychange", visibilityChange);
+        reducedMotion.addEventListener("change", motionChange);
+        renderer.domElement.addEventListener("webglcontextlost", lost);
         renderer.domElement.setAttribute("aria-hidden", "true");
         element!.appendChild(renderer.domElement); resize();
         element!.dataset.vertices = String(core.geometry.attributes.position.count);
         renderer.render(scene, camera);
         element!.dataset.triangles = String(renderer.info.render.triangles);
+        element!.dataset.motion = reducedMotion.matches ? "reduced" : "automatic";
         setStatus("ready");
-        dispose = () => { cancelAnimationFrame(frame); resizeObserver.disconnect(); renderer.domElement.remove(); model.traverse(object => { if (object instanceof THREE.Mesh) object.geometry.dispose(); }); material.dispose(); ringMaterial.dispose(); satelliteMaterial.dispose(); environment.dispose(); renderer.dispose(); renderer.forceContextLoss(); };
+        dispose = () => { cancelAnimationFrame(frame); resizeObserver.disconnect(); visibilityObserver.disconnect(); document.removeEventListener("visibilitychange", visibilityChange); reducedMotion.removeEventListener("change", motionChange); renderer.domElement.remove(); model.traverse(object => { if (object instanceof THREE.Mesh) object.geometry.dispose(); }); material.dispose(); ringMaterial.dispose(); satelliteMaterial.dispose(); environment.dispose(); renderer.dispose(); renderer.forceContextLoss(); };
       } catch { if (!cancelled) setStatus("fallback"); }
     }
-    return () => { cancelled = true; controller.abort(); clearTimeout(scheduled); observer.disconnect(); turn.current = () => {}; dispose(); };
+    return () => { cancelled = true; controller.abort(); clearTimeout(scheduled); observer.disconnect(); dispose(); };
   }, []);
 
   return <figure className={`cue-sculpture cue-model cue-model-state-${status}`}>
     <div className="cue-emblem-fallback" aria-hidden="true"><span/></div>
-    <div ref={host} className="cue-model-stage" role="img" aria-label="Interactive sculptural gold Cue emblem" data-status={status}/>
-    <figcaption className="cue-model-caption"><span>A QUIET FORCE. BEHIND THE SCENES.</span>
-      {status === "ready" ? <div className="cue-model-controls"><button type="button" aria-label="Rotate emblem left" onClick={() => turn.current(-.18)}>←</button><span>DRAG TO EXPLORE</span><button type="button" aria-label="Rotate emblem right" onClick={() => turn.current(.18)}>→</button><button type="button" className="cue-model-reset" onClick={() => turn.current(0, true)}>Reset</button></div> : <span>{status === "loading" ? "" : "STILL PREVIEW"}</span>}
+    <div ref={host} className="cue-model-stage" role="img" aria-label="Automatically rotating sculptural gold Cue emblem" data-status={status}/>
+    <figcaption className="cue-model-caption"><span>ALWAYS MOVING. BEHIND THE SCENES.</span>
+      {status === "fallback" ? <span>STILL PREVIEW</span> : null}
     </figcaption>
   </figure>;
 }

@@ -1,5 +1,8 @@
 # Cue — two-minute demo
 
+For the shot-by-shot recording plan and exact voiceover, use
+[FILMING-SCRIPT.md](FILMING-SCRIPT.md).
+
 **Theme:** Make what your agents want. **Category:** the execution layer for delegated work. **Promise:** Hands free. In good hands.
 
 **Stage rule:** show a live connected product and timestamped, previously observed outcomes. This is a two-minute presentation, not a promise that four merchant workflows finish in two minutes. Do not repeat the confirmed RSVP or Amazon purchase.
