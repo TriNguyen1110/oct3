@@ -1,0 +1,34 @@
+{
+  "checked_at": "2026-10-03T21:51:14.050Z",
+  "source_commit": "30dd30042281f5e1f0dca9156c4ccf39ace8a87b",
+  "origin": "https://oct3-five.vercel.app",
+  "asset_http": 200,
+  "asset_sha256": "80d853cd9f3cfb8e627331f6de51d3157dfb242da673419a0f5e197692d409bf",
+  "original_bytes_preserved": true,
+  "eve_health_http": 200,
+  "screens": [
+    {
+      "width": 1440,
+      "page_http": 200,
+      "image_ok": true,
+      "animation": "none",
+      "overflow": false,
+      "page_errors": 0,
+      "new_mission_dialog": true,
+      "credit_and_license_visible": true,
+      "api_writes": 0
+    },
+    {
+      "width": 390,
+      "page_http": 200,
+      "image_ok": true,
+      "animation": "none",
+      "overflow": false,
+      "page_errors": 0,
+      "new_mission_dialog": true,
+      "credit_and_license_visible": true,
+      "api_writes": 0
+    }
+  ],
+  "merchant_actions": 0
+}

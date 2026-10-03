@@ -4,7 +4,7 @@ The public demo is **https://oct3-five.vercel.app**. The stage starts with a
 fresh Claude Code terminal connected to Cue's MCP endpoint, then shows the same
 saved mission in the dashboard. See [the terminal runbook](CLAUDE_DEMO.md).
 
-**Functional baseline: `d144a09`, October 3.** Native-passkey approval, voice draft, and free RSVP flow are deployed. The real manager enrolled a native passkey, approved the exact $0 Open Together action, and Cue recorded matching Luma confirmation. [Native passkey and event evidence](../reports/performance/native-passkey-live-event.json). The updated hero uses a real Tom Cruise portrait as cinema inspiration; its photographer credit, source and CC BY-SA license are displayed and retained with the asset.
+**Functional baseline: `d144a09`, October 3.** Native-passkey approval, voice draft, and free RSVP flow are deployed. The real manager enrolled a native passkey, approved the exact $0 Open Together action, and Cue recorded matching Luma confirmation. [Native passkey and event evidence](../reports/performance/native-passkey-live-event.json). The updated hero pairs a real classical marble close-up with cinematic monochrome styling. Its museum source and CC0 license are retained with the asset.
 
 **Verified hosted research baseline: `21377a8`, October 3.** A real Claude Code caller
 submitted one live research mission with explicit Stripe sandbox payment and
