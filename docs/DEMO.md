@@ -19,6 +19,35 @@ payment gate, persisted Supabase receipt and a replay without another payment
 call. That isolated test did not dispatch browsers. Combined caller-payment-worker
 rehearsal and Link merchant spending still need their own evidence.
 
+## Readiness audit — October 3, source f9d3de1
+
+**The complete planned live demo is not verified or implemented end to end.**
+The following distinctions come from saved test evidence plus a read-only audit
+of the current code. Current local dashboard, readiness and authenticated history
+reads return HTTP 200; history uses Supabase. Configuration flags alone are not
+integration tests. No new paid browser/model runs or merchant actions were used
+for this audit.
+
+| Demo feature | Actual evidence and limit |
+|---|---|
+| Claude terminal connection | Real Claude Code called `list_missions`; no complete live submission/payment run. |
+| CLI/MCP submit, status, history, retry dedupe | Actual fixture journey passed against local API and Supabase. |
+| Budget revision, exact approvals and spending guards | Local negative/concurrency checks pass; actual Supabase races and SQL overspend rejection pass. The interactive planning journey uses fixtures. |
+| Stripe service payment and receipt | Actual 50-cent sandbox MPP gate passed; proof persisted and replay made no additional payment call. Workers were deliberately not dispatched. |
+| Three live research lanes | Earlier local run took 21.036 seconds: Fiverr 3 options, Eventbrite 1, Amazon blocked. That run predates current payment gating and cloud integration. |
+| Live research to exact purchase proposal | Missing: research returns options; only fixture planning currently constructs proposals. |
+| Automatic terminal payment | Missing: CLI/MCP can forward an existing payment credential, but the Claude launcher has no wallet/payment negotiation client. |
+| Dashboard live submission at HTTP 402 | Current form displays the API error; it does not provide a payment/resume flow for the saved mission. |
+| Purchase, hire, event RSVP and merchant receipts | Missing: resume returns a handoff; remote form writes are blocked. Receipt presentation tests use synthetic evidence. |
+| Hosted Vercel journey | Not deployed or verified. Local success does not establish hosted execution. |
+
+The demonstrated fallback is fixture planning/approval, saved live research with
+its timestamp, cloud persistence, and a separate sandbox service receipt. A
+prepared checkout, actual hire/order/RSVP or merchant receipt must not be claimed.
+Before calling the desired terminal-to-result demo ready, implement payment
+handoff/negotiation, then rehearse one combined journey. A real free RSVP also
+needs its own execution adapter and verification; it is not merely an unrun test.
+
 ## Timing evidence
 
 Read-only browser measurements on October 3, 2026 used separate oct3 profiles

@@ -13,4 +13,6 @@ Use Node 24: `export PATH=/Users/tringuyen/.nvm/versions/node/v24.20.0/bin:$PATH
 
 Dependencies are pinned in package.json and package-lock.json. Put secrets in
 ignored `.env.local`; never in browser code, evidence, commits or model messages.
-Stripe is not configured yet. Fixture mode must be explicit throughout the UI.
+Stripe MPP sandbox is configured and its isolated payment gate is verified;
+the combined terminal/payment/browser journey remains unverified. Fixture mode
+must be explicit throughout the UI. See docs/DEMO.md for the readiness audit.
