@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-10-03T21:43:11.247223+00:00",
+  "source_commit": "ff6cfbf",
+  "origin": "https://oct3-five.vercel.app",
+  "page_http": 200,
+  "hermes_referenced": true,
+  "prior_generated_statue_referenced": false,
+  "asset_http": 200,
+  "asset_sha256": "6866290ef2f1532e3ded92d8a6c16ebf76ddb3681442283fc9c28f7bd2186d15",
+  "matches_source_photo": true,
+  "eve_health_http": 200,
+  "merchant_actions": 0,
+  "hosted_screen_checks": {
+    "widths": [
+      1440,
+      390
+    ],
+    "image_decoded": true,
+    "horizontal_overflow": false,
+    "page_errors": 0,
+    "new_mission_dialog": true,
+    "statue_animation": "none",
+    "scope": "fresh unauthenticated headless Chrome; API mutations blocked; no merchant activity"
+  }
+}

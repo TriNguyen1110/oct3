@@ -61,6 +61,7 @@ recordings.
 ## Agent connections and evidence
 
 - [Connect with CLI or MCP](docs/CONNECT.md)
+- [Experimental local Chrome connection probe](docs/LOCAL_BROWSER.md) — native connection testing only; deployed workers still use Surfsky.
 - [Sponsor integrations and proof](docs/SPONSORS.md)
 - [Demo runbook and latency](docs/DEMO.md)
 - [Measured impact baseline and comparison protocol](reports/verification/impact-baseline.md)
