@@ -33,4 +33,3 @@ The mocked create payload also proves private recipient and attendee strings are
 | `app/api/wallet/route.ts` | `028549a3845f6e8b106ba903d1611aa0e361f931038c924849f1e11c2f182771` |
 | `app/api/tasks/[id]/wallet/cancel/route.ts` | `567a09765bede1f62ce39130a624a5444947bd78769eb5bbc676326545886b84` |
 | `tests/link-wallet.test.ts` | `e335906b4e194b3698a2ef9d524368409c7741289b6549d345bd1c6db1e46b47` |
-

@@ -1,0 +1,9 @@
+{
+  "checked_at": "2026-10-03T22:33:17.449Z",
+  "project_name": "Production project",
+  "usage_http": 200,
+  "browser_minutes": 7240,
+  "proxy_bytes": 87013096,
+  "remaining_credit_reported": false,
+  "session_creation_attempts": 0
+}

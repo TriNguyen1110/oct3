@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-10-03T22:35:10.086833+00:00",
+  "credential_source": "oct3/.env.local BROWSERBASE_API_KEY supplied by user; old job_search credential not read",
+  "attempts": 1,
+  "http_status": 402,
+  "provider_message_sanitized": "Free plan browser minutes limit reached. Please upgrade your account.",
+  "projects_reads": 1,
+  "sessions_created": 0,
+  "cloud_connection_opened": false,
+  "lease_released": true,
+  "cookie_transfer": false,
+  "local_chrome_access": false,
+  "automated_form_actions": 0,
+  "automated_product_navigations": 0,
+  "helper_sha256": "c7fa2d9411ad3b09847ab611637d3ad65b4991b471916bd2094805e83fa5d2dc"
+}

@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-10-03T22:12:52.735Z",
+  "credential_source": "job_search/.env.local BROWSERBASE_API_KEY",
+  "operation": "GET /v1/projects",
+  "session_creations": 0,
+  "cookie_reads": 0,
+  "sensitive_transfers": 0,
+  "http": 200,
+  "valid_project_count": 1,
+  "project_available": true,
+  "concurrency_limits": [
+    3
+  ]
+}

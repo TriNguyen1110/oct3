@@ -1,0 +1,20 @@
+{
+  "checked_at": "2026-10-03T22:26:22.743Z",
+  "metadata_query_http": 200,
+  "matching_sessions": 0,
+  "active_matches": 0,
+  "released": 0,
+  "creation_retry": false,
+  "initial_attempt_source": "coordinator actual run",
+  "initial_create_result": "creation_uncertain",
+  "original_http_status": "not_retained",
+  "cloud_connection_opened": false,
+  "matching_owned_lease_released_after_coordinator_authorization": true,
+  "next_helper_sha256": "8ef8f6eef15b3c065b1869a530d6f15d3b1acd45c956a512408c5600573f4949",
+  "next_helper_changes": [
+    "keepAlive false while one CDP socket remains connected",
+    "safe HTTP status/category retained",
+    "explicit client rejection distinct from transport ambiguity"
+  ],
+  "retry_executed_by_verifier": false
+}

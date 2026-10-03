@@ -1,0 +1,39 @@
+# Browserbase fallback: availability and authorization boundary
+
+Actual read-only `GET https://api.browserbase.com/v1/projects` at2026-10-03T22:12:52Z returned200 with one usable project and configured concurrency3, using the existing `BROWSERBASE_API_KEY` in `/Users/tringuyen/Developer/job_search/.env.local`. No key value/project ID is recorded, no session/context was created, and no cookies were read or transferred. Project availability does not establish remaining credits or Amazon login success. [Sanitized API evidence](browserbase-project-readonly.json).
+
+Eve registry search/view finds `extension/browserbase`, adding `@browserbasehq/eve` and `agent/extensions/browserbase.ts`. Install command, if later selected: `eve add extension/browserbase --non-interactive`. Nothing was installed. Existing job_search source `scripts/application-browser-provider.mjs` actively maps the retired Browserbase setting to Surfsky, so the stored key is reusable but that application does not currently supply a live Browserbase-authenticated browser.
+
+Browserbase's official cookie-sync helper supports `--domains amazon.com`, but source inspection shows it first calls `local.context.cookies()` without URLs and only then filters. Therefore that command is **not suitable unchanged for domain-only local access**. Its local Stagehand initialization may also encounter the existing-target initialization issue; this has not been run. [Official source](https://github.com/browserbase/skills/blob/main/skills/cookie-sync/scripts/cookie-sync.mjs).
+
+A bounded transfer, only after explicit approval, would reuse the successful raw-CDP owned-target connection and request only cookies applicable to `https://www.amazon.com/` with `Network.getCookies({urls:[...]})`, then recheck each cookie's exact Amazon domain. Keep values solely in process memory; no broad cookie enumeration, disk export, logs or model output. Create a separate Amazon-only Browserbase context and bounded session, inject only the approved cookies, run a no-click login-status/product check with request guards, and release the session. Cookie transfer shares Amazon authentication material with Browserbase; the user must choose it before execution. The current tested native profile is signed out, so transferring its cookies cannot be assumed to solve authentication. A different confirmed signed-in profile or user login in the Browserbase live view is needed.
+
+Browserbase contexts can persist authentication and site storage between sessions, and persist until explicitly deleted; use one context per site/login and avoid concurrent sessions. A cookie-only import should not copy the whole Chrome profile, other domains or saved credentials. Amazon can still demand authentication after an environment change. Direct user login in an isolated Browserbase live view avoids exporting local cookies but still places that login in the provider's browser. [Context lifecycle and login guidance](https://docs.browserbase.com/platform/browser/core-features/contexts).
+
+**Ready:** key/project discovery and minimal technical plan. **Not authorized or performed:** paid/session creation, cookie export, sensitive transfer, Amazon login, browser-provider switch. Root is awaiting the user's Chrome-profile/sign-in/Browserbase choice. No Browser Use installation or production changes.
+
+## Authorized fallback prepared after Chrome retry
+
+The user authorized switching providers if the selected Chrome attempt failed; coordinator reported that Work's diagnostic still showed signed out and stopped local retries. Prepared `/tmp/cue-browserbase-isolated.mts`, SHA256 `27ba8143733a674afcea7a24ca2d3201142de21f6aac8e12126c2489618858cf`; verifier did not execute it against Browserbase. Four fake-provider/protocol lifecycle tests and isolated typecheck passed.
+
+The helper creates one ephemeral session (no context or cookie import), disables session recordings/logging and automatic CAPTCHA solving, holds one cloud CDP connection, and navigates only the fixed public Amazon product once. A mode0600 local HTML file contains the private fullscreen Live View link; provider URLs and session credentials never go to stdout. Direct human login remains interactive and is not reported as guarded or automated. Stdin `read` requests a fixed public product/login-status read on the existing connection; `stop` releases. Nine-minute operator hold and ten-minute provider timeout bound the session. No automatic refresh/reconnect or purchase/registration actions.
+
+Cleanup requests release then verifies terminal status; ambiguous create or cleanup retains the lease/private reconciliation metadata and never retries creation. Current official API requires only `status: REQUEST_RELEASE` for release, while creation includes the resolved projectId. [Create Session](https://docs.browserbase.com/reference/api/create-a-session), [Live View URLs](https://docs.browserbase.com/reference/api/session-live-urls), [Update Session](https://docs.browserbase.com/reference/api/update-a-session). Coordinator owns real execution/review.
+
+## First actual attempt and reconciliation
+
+Coordinator executed the initial helper; creation failed before cloud connection. The initial helper discarded HTTP error detail, so the original status/cause is unknown. Verifier subsequently queried sessions using only the private diagnostic-owner metadata: HTTP200, zero matching sessions. With coordinator authorization, only the matching owned lease was removed. No creation was retried by verifier. [Evidence](../performance/browserbase-first-attempt-reconciliation.json).
+
+Updated helper SHA256 `8ef8f6eef15b3c065b1869a530d6f15d3b1acd45c956a512408c5600573f4949` uses keepAlive false (the CDP connection remains open), retains sanitized HTTP status/category, and distinguishes explicit client rejection from ambiguous transport failures. Existing four fake lifecycle checks and isolated typecheck passed. Coordinator owns the single authorized retry; no provider failure cause is asserted without its response.
+
+## Second actual attempt: account blocker
+
+Coordinator ran the single revised retry: project discovery succeeded; session creation returned **HTTP402**, categorized as plan_restriction. No session or cloud connection was created, and the owned lease was released. This establishes an account/plan-related rejection; no payment, plan upgrade or credit purchase was performed. Further creation attempts are stopped pending the user's provider-account change or alternate Browser Use key. [Second result](../performance/browserbase-second-attempt.json).
+
+## User-requested connection retry
+
+After the user requested the Browserbase connection following their billing intention, verifier ran the frozen helper once. Actual result remained HTTP402 plan_restriction after621ms; project discovery succeeded, zero sessions were created, no cloud connection opened, and the owned lease was released. No Live View link exists for this attempt. No further retry was made; the account/project still cannot create a browser. [Latest actual result](../performance/browserbase-connection-retry.json).
+
+## New user-supplied key: exact provider reason
+
+The user supplied a new key, saved by coordinator in Cue's ignored owner-only `.env.local`. Verifier changed the helper to read only that file, without accessing the old job_search credential, and ran one authorized attempt. Browserbase returned HTTP402 with the explicit reason: **Free plan browser minutes limit reached. Please upgrade your account.** Zero sessions/cloud connections/product navigations; lease released. This resolves the earlier generic plan_restriction into an exhausted Free-plan minute allowance. The code does not upgrade billing or retry further. [Actual new-key result](../performance/browserbase-new-key-attempt.json).

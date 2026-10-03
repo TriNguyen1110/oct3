@@ -1,0 +1,14 @@
+{
+  "recorded_at": "2026-10-03T22:27:47.600180+00:00",
+  "evidence_source": "coordinator actual retry result",
+  "projects_reads": 1,
+  "sessions_created": 0,
+  "provider_http_status": 402,
+  "provider_error_category": "plan_restriction",
+  "cloud_connection_opened": false,
+  "lease_released": true,
+  "cookies_transferred": false,
+  "local_chrome_access": false,
+  "further_creation_attempts": 0,
+  "status": "blocked_pending_provider_account_or_alternate_key"
+}

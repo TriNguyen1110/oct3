@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-10-03T22:32:30.720930+00:00",
+  "evidence_source": "verifier actual single retry after user requested Browserbase connection",
+  "helper_sha256": "8ef8f6eef15b3c065b1869a530d6f15d3b1acd45c956a512408c5600573f4949",
+  "state": "failed",
+  "projects_reads": 1,
+  "sessions_created": 0,
+  "provider_http_status": 402,
+  "provider_error_category": "plan_restriction",
+  "provider_operation": "create_session",
+  "cloud_connection_opened": false,
+  "lease_released": true,
+  "cookie_transfer": false,
+  "local_chrome_access": false,
+  "automated_form_actions": 0,
+  "automated_product_navigations": 0,
+  "elapsed_ms": 621,
+  "subsequent_retries": 0
+}

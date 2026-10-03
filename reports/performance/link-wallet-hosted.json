@@ -1,0 +1,11 @@
+{
+  "origin": "https://oct3-five.vercel.app",
+  "anonymous_status": 401,
+  "manager_status": 200,
+  "connected": true,
+  "test_mode": true,
+  "payment_method_count": 1,
+  "raw_credentials_exposed": false,
+  "connections_ui": true,
+  "post_login_api_writes": 0
+}

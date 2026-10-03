@@ -12,5 +12,28 @@
   "real_charges": 0,
   "merchant_execution": "disabled",
   "emblem_local_desktop_mobile": "passed",
-  "hosted_verification": "pending"
+  "hosted_verification": "passed",
+  "deployed_commit": "54d6425ecfcd0642b6c3de3bbde01684d1dfc313",
+  "origin": "https://oct3-five.vercel.app",
+  "wallet_hosted": {
+    "anonymous": 401,
+    "manager": 200,
+    "connected": true,
+    "test_mode": true,
+    "payment_method_count": 1,
+    "connections_ui": true,
+    "api_writes_after_auth": 0
+  },
+  "emblem_hosted": {
+    "widths": [
+      1440,
+      390
+    ],
+    "canvas": true,
+    "vertices": 50460,
+    "rotation_reset_drag_cta": "passed",
+    "overflow": false,
+    "page_errors": 0
+  },
+  "hosted_checked_at": "2026-10-03T22:43:41.862460+00:00"
 }
