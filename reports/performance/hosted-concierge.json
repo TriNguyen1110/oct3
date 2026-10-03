@@ -1,0 +1,51 @@
+{
+  "checked_at": "2026-10-03T20:20:42.483Z",
+  "origin": "https://oct3-five.vercel.app",
+  "source_commit": "ccdf75f",
+  "routes": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/api/readiness",
+      "status": 200
+    },
+    {
+      "path": "/eve/v1/health",
+      "status": 200
+    },
+    {
+      "path": "/api/tasks/fa208fd2-83d1-40d8-98c7-ba9be3fe2537%3Aevent_tickets/registration-review",
+      "status": 200
+    }
+  ],
+  "redesign_visible": true,
+  "registration_review": {
+    "proposal_id": "3ee2fce7-ce0a-4c74-ae44-97c9028198f1",
+    "revision": 1,
+    "source_url": "https://luma.com/OpenTogether",
+    "total_minor": 0,
+    "profile_unchanged": true,
+    "attendee_present": true
+  },
+  "initial_deployment_failure": "843db7b review API could not import Playwright because its dynamically loaded browsers.json was absent; ccdf75f explicitly includes that runtime manifest.",
+  "merchant_actions": 0,
+  "cached_prepare": {
+    "http": 200,
+    "same_proposal": true,
+    "status": "awaiting_approval",
+    "new_browser_run": false
+  },
+  "browser": {
+    "http": 200,
+    "desktop_overflow": false,
+    "mobile_overflow": false,
+    "page_errors": 0,
+    "new_mission_opens_auth": true,
+    "hosted_pinned_attendee_matched": true,
+    "review_approval_enabled": true,
+    "review_mobile_overflow": false,
+    "merchant_actions": 0
+  }
+}

@@ -4,7 +4,13 @@ The public demo is **https://oct3-five.vercel.app**. The stage starts with a
 fresh Claude Code terminal connected to Cue's MCP endpoint, then shows the same
 saved mission in the dashboard. See [the terminal runbook](CLAUDE_DEMO.md).
 
-**Verified hosted baseline: `21377a8`, October 3.** A real Claude Code caller
+**Current deployment: `ccdf75f`, October 3.** The concierge redesign and free
+RSVP review are deployed. Public page, readiness, Eve health and the private
+review returned HTTP 200. Reopening preparation reused the same proposal without
+a new browser run. Final RSVP submission remains unverified.
+[Deployment evidence](../reports/performance/hosted-concierge.json).
+
+**Verified hosted research baseline: `21377a8`, October 3.** A real Claude Code caller
 submitted one live research mission with explicit Stripe sandbox payment and
 read its status. The same mission contains a verified 50-cent test receipt,
 Fiverr's three observed options, Luma's selected event, and Amazon's HTTP 503

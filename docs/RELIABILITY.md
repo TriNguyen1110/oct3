@@ -102,3 +102,11 @@ Independent synthetic execution checks passed; actual read-only preparation and
 the private review also passed. No real RSVP is claimed. See the
 [free-registration report](../reports/verification/free-registration.md) for
 coverage and the reproduced races that were corrected.
+
+
+The first deployment of the RSVP routes exposed a runtime packaging failure:
+Playwright loads `browsers.json` dynamically, so Next's default tracing omitted
+it even though compilation and local checks passed. `next.config.ts` now adds
+that small manifest explicitly to API traces. The subsequent deployed review
+and cached preparation returned HTTP 200. This is why the runbook checks hosted
+routes in addition to typecheck/build. [Next tracing documentation](https://nextjs.org/docs/app/api-reference/config/next-config-js/output).
