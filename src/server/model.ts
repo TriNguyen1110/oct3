@@ -39,6 +39,12 @@ export interface MissionRecord {
   /** Private operational metadata; never included in MissionView or model output. */
   research_attempts?: Record<string, ResearchAttempt>;
   approved_action_hashes?: Record<string, string>;
+  /** Provider references and approval binding only. Never card data or wallet tokens. */
+  wallet_spends?: Record<string, {
+    proposal_id: string; revision: number; action_hash: string; idempotency_key: string;
+    test_mode: boolean; state: string; claim_id: string; request_id?: string;
+    checked_at: string;
+  }>;
   /** Private attendee data and provider identifiers; never copy into MissionView. */
   prepared_registrations?: Record<string, {
     revision: number;

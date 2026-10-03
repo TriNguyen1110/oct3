@@ -121,6 +121,7 @@ export async function reviseMission(id: string, principal: Principal, changes: {
   if (principal.role !== "manager") throw new AppError(403, "manager_required", "A manager must revise mission constraints.");
   const validated = constraintsSchema.parse(changes);
   return mutateRecord(id, principal.workspace_id, record => {
+    if (Object.values(record.wallet_spends || {}).some(spend => !["denied", "expired", "canceled"].includes(spend.state))) throw new AppError(409, "wallet_reconciliation_required", "Cancel or reconcile the existing Link spend request before revising this mission.");
     if (record.view.revision !== validated.expected_revision) throw new AppError(409, "revision_conflict", "This mission has changed. Review the latest revision.");
     if (record.view.tasks.some(x => x.status === "executing")) throw new AppError(409, "execution_in_flight", "An approved action is in flight. Reconcile it before changing constraints.");
     const protectedSpend = record.reservations.filter(x => ["committed", "uncertain"].includes(x.state)).reduce((n, x) => n + x.amount_minor, 0);
@@ -147,14 +148,14 @@ export async function reviseMission(id: string, principal: Principal, changes: {
   });
 }
 
-function validateProposal(record: MissionRecord, taskId: string, exact: { proposal_id: string; revision: number }) {
+function validateProposal(record: MissionRecord, taskId: string, exact: { proposal_id: string; revision: number }, allowExpired = false) {
   const task = record.view.tasks.find(x => x.id === taskId);
   if (!task) throw new AppError(404, "task_not_found", "Task not found.");
   if (!task.proposal || task.proposal.id !== exact.proposal_id || task.proposal.revision !== exact.revision || record.view.revision !== exact.revision) throw new AppError(409, "stale_proposal", "This proposal is stale. Review the current exact action.");
   const stored = task.proposal;
   const expires = Date.parse(stored.expires_at);
   if (!Number.isFinite(expires)) throw new AppError(409, "invalid_proposal", "The stored proposal expiry is invalid. Research it again.");
-  if (expires <= Date.now()) throw new AppError(409, "proposal_expired", "The proposal expired. Recheck its price and availability.");
+  if (!allowExpired && expires <= Date.now()) throw new AppError(409, "proposal_expired", "The proposal expired. Recheck its price and availability.");
   if (stored.task_id !== task.id || stored.currency !== "USD" || !Number.isSafeInteger(stored.quantity) || stored.quantity <= 0) {
     throw new AppError(409, "invalid_proposal", "The stored proposal is not bound to this task, currency and quantity.");
   }
@@ -213,6 +214,8 @@ export async function decideTask(taskId: string, principal: Principal, exact: { 
     const task = validateProposal(record, taskId, exact);
     if (task.status === "executing" || task.status === "confirmed" || record.reservations.some(x => x.task_id === taskId && x.state === "uncertain")) throw new AppError(409, "execution_locked", "Reconcile this commitment before changing its approval.");
     if (decision === "reject") {
+      const spend = record.wallet_spends?.[taskId];
+      if (spend && !["denied", "expired", "canceled"].includes(spend.state)) throw new AppError(409, "wallet_reconciliation_required", "Cancel or reconcile the Link spend request before rejecting this plan.");
       if (task.approval) task.approval.state = "rejected";
       if (record.approved_action_hashes) delete record.approved_action_hashes[taskId];
       delete record.prepared_registrations?.[taskId];
@@ -251,6 +254,10 @@ export async function resumeTask(taskId: string, principal: Principal, exact: { 
   const found = await findTask(taskId, principal.workspace_id);
   const selected = found.view.tasks.find(x => x.id === taskId)!;
   if (selected.proposal?.action_type === "free_registration") return resumeFreeRegistrationTask(taskId, principal, exact);
+  if (found.view.mode === "live" && (process.env.LINK_ACCESS_TOKEN || process.env.LINK_AUTH_FILE || found.wallet_spends?.[taskId])) {
+    const { resumeLinkWallet } = await import("./link-wallet");
+    return resumeLinkWallet(taskId, principal, exact);
+  }
   return mutateRecord(found.id, principal.workspace_id, record => {
     const existing = record.view.tasks.find(x => x.id === taskId)!;
     const protectedCommitment = existing.status === "confirmed" || existing.status === "executing" || record.reservations.some(x => x.task_id === taskId && ["committed", "uncertain"].includes(x.state));
@@ -272,6 +279,16 @@ export async function resumeTask(taskId: string, principal: Principal, exact: { 
     activity(record, `${task.lane}: execution safely stopped before any merchant commitment.`, "warning", task.lane);
     refresh(record);
   });
+}
+
+/** Shared deterministic boundary for wallet requests; caller input cannot supply payment authority. */
+export function walletAction(record: MissionRecord, taskId: string, exact: { proposal_id: string; revision: number }, reconcileExisting = false) {
+  const task = validateProposal(record, taskId, exact, reconcileExisting && Boolean(record.wallet_spends?.[taskId]?.request_id));
+  if (record.view.mode !== "live" || record.view.service_payment.status !== "paid" || task.proposal!.action_type === "free_registration") throw new AppError(409, "wallet_action_invalid", "A paid live merchant task is required for wallet preparation.");
+  if (["executing", "confirmed"].includes(task.status) || record.reservations.some(r => r.task_id === taskId && ["committed", "uncertain"].includes(r.state))) throw new AppError(409, "execution_locked", "Reconcile the existing merchant commitment first.");
+  if (!exactStoredApproval(task, exact) || !exactApprovedAction(record, task) || !exactHeldReservation(record, taskId, exact.proposal_id, task.proposal!.total_minor)) throw new AppError(403, "approval_required", "The current exact action needs passkey approval and a held budget reservation.");
+  if (!task.evidence.some(e => e.kind === "checkout_preview" && e.mode === "live" && e.proposal_id === exact.proposal_id && e.revision === exact.revision && e.source_url === task.proposal!.source_url)) throw new AppError(409, "checkout_required", "Verify the merchant checkout and final total before requesting wallet payment.");
+  return { task, proposal: task.proposal!, action_hash: approvedActionHash(record, task) };
 }
 
 export async function missionView(id: string, principal: Principal): Promise<MissionView> { return (await getRecord(id, principal.workspace_id)).view; }

@@ -1,0 +1,11 @@
+{
+  "test_mode": true,
+  "request_approval": false,
+  "merchant_actions": 0,
+  "credentials_requested": false,
+  "created": true,
+  "read_verified": true,
+  "canceled": true,
+  "create_binding_verified": true,
+  "provider_status": "created"
+}

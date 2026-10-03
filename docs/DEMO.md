@@ -32,7 +32,7 @@ are not merchant observations. See [sponsor evidence](SPONSORS.md).
 | Free event preparation and registration | Fresh hosted $0 proposal, native-passkey approval, and matching Luma confirmation verified. One actual free RSVP; no receipt URL was captured. |
 | Amazon/Fiverr purchase and receipts | Still handoffs. Both latest preflights were signed out; exact fee-inclusive totals and orders remain unverified. |
 | Food pickup | Latest selected-state smoke ended `merchant_changed` after 25.665 s because Potrero was absent. No cart or checkout; keep it labeled a handoff. |
-| Link merchant wallet | Not connected. A Stripe service receipt is separate from merchant payment. |
+| Link merchant wallet | Account connection and one saved method verified. A synthetic 50-cent test request was created, read back and canceled without requesting approval or credentials. Guarded product request flow is separate from merchant execution; no paid checkout is proven. |
 | Hosted Vercel/Eve | Public dashboard, authenticated readiness/profile and Eve health all HTTP 200; actual hosted Eve research dispatch verified. |
 
 To rehearse the research API explicitly with sandbox payment:

@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-10-03T22:29:29.386Z",
+  "scope": "Local headless Chromium software WebGL; real geometry, not real-user performance",
+  "ready_ms": 1230,
+  "geometry": {
+    "vertices": 50460,
+    "triangles": 24740,
+    "effective_dpr": 1.5,
+    "fallback_hidden": true
+  },
+  "reduced_motion_no_auto_rotation": true,
+  "glb": [],
+  "webgl_failure_fallback": true,
+  "fallback_overflow": false,
+  "fallback_cta": true
+}

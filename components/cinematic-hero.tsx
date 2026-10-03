@@ -1,7 +1,7 @@
 "use client";
 
 import { StatueViewer } from "./statue-viewer";
-// Real classical sculpture geometry is loaded separately from the mission controls.
+// A cinematic 3D emblem is loaded separately from the mission controls.
 
 export function CinematicHero({ onNewMission, onConnect }: { onNewMission: () => void; onConnect: () => void }) {
   return <section className="cinematic-hero" aria-labelledby="cue-hero-title">

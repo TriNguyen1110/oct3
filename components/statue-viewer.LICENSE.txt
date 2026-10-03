@@ -1,0 +1,31 @@
+Adapted component: R3F Blob by UI Layout
+21st listing: https://docs.21st.dev/community/components/s/3d
+Actual component source: https://www.ui-layouts.com/r/r3f-blob.json
+Original license: https://raw.githubusercontent.com/ui-layouts/uilayouts/main/LICENSE
+
+Cue retains/adapts the classic Perlin displacement functions on real icosahedron
+geometry. Reimplemented with existing Three.js, no R3F or remote HDRI. Added
+polished gold physical material, procedural studio environment, orbital rings,
+turquoise satellite and accessible bounded rotation. On-demand rendering only.
+
+MIT License
+
+Copyright (c) 2024 UI LAYOUT
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

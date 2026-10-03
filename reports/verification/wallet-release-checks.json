@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-10-03T22:40:56.718624+00:00",
+  "tests": {
+    "passed": 190,
+    "failed": 0,
+    "skipped": 8,
+    "elapsed_ms": 49413.179792
+  },
+  "typecheck": "passed",
+  "wallet_independent_tests": 12,
+  "link_real_test_create_read_cancel": "passed",
+  "real_charges": 0,
+  "merchant_execution": "disabled",
+  "emblem_local_desktop_mobile": "passed",
+  "hosted_verification": "pending"
+}
