@@ -1,0 +1,77 @@
+{
+  "checked_at": "2026-10-03T23:00:16.341Z",
+  "origin": "https://oct3-five.vercel.app",
+  "mission_id": "421d6be5-462d-4848-bd7a-223cf3dd6cd4",
+  "dashboard_url": "https://oct3-five.vercel.app/?mission=421d6be5-462d-4848-bd7a-223cf3dd6cd4",
+  "mode": "live",
+  "caller": {
+    "client": "Claude Code",
+    "model": "claude-sonnet-5-5",
+    "submit_calls": 1,
+    "status_calls": 1,
+    "caller_cost_usd": 0.12576175
+  },
+  "service_payment": {
+    "provider": "Stripe",
+    "mode": "test",
+    "status": "paid",
+    "amount_minor": 50,
+    "currency": "USD"
+  },
+  "tasks": [
+    {
+      "lane": "amazon",
+      "status": "options_ready",
+      "provider": "Browserless",
+      "attempts": 1,
+      "elapsed_ms": 14200,
+      "option_count": 3,
+      "first_option": {
+        "title": "Colgate Cavity Protection Fluoride Toothpaste, Mint, 6 Pack, 6 oz",
+        "amount_minor": 998,
+        "currency": "USD",
+        "source_url": "https://www.amazon.com/dp/B01BNEWDFQ"
+      },
+      "cleanup": "confirmed"
+    },
+    {
+      "lane": "fiverr",
+      "status": "needs_human",
+      "providers_attempted": ["Surfsky", "Browserless"],
+      "attempts": 2,
+      "blocker_code": "provider_error",
+      "blocker": "Fiverr returned HTTP 403 in the hosted mission.",
+      "separate_fresh_surfsky_rehearsal": "reports/performance/fiverr-readonly-rehearsal.json",
+      "cleanup": "confirmed"
+    },
+    {
+      "lane": "event_tickets",
+      "status": "options_ready",
+      "provider": "Surfsky",
+      "attempts": 1,
+      "option_count": 1,
+      "first_option": {
+        "title": "Open Together: AI Builders Unite",
+        "amount_minor": 0,
+        "currency": "USD",
+        "source_url": "https://luma.com/OpenTogether"
+      },
+      "registration_actions": 0,
+      "cleanup": "confirmed"
+    },
+    {
+      "lane": "food",
+      "status": "needs_human",
+      "provider": "Surfsky",
+      "attempts": 2,
+      "blocker_code": "merchant_changed",
+      "blocker": "The hosted session did not retain the expected Boba Guys location-picker state.",
+      "separate_fresh_surfsky_rehearsal": "reports/performance/food-boba-readonly-rehearsal.json",
+      "cleanup": "confirmed"
+    }
+  ],
+  "merchant_commitments": 0,
+  "purchase_actions": 0,
+  "registration_actions": 0,
+  "claim_boundary": "The hosted four-lane Claude mission and Stripe sandbox fee are actual. Amazon and Luma completed read-only research in that mission. Fiverr and food demonstrated bounded handoffs in the hosted mission; their successful observations are separate fresh Surfsky rehearsals and must be labeled separately."
+}
