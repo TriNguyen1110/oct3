@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { Locator, Page } from "playwright-core";
 import type { Evidence, Option } from "../shared/contracts";
+import { browserlessConfigured, solveBrowserlessChallenge, withBrowserlessPage } from "./browserless";
 import { BrowserIssue, withSurfskyPage } from "./surfsky";
 import type { ResearchTaskInput, ResearchTaskResult } from "./types";
 
@@ -39,6 +40,60 @@ export async function restrictFoodToReadOnly(page: Page) {
   // Retain the session for the page lifetime and apply bypass after routing setup.
 }
 
+async function researchDoorDashMenu(input: ResearchTaskInput, started: number): Promise<ResearchTaskResult> {
+  const requirement = input.requirements as Extract<ResearchTaskInput["requirements"], { query: string }>;
+  const observations: Evidence[] = [];
+  try {
+    await input.onProgress?.({ task_id: input.task_id, lane: "food", at: new Date().toISOString(), message: "Opening the Boba Guys DoorDash pickup menu in a residential browser." });
+    const run = await withBrowserlessPage("food", input.attempt_key, signalFor(input), input.timeout_ms ?? 60_000, async page => {
+      await restrictFoodToReadOnly(page);
+      const response = await page.goto(doorDashUrl, { waitUntil: "domcontentloaded", timeout: 45_000 });
+      await page.waitForTimeout(5_000);
+      const readPageSignal = async () => `${await page.title()} ${(await page.locator("body").innerText().catch(() => "")).slice(0, 2_000)}`;
+      let pageSignal = await readPageSignal();
+      if (/just a moment|verify you are human|captcha/i.test(pageSignal)) {
+        if (await solveBrowserlessChallenge(page)) { await page.waitForTimeout(6_000); pageSignal = await readPageSignal(); }
+      }
+      if (response && response.status() >= 400) throw new BrowserIssue(response.status() === 403 ? "challenge" : "provider_error", `DoorDash returned HTTP ${response.status()} before the Boba Guys menu was available.`);
+      const current = new URL(page.url());
+      if (!/^(?:www\.)?doordash\.com$/.test(current.hostname) || !/^\/store\/boba-guys-san-francisco-880283\//.test(current.pathname)) throw new BrowserIssue("merchant_changed", "DoorDash redirected away from the supported Boba Guys store.");
+      if (/just a moment|verify you are human|captcha/i.test(pageSignal)) throw new BrowserIssue("challenge", "DoorDash requires browser verification before the pickup menu can be reviewed.");
+      const pickup = page.getByText("Pickup", { exact: true }).first();
+      if (!await pickup.isVisible().catch(() => false)) throw new BrowserIssue("merchant_changed", "DoorDash did not expose Pickup for the supported Boba Guys store.");
+      const card = page.getByRole("button", { name: /Classic Black/i }).first();
+      if (!await card.isVisible().catch(() => false)) throw new BrowserIssue("merchant_changed", "DoorDash did not expose the observed Classic Black menu card.");
+      const cardText = (await card.innerText()).replace(/\s+/g, " ").trim();
+      const price = cardText.match(/\$\d{1,3}(?:,\d{3})*\.\d{2}/)?.[0];
+      if (!price) throw new BrowserIssue("merchant_changed", "DoorDash did not expose a readable price for Classic Black.");
+      const [candidate] = parseDoorDashRows([{ title: "Classic Black", price, context: `${cardText} Boba Guys pickup boba milk tea` }], requirement.query);
+      if (!candidate) throw new BrowserIssue("merchant_changed", "The observed DoorDash menu card did not match the requested boba pickup.");
+      const menuProof = evidence(input, doorDashUrl, "DoorDash Boba Guys pickup menu observed", `DoorDash returned HTTP 200 and exposed Pickup plus the visible Classic Black menu card at ${price}. The worker did not open modifiers, add an item to cart, checkout, or payment.`);
+      observations.push(menuProof);
+      const options: Option[] = [{
+        id: id(input.task_id, doorDashUrl, candidate.title, String(candidate.unit_minor)),
+        title: candidate.title,
+        description: `DoorDash showed Classic Black from Boba Guys at ${price} on the pickup menu. Open the provider preview to choose exact size, milk, sweetness, ice and toppings. Cart, fees, pickup time and checkout total remain unverified.`,
+        source_url: doorDashUrl,
+        merchant: "DoorDash · Boba Guys",
+        amount_minor: candidate.unit_minor,
+        currency: "USD",
+        quantity: requirement.quantity,
+        recommended: true,
+        reason: "Observed on the actual DoorDash pickup menu through a residential browser; no cart or order exists.",
+        evidence_ids: [menuProof.id],
+      }];
+      return { options };
+    });
+    const progress = "Found Classic Black on the real DoorDash pickup menu. Exact modifiers, cart and checkout still need manager review.";
+    await input.onProgress?.({ task_id: input.task_id, lane: "food", at: new Date().toISOString(), message: progress });
+    return { ...run.value, evidence: observations, progress, elapsed_ms: Date.now() - started, cleanup: run.cleanup, blocker: "DoorDash menu option prepared for review. Selecting modifiers and checkout require a manager; no food order was placed.", blocker_code: "checkout_handoff", ...(run.cleanup === "unconfirmed" ? { blocker: "Browser cleanup could not be confirmed. Reconcile the food worker before retrying.", blocker_code: "provider_error" as const } : {}) };
+  } catch (error) {
+    const issue = error instanceof BrowserIssue ? error : new BrowserIssue(input.signal?.aborted ? "cancelled" : "provider_error", "DoorDash pickup research could not finish.");
+    observations.push(evidence(input, doorDashUrl, "DoorDash pickup needs attention", `${issue.message} No modifier, cart, checkout, order or payment action was submitted.`));
+    return { options: [], evidence: observations, blocker: issue.message, blocker_code: issue.code, progress: issue.message, elapsed_ms: Date.now() - started, cleanup: issue.cleanup };
+  }
+}
+
 export async function researchDoorDash(input:ResearchTaskInput):Promise<ResearchTaskResult>{
   const started=Date.now(),observations:Evidence[]=[];
   if(input.lane!=="food"||!("query" in input.requirements))return {options:[],evidence:[],blocker:"Food research requires a query, fulfillment mode, location and quantity.",blocker_code:"configuration",progress:"Food requirements are incomplete.",elapsed_ms:Date.now()-started,cleanup:"not_started"};
@@ -46,6 +101,7 @@ export async function researchDoorDash(input:ResearchTaskInput):Promise<Research
   if(requirement.quantity!==1)return {options:[],evidence:[],blocker:"This observed Boba Guys preparation supports exactly one drink.",blocker_code:"configuration",progress:"Choose quantity one for the current food worker.",elapsed_ms:Date.now()-started,cleanup:"not_started"};
   if(requirement.fulfillment!=="pickup"||!/(?:boba|bubble tea|milk tea)/i.test(requirement.query))return {options:[],evidence:[],blocker:"This bounded food worker currently supports boba pickup near the selected San Francisco venue.",blocker_code:"configuration",progress:"Choose boba pickup for the current food worker.",elapsed_ms:Date.now()-started,cleanup:"not_started"};
   if(!/\b580\s+20th\s+(?:st(?:reet)?\.?)(?:,|\s).*san francisco/i.test(requirement.location))return {options:[],evidence:[],blocker:"This observed pickup preparation is pinned to the supplied 580 20th Street, San Francisco location.",blocker_code:"configuration",progress:"Use the verified pickup location for the current food worker.",elapsed_ms:Date.now()-started,cleanup:"not_started"};
+  if(browserlessConfigured())return researchDoorDashMenu(input,started);
   try{
     await input.onProgress?.({task_id:input.task_id,lane:"food",at:new Date().toISOString(),message:"Opening Boba Guys' official Order Ahead page in the persistent food browser."});
     const run=await withSurfskyPage("food",signalFor(input),async page=>{

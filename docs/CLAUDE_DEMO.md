@@ -141,6 +141,19 @@ worker model and browser usage. Once prepared, reuse saved results on stage.
 
 ## Stage prompt
 
+For the fastest DoorDash demo, use this short prompt. The stage launcher has an
+explicit, fixed preset for every required mission field, so Claude should submit
+immediately instead of interviewing the presenter:
+
+> Demo Cue with DoorDash. Prepare one Classic Black boba for pickup, under $8,
+> with 50% sweetness. Use the supported stage preset for everything else. Do not
+> purchase anything. Give me the dashboard and exact review/provider links.
+
+The launcher maps this request to the tracked venue, OpenTogether, toothpaste
+and beat-maker values, stable key `cue-doordash-stage-20261003`, and the Stripe
+sandbox service fee. “Order” is interpreted as research and preparation for
+manager review; it never authorizes a DoorDash cart or checkout.
+
 Fill in the actual event/date and chosen requirements before rehearsal:
 
 > Use oct3 to get my team ready for [EVENT URL] on [DATE], with a planning budget

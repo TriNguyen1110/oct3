@@ -1,0 +1,26 @@
+{
+  "scope": "Actual production DoorDash read-only adapter",
+  "checked_at": "2026-10-03T23:37:39.353Z",
+  "provider": "DoorDash",
+  "browser": "Browserless residential session",
+  "source": "https://www.doordash.com/store/boba-guys-san-francisco-880283/?pickup=true",
+  "result": {
+    "http_status": 200,
+    "fulfillment_observed": "Pickup",
+    "option": "Classic Black",
+    "merchant": "DoorDash · Boba Guys",
+    "observed_item_price_minor": 690,
+    "currency": "USD",
+    "quantity": 1,
+    "elapsed_ms": 15397,
+    "cleanup": "confirmed",
+    "terminal_state": "checkout_handoff"
+  },
+  "safety": {
+    "modifier_actions": 0,
+    "cart_actions": 0,
+    "checkout_actions": 0,
+    "payment_actions": 0
+  },
+  "claim_limit": "A real DoorDash pickup menu option and displayed item price were observed. Exact modifiers, availability, fees, pickup time and checkout total remain unverified; no cart or food order exists."
+}
