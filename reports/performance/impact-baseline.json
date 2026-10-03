@@ -46,6 +46,36 @@
       "reported_cost_usd": 0.11198925,
       "scope": "One sandbox-paid read-only research call; merchant completion untested"
     },
+    "fresh_parallel_rehearsal": {
+      "sources": [
+        "reports/performance/fiverr-readonly-rehearsal.json",
+        "reports/performance/luma-opentogether-readonly-rehearsal.json",
+        "reports/performance/food-boba-readonly-rehearsal.json"
+      ],
+      "fiverr_ms": 15628,
+      "luma_ms": 12091,
+      "food_ms": 53707,
+      "serial_sum_ms": 81426,
+      "observed_concurrent_window_ms": 53711,
+      "wall_time_avoided_vs_serial_sum_ms": 27715,
+      "wall_time_reduction_fraction": 0.34036,
+      "successful_grounded_results": 3,
+      "merchant_commitments": 0,
+      "cleanup_confirmed": true,
+      "limitation": "One fresh overlapping rehearsal. This measures browser-wait compression for the same observations, not sustained throughput, human-active time saved, checkout readiness, or purchases. Amazon ran separately in 12188ms."
+    },
+    "hosted_four_lane_rehearsal": {
+      "source": "reports/performance/hosted-four-lane-browserless-rehearsal.json",
+      "client": "Claude Code",
+      "tool_calls": 2,
+      "reported_caller_cost_usd": 0.12576175,
+      "lanes_dispatched": 4,
+      "lanes_with_grounded_options": 2,
+      "explicit_handoffs": 2,
+      "service_fee_test_usd": 0.5,
+      "merchant_commitments": 0,
+      "limitation": "Actual four-lane routing and bounded failure containment; Fiverr and food did not complete in this hosted mission."
+    },
     "component_form_preparation": {
       "source": "reports/performance/local-components.json",
       "wall_ms": 20654,
