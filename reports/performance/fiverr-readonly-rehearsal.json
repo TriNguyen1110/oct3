@@ -1,0 +1,92 @@
+{
+  "checked_at": "2026-10-03T22:54:06.381Z",
+  "scope": "Fresh public Fiverr beat-maker/Basic-style research rehearsal",
+  "provider": "Fiverr",
+  "execution": {
+    "primary": "Surfsky",
+    "durable_lane_acquired": true,
+    "durable_lane_released": true,
+    "elapsed_ms": 15628
+  },
+  "outcome": {
+    "status": "observed_options",
+    "options": [
+      {
+        "title": "I will be your beat maker",
+        "source_url": "https://www.fiverr.com/nakkaofficial/be-your-beat-maker",
+        "amount_minor": 2000,
+        "currency": "USD",
+        "quantity": 1,
+        "description": "D Daniel N. Top Rated I will be your beat maker 5.0 (20) From $20 Offers video consultations Starting package price; brief, delivery date and service fees require seller/checkout verification."
+      },
+      {
+        "title": "I will be your beat maker and producer",
+        "source_url": "https://www.fiverr.com/lorrdsky/be-your-beat-maker-and-producer",
+        "amount_minor": 1500,
+        "currency": "USD",
+        "quantity": 1,
+        "description": "L Lorrdsky Level 1 I will be your beat maker and producer 5.0 (1) From $15 Starting package price; brief, delivery date and service fees require seller/checkout verification."
+      },
+      {
+        "title": "I will make dark trap, memphis, or rage trap type beat",
+        "source_url": "https://www.fiverr.com/adizesuara/professionally-recreate-or-remix-any-ai-music-to-hq-audio",
+        "amount_minor": 1500,
+        "currency": "USD",
+        "quantity": 1,
+        "description": "A Adize Level 2 I will make dark trap, memphis, or rage trap type beat 5.0 (1) From $15 Starting package price; brief, delivery date and service fees require seller/checkout verification."
+      }
+    ],
+    "evidence": [
+      {
+        "title": "Page components inspected",
+        "source_url": "https://www.fiverr.com/search/gigs",
+        "observed_at": "2026-10-03T22:54:02.781Z",
+        "detail": "Read-only observation (readOnly=true): Observed 0 supported preparatory controls; 0 required controls excluded by policy. No fields were filled.",
+        "mode": "live"
+      },
+      {
+        "title": "I will be your beat maker",
+        "source_url": "https://www.fiverr.com/nakkaofficial/be-your-beat-maker",
+        "observed_at": "2026-10-03T22:54:04.813Z",
+        "detail": "Read-only observation (readOnly=true): From $20. D Daniel N. Top Rated I will be your beat maker 5.0 (20) From $20 Offers video consultations Starting package price; brief, delivery date and service fees require seller/checkout verification.",
+        "mode": "live"
+      },
+      {
+        "title": "I will be your beat maker and producer",
+        "source_url": "https://www.fiverr.com/lorrdsky/be-your-beat-maker-and-producer",
+        "observed_at": "2026-10-03T22:54:04.813Z",
+        "detail": "Read-only observation (readOnly=true): From $15. L Lorrdsky Level 1 I will be your beat maker and producer 5.0 (1) From $15 Starting package price; brief, delivery date and service fees require seller/checkout verification.",
+        "mode": "live"
+      },
+      {
+        "title": "I will make dark trap, memphis, or rage trap type beat",
+        "source_url": "https://www.fiverr.com/adizesuara/professionally-recreate-or-remix-any-ai-music-to-hq-audio",
+        "observed_at": "2026-10-03T22:54:04.813Z",
+        "detail": "Read-only observation (readOnly=true): From $15. A Adize Level 2 I will make dark trap, memphis, or rage trap type beat 5.0 (1) From $15 Starting package price; brief, delivery date and service fees require seller/checkout verification.",
+        "mode": "live"
+      }
+    ],
+    "blocker_code": null,
+    "blocker": null,
+    "adapter_elapsed_ms": 14577,
+    "session_cleanup": "confirmed",
+    "exact_lane_stopped": true,
+    "stopped_detail": "The exact saved lane profile is stopped."
+  },
+  "fallback": {
+    "provider": "Browserless",
+    "attempted": false,
+    "reason": "surfsky_succeeded"
+  },
+  "safety": {
+    "worker_write_actions": 0,
+    "add_to_cart_actions": 0,
+    "orders_or_payments": 0,
+    "messages": 0,
+    "registrations_or_rsvps": 0,
+    "sign_in_attempts": 0,
+    "credentials_or_session_urls_recorded": false
+  },
+  "lane_result": "pass_with_source_quality_caveat",
+  "assessment": "Surfsky returned three public starting-price cards. The first two have coherent beat-maker titles and public gig slugs. The third displayed title and public URL slug do not agree, so it is retained as exact adapter output but excluded from the reliable shortlist. No specific Basic package, delivery promise, fee, or checkout total was verified."
+}

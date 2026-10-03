@@ -1,0 +1,36 @@
+{
+  "checked_at": "2026-10-03T22:53:29Z",
+  "provider": "Browserless",
+  "configuration": {
+    "stealth": true,
+    "proxy": "residential",
+    "proxy_country": "us",
+    "proxy_sticky": true,
+    "local_profile_imported": false
+  },
+  "exact_product_probe": {
+    "source_url": "https://www.amazon.com/dp/B0195UTBKA",
+    "http_status": 200,
+    "elapsed_ms": 13338,
+    "title": "Colgate Cavity Protection Fluoride Toothpaste, Mint, 6 oz",
+    "captcha_found": false,
+    "captcha_solved": false,
+    "cart_actions": 0,
+    "checkout_actions": 0
+  },
+  "integrated_research_probe": {
+    "query": "toothpaste",
+    "elapsed_ms": 12188,
+    "observed_options": 3,
+    "first_option": {
+      "title": "Colgate Cavity Protection Fluoride Toothpaste, Mint, 6 Pack, 6 oz",
+      "source_url": "https://www.amazon.com/dp/B01BNEWDFQ",
+      "displayed_amount_minor": 998,
+      "currency": "USD"
+    },
+    "cleanup": "confirmed",
+    "cart_actions": 0,
+    "checkout_actions": 0
+  },
+  "claim_boundary": "Public Amazon product access and Cue research integration are proven. Signed-in cart preparation, fee-inclusive checkout total, payment and order confirmation are not proven."
+}

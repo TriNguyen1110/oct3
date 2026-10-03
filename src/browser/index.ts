@@ -6,9 +6,11 @@ import { rankCandidates } from "./rank";
 import { createComponentToolkit, type ComponentSnapshot } from "./components";
 import type { ExecuteApprovedTaskInput, ExecuteApprovedTaskResult, ResearchTaskInput, ResearchTaskResult } from "./types";
 import { researchDoorDash } from "./doordash";
+import { browserlessConfigured, solveBrowserlessChallenge, withBrowserlessPage } from "./browserless";
 
 export type * from "./types";
 export { surfskyConfigured, surfskyHealth, verifyLaneStopped } from "./surfsky";
+export { browserlessConfigured } from "./browserless";
 export { createComponentTools } from "./component-tools";
 export { createComponentToolkit } from "./components";
 export type { ComponentSnapshot, ComponentPolicy, TaskComponent } from "./components";
@@ -40,15 +42,22 @@ export async function researchTask(input: ResearchTaskInput): Promise<ResearchTa
     if (input.connection_ref && input.connection_ref !== `oct3-${input.lane}`) throw new BrowserIssue("configuration", "The worker connection is not authorized for this lane.");
     source = researchUrl(input);
     const provider = providerName(input.lane, source);
-    await progress(input, `Starting ${provider} research in its persistent Surfsky browser.`);
+    const preferBrowserless = input.lane === "amazon" && browserlessConfigured();
+    await progress(input, `Starting ${provider} research in ${preferBrowserless ? "a stealth Browserless session" : "its persistent Surfsky browser"}.`);
     const signal = runSignal(input);
-    const run = await withSurfskyPage(input.lane, signal, async page => {
+    const work = (usingBrowserless: boolean) => async (page: import("playwright-core").Page) => {
       const response = await page.goto(source!, { waitUntil: "domcontentloaded" });
       if (response && response.status() >= 400) throw new BrowserIssue("provider_error", `${provider} returned HTTP ${response.status()} before readable options were available.`);
       // Allow client-rendered marketplace cards; bounded, no forms or commitments.
       const selector = input.lane === "amazon" ? '[data-component-type="s-search-result"]' : input.lane === "fiverr" ? 'a[href*="/search/"]' : 'script[type="application/ld+json"]';
       await page.locator(selector).first().waitFor({state:"attached",timeout:5_000}).catch(() => {});
-      await detectAccessBlocker(page);
+      try {
+        await detectAccessBlocker(page);
+      } catch (error) {
+        if (!(usingBrowserless && error instanceof BrowserIssue && error.code === "challenge" && await solveBrowserlessChallenge(page))) throw error;
+        await page.waitForLoadState("domcontentloaded").catch(() => {});
+        await detectAccessBlocker(page);
+      }
       publicSourceUrl(page.url(), input.lane); // reject redirects outside the selected merchant
       const components=createComponentToolkit(page,{task_id:input.task_id,allowedOrigins:[new URL(page.url()).origin],readOnly:true,signal});
       const inspected=await components.inspectTaskPage();
@@ -73,7 +82,20 @@ export async function researchTask(input: ResearchTaskInput): Promise<ResearchTa
         return {options,blocker:"No verifiable USD options were found in this page layout. Open the source for a manager handoff.",blocker_code:"no_options" as const};
       }
       return { options };
-    });
+    };
+    let run;
+    if (preferBrowserless) {
+      run = await withBrowserlessPage(input.lane, input.attempt_key, signal, input.timeout_ms ?? 90_000, work(true));
+    } else {
+      try {
+        run = await withSurfskyPage(input.lane, signal, work(false));
+      } catch (error) {
+        const fallbackCodes = new Set(["provider_auth", "provider_capacity", "provider_credit", "provider_error", "challenge"]);
+        if (!(browserlessConfigured() && error instanceof BrowserIssue && error.cleanup !== "unconfirmed" && fallbackCodes.has(error.code))) throw error;
+        await progress(input, `${provider} Surfsky run could not finish; retrying once in an isolated Browserless session.`);
+        run = await withBrowserlessPage(input.lane, input.attempt_key, signal, input.timeout_ms ?? 90_000, work(true));
+      }
+    }
     const message = run.value.options.length ? `Observed ${run.value.options.length} ${providerName(input.lane,source)} option${run.value.options.length === 1 ? "" : "s"}. Prices are research estimates, not checkout totals; event research does not confirm an RSVP.` : run.value.blocker!;
     await progress(input,message);
     return { ...run.value,...(inspection?{inspection}:{}),evidence:observations,progress:message,elapsed_ms:Date.now()-started,cleanup:run.cleanup,...(run.cleanup === "unconfirmed"?{blocker:"Browser cleanup could not be confirmed. Reconcile this worker session before another run.",blocker_code:"provider_error" as const}:{}) };

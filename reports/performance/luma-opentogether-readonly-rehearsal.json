@@ -1,0 +1,62 @@
+{
+  "checked_at": "2026-10-03T22:54:02.848Z",
+  "scope": "Fresh exact OpenTogether public event research rehearsal; RSVP prohibited",
+  "provider": "Luma",
+  "execution": {
+    "primary": "Surfsky",
+    "durable_lane_acquired": true,
+    "durable_lane_released": true,
+    "elapsed_ms": 12091
+  },
+  "outcome": {
+    "status": "observed_options",
+    "options": [
+      {
+        "title": "Open Together: AI Builders Unite",
+        "source_url": "https://luma.com/OpenTogether",
+        "amount_minor": 0,
+        "currency": "USD",
+        "quantity": 1,
+        "description": "Calling all AI Builders to San Francisco.\nLet's come together.\nShow strength in numbers.\nCelebrate open models.\nAnd dance for AI freedom.\nFriday October 16 is opening night of Open Source AI Week, and we're throwing the kick-off party, free for everyone.\n6pm to 9pm. Meetup. Community demos. Light bites and drinks.\n9pm to midnight. Dance party! DJs!\nOpen source and open models give us the freedom to build, share, and control our tech. Let\u2019s bring together the community making that future possible. Listed 2026-10-16T18:00:00.000-07:00; 1 requested passes using the listed price $0.00 each. The public page currently offers registration without an observed approval label; no registration or RSVP was submitted or confirmed. Ticket type, fees and availability for the full group still require checkout verification."
+      }
+    ],
+    "evidence": [
+      {
+        "title": "Page components inspected",
+        "source_url": "https://luma.com/OpenTogether",
+        "observed_at": "2026-10-03T22:53:59.761Z",
+        "detail": "Read-only observation (readOnly=true): Observed 0 supported preparatory controls; 0 required controls excluded by policy. No fields were filled.",
+        "mode": "live"
+      },
+      {
+        "title": "Open Together: AI Builders Unite",
+        "source_url": "https://luma.com/OpenTogether",
+        "observed_at": "2026-10-03T22:54:01.114Z",
+        "detail": "Read-only observation (readOnly=true): $0.00 per ticket. Calling all AI Builders to San Francisco.\nLet's come together.\nShow strength in numbers.\nCelebrate open models.\nAnd dance for AI freedom.\nFriday October 16 is opening night of Open Source AI Week, and we're throwing the kick-off party, free for everyone.\n6pm to 9pm. Meetup. Community demos. Light bites and drinks.\n9pm to midnight. Dance party! DJs!\nOpen source and open models give us the freedom to build, share, and control our tech. Let\u2019s bring together the community making that future possible. Listed 2026-10-16T18:00:00.000-07:00; 1 requested passes using the listed price $0.00 each. The public page currently offers registration without an observed approval label; no registration or RSVP was submitted or confirmed. Ticket type, fees and availability for the full group still require checkout verification.",
+        "mode": "live"
+      }
+    ],
+    "blocker_code": null,
+    "blocker": null,
+    "adapter_elapsed_ms": 10951,
+    "session_cleanup": "confirmed",
+    "exact_lane_stopped": true,
+    "stopped_detail": "The exact saved lane profile is stopped."
+  },
+  "fallback": {
+    "provider": "Browserless",
+    "attempted": false,
+    "reason": "surfsky_succeeded"
+  },
+  "safety": {
+    "worker_write_actions": 0,
+    "add_to_cart_actions": 0,
+    "orders_or_payments": 0,
+    "messages": 0,
+    "registrations_or_rsvps": 0,
+    "sign_in_attempts": 0,
+    "credentials_or_session_urls_recorded": false
+  },
+  "lane_result": "pass",
+  "assessment": "The exact public OpenTogether event, date, and zero-dollar listed ticket were observed. No form was filled and no registration or RSVP was attempted; the previously confirmed RSVP was not duplicated."
+}
