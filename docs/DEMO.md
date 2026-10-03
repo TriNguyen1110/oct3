@@ -1,80 +1,58 @@
 # Demo runbook
 
-The current stage direction is [Claude terminal → merchant outcomes](CLAUDE_DEMO.md):
-connect Claude Code live, prepare a low-budget team outing, review supplies and
-freelancer previews, and target one verified free event registration. Default
-real merchant spend is $0; Stripe uses its sandbox. The terminal connection is
-verified; event registration and merchant completion remain build
-targets. The measured research and fixture sequence below is the working fallback.
+The public demo is **https://oct3-five.vercel.app**. The stage starts with a
+fresh Claude Code terminal connected to Cue's MCP endpoint, then shows the same
+saved mission in the dashboard. See [the terminal runbook](CLAUDE_DEMO.md).
+
+**Verified hosted baseline: `21377a8`, October 3.** A real Claude Code caller
+submitted one live research mission with explicit Stripe sandbox payment and
+read its status. The same mission contains a verified 50-cent test receipt,
+Fiverr's three observed options, Luma's selected event, and Amazon's HTTP 503
+handoff. Supabase persists the mission and the saved manager profile.
+[Hosted checks](../reports/performance/hosted-baseline.json) and
+[actual mission](../reports/performance/hosted-claude-paid-research.json).
+
+The free RSVP implementation passed 135 checks with zero failures and two
+opt-in skips; typecheck passed. Actual read-only preparation took 22.580 seconds
+and the rendered review matched the private saved attendee and $0 total at
+desktop/mobile widths, with no overflow or page errors. No actual registration,
+Amazon purchase or Fiverr order has occurred. The narrow Luma
+flow requires a fresh read-only preparation, exact attendee review, approval and
+separate submission. Research prices do not become checkout totals.
 
 **90 seconds is the presentation goal, not an end-to-end runtime guarantee.**
-The current app has real browser research, labeled fixture planning, and explicit
-payment/checkout gaps. Do not present the fixture plan as merchant observations.
-See [sponsor status](SPONSORS.md) for claims that are safe to make today.
+Replay saved research with its timestamp during repeated rehearsals. The budget
+revision interaction remains a visibly labeled fixture; its illustrative prices
+are not merchant observations. See [sponsor evidence](SPONSORS.md).
 
-Architecture talking point: Supabase persists shared mission state; Queues could
-hold durable browser jobs, and Cron could check stalled work. Queues and Cron are
-planned, not active in this build. Stripe has a verified 50-cent MPP sandbox
-payment gate, persisted Supabase receipt and a replay without another payment
-call. That isolated test did not dispatch browsers. Combined caller-payment-worker
-rehearsal and Link merchant spending still need their own evidence.
+| Demo feature | Current evidence and limit |
+|---|---|
+| Claude terminal → MCP → API | Actual hosted `submit_mission` then `mission_status`, exact input and stable key; caller cost $0.11198925. |
+| Stripe service payment | Actual 50-cent sandbox payment through the real MPP verifier; persisted receipt and same-mission replay. Developer-supplied test method, not a manager-funded wallet. |
+| Concurrent research | Hosted Fiverr 3 options, Luma 1 option; Amazon HTTP 503 remains an explicit handoff. |
+| Supabase profile and history | Actual private manager profile save/reload and independent database read; workspace history persists. Preferences never authorize a purchase. |
+| Budget and exact approval guards | Independent local negative/concurrency checks plus actual Supabase race/overspend checks. Interactive budget planning uses labeled fixtures. |
+| Dashboard payment recovery | Saved mission survives 402/503; explicit sandbox-payment action resumes that same mission. Mocked rendered recovery checks passed. |
+| Free event preparation and registration | Actual read-only preparation and saved attendee review passed; synthetic approval/replay guards passed. Final provider submission is unverified. |
+| Amazon/Fiverr purchase and receipts | Unimplemented. Exact destinations, final fee-inclusive totals, account sessions and user approval are still required. |
+| Link merchant wallet | Not connected. A Stripe service receipt is separate from merchant payment. |
+| Hosted Vercel/Eve | Public dashboard, authenticated readiness/profile and Eve health all HTTP 200; actual hosted Eve research dispatch verified. |
 
-## Readiness audit — October 3, source f9d3de1
-
-**Superseding implementation update:** the sandbox payer, saved-mission payment
-recovery, Luma research and saved manager profile are now implemented. Explicit
-CLI `--pay-test` or MCP `pay_test_service_fee: true` uses the developer-supplied
-Stripe test method through the real MPP verifier. It is not an external real
-wallet. Normal calls still return a payment challenge. Manager profile data is
-stored in Supabase; agents can read defaults, but only the manager can edit them.
-
-Independent local verification: 88 passes, zero failures, one opt-in integration
-skip; typecheck and production build pass. The new combined real CLI/API →
-Stripe sandbox → Eve/Claude → Surfsky → Supabase run returned a paid mission in
-5.390 seconds and settled in 27.428 seconds, with Fiverr options, Amazon HTTP503,
-and a stale compiled worker rejecting Luma. The verified payment replay retained
-the same mission and payment. The Luma worker is being rebuilt and retried on
-that existing mission; do not call all three lanes successful from this run.
-See `reports/performance/local-paid-research.json` and
-`reports/verification/demo-completion.md`. Free RSVP execution remains separate
-work and no actual registration or purchase has occurred.
-
-To explicitly rehearse the research API with sandbox payment:
+To rehearse the research API explicitly with sandbox payment:
 
 ```sh
-npm run cli -- submit examples/team-outing.json --key cue-stage-outing-001 --pay-test
-npm run cli -- status <returned-mission-id>
+OCT3_BASE_URL=https://oct3-five.vercel.app npm run cli -- submit examples/team-outing.json --key cue-stage-outing-001 --pay-test
+OCT3_BASE_URL=https://oct3-five.vercel.app npm run cli -- status <returned-mission-id>
 ```
 
-Reuse the same input and key on retry. The sample is live **read-only research**,
-with a planning budget, not authorization to spend or register.
+Reuse the same exact input and key on retry. The sample is live read-only
+research with a planning budget, not authorization to spend or register.
+The current independent suite is 135 passes, zero failures and two opt-in
+integration skips; the new free-registration boundaries have their own
+[verification report](../reports/verification/free-registration.md).
 
-**The complete planned live demo is not verified or implemented end to end.**
-The following distinctions come from saved test evidence plus a read-only audit
-of the current code. Current local dashboard, readiness and authenticated history
-reads return HTTP 200; history uses Supabase. Configuration flags alone are not
-integration tests. No new paid browser/model runs or merchant actions were used
-for this audit.
-
-| Demo feature | Actual evidence and limit |
-|---|---|
-| Claude terminal connection | Real Claude Code called `list_missions`; no complete live submission/payment run. |
-| CLI/MCP submit, status, history, retry dedupe | Actual fixture journey passed against local API and Supabase. |
-| Budget revision, exact approvals and spending guards | Local negative/concurrency checks pass; actual Supabase races and SQL overspend rejection pass. The interactive planning journey uses fixtures. |
-| Stripe service payment and receipt | Actual 50-cent sandbox MPP gate passed; proof persisted and replay made no additional payment call. Workers were deliberately not dispatched. |
-| Three live research lanes | Earlier local run took 21.036 seconds: Fiverr 3 options, Eventbrite 1, Amazon blocked. That run predates current payment gating and cloud integration. |
-| Live research to exact purchase proposal | Missing: research returns options; only fixture planning currently constructs proposals. |
-| Automatic terminal payment | Missing: CLI/MCP can forward an existing payment credential, but the Claude launcher has no wallet/payment negotiation client. |
-| Dashboard live submission at HTTP 402 | Current form displays the API error; it does not provide a payment/resume flow for the saved mission. |
-| Purchase, hire, event RSVP and merchant receipts | Missing: resume returns a handoff; remote form writes are blocked. Receipt presentation tests use synthetic evidence. |
-| Hosted Vercel journey | Not deployed or verified. Local success does not establish hosted execution. |
-
-The demonstrated fallback is fixture planning/approval, saved live research with
-its timestamp, cloud persistence, and a separate sandbox service receipt. A
-prepared checkout, actual hire/order/RSVP or merchant receipt must not be claimed.
-Before calling the desired terminal-to-result demo ready, implement payment
-handoff/negotiation, then rehearse one combined journey. A real free RSVP also
-needs its own execution adapter and verification; it is not merely an unrun test.
+Supabase Queues and Cron are planned extensions; neither is active in this
+build. They must not be presented as implemented sponsor use.
 
 ## Timing evidence
 
@@ -93,7 +71,8 @@ cleanup, not percentiles or measurements of the deployed application.
 | Local fixture submit / status / replan | Application path only; no browsers | **59 / 13 / 18 ms** |
 | Local synthetic Chrome component-tool run with real Claude | Four values retained, conditional field discovered, ten tool calls, zero submission | **20.654 s** |
 | Real CLI/MCP verification journey | Auth, submit, dedupe, reads, revision, approval boundaries | **7.14 s** |
-| Hosted submit acknowledgement and status read | Not yet measured | Pending |
+| Combined local sandbox payment → Eve → research | Handle in 5.390 s; settled with two initial blockers | **27.428 s** |
+| Hosted fresh Claude caller → sandbox-paid research | Submission/status verified; Fiverr and Luma results, Amazon handoff | End-to-end latency not separately measured |
 
 The three browser probes ran concurrently. Do not add their times and describe
 that as observed mission latency; do not assume the slowest probe alone predicts
@@ -109,9 +88,10 @@ the complete journey. [Probe details](../src/browser/README.md).
    in the board login. Keep both out of visible commands and recordings.
    Confirm [readiness](../app/api/readiness/route.ts); configured does not mean
    live-tested.
-3. Select one real Eventbrite event with a matching ISO date, one Amazon query
-   and one Fiverr brief. The documented Eventbrite probe was an example, not
-   the user's selected event. A mismatch should remain an explicit blocker.
+3. Use the selected Open Together event, October 16 at 18:00 PDT, with quantity
+   one and the saved manager profile. The tracked team-outing input uses this
+   exact event. A mismatch must remain a blocker. No actual RSVP is authorized
+   by running research.
 4. Warm the app with an authenticated status read and load the board. Reuse the
    persistent remote profiles. Do not leave extra browser sessions running:
    active profiles can block workers and add unnecessary cost.

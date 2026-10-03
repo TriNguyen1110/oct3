@@ -3,6 +3,7 @@ import type { Lane, MissionInput, MissionView, Proposal, Task } from "../shared/
 import type { Principal } from "./auth";
 import { AppError } from "./errors";
 import { fixtureResearch } from "./fixtures";
+import { assertPreparedFreeRegistration, resumeFreeRegistrationTask } from "./free-registration";
 import type { MissionRecord } from "./model";
 import { servicePaymentReadiness } from "./service-payments";
 import { constraintsSchema } from "./schema";
@@ -134,6 +135,7 @@ export async function reviseMission(id: string, principal: Principal, changes: {
       if (task.status === "confirmed" || record.reservations.some(x => x.task_id === task.id && x.state === "uncertain")) continue;
       if (task.approval) task.approval.state = "stale";
       if (record.approved_action_hashes) delete record.approved_action_hashes[task.id];
+      delete record.prepared_registrations?.[task.id];
       task.proposal = undefined;
       if (record.view.mode === "fixture") {
         const result = fixtureResearch(task.id, task.lane, record.input); task.options = result.options; task.evidence = result.evidence;
@@ -205,9 +207,11 @@ export async function decideTask(taskId: string, principal: Principal, exact: { 
     if (decision === "reject") {
       if (task.approval) task.approval.state = "rejected";
       if (record.approved_action_hashes) delete record.approved_action_hashes[taskId];
+      delete record.prepared_registrations?.[taskId];
       record.reservations.filter(x => x.task_id === taskId && x.state === "reserved").forEach(x => { x.state = "released"; });
       task.status = "needs_human"; task.blocker = "Manager rejected this proposal. Revise constraints to prepare a new plan.";
     } else {
+      if (task.proposal?.action_type === "free_registration") assertPreparedFreeRegistration(record, task);
       if (task.approval?.state === "approved") {
         if (!exactStoredApproval(task, exact) || !exactApprovedAction(record, task) || !exactHeldReservation(record, taskId, exact.proposal_id, task.proposal!.total_minor)) {
           throw new AppError(409, "approval_state_invalid", "The saved approval is not backed by one exact held reservation.");
@@ -219,12 +223,13 @@ export async function decideTask(taskId: string, principal: Principal, exact: { 
       refresh(record);
       if (cost > record.view.budget.available_minor) throw new AppError(409, "budget_exceeded", "The remaining budget cannot cover this action.");
       record.reservations.push({ id: randomUUID(), task_id: taskId, proposal_id: exact.proposal_id, amount_minor: cost, state: "reserved" });
-      task.approval = { id: task.approval?.id || randomUUID(), proposal_id: exact.proposal_id, revision: exact.revision, state: "approved", approved_at: new Date().toISOString(), link_state: record.view.mode === "fixture" ? "not_applicable_fixture" : "not_configured" };
+      const freeRegistration = task.proposal!.action_type === "free_registration";
+      task.approval = { id: task.approval?.id || randomUUID(), proposal_id: exact.proposal_id, revision: exact.revision, state: "approved", approved_at: new Date().toISOString(), link_state: record.view.mode === "fixture" ? "not_applicable_fixture" : freeRegistration ? "not_applicable_free" : "not_configured" };
       record.approved_action_hashes ||= {};
       record.approved_action_hashes[taskId] = approvedActionHash(record, task);
       task.status = "prepared";
-      task.progress = "Plan approved; merchant commitment has not occurred";
-      task.blocker = record.view.mode === "fixture" ? "Fixture approval recorded. No merchant payment or order will be sent." : "Link Agent Wallet is not connected. Merchant spending requires separate verified Link approval.";
+      task.progress = freeRegistration ? "Free registration approved; ready for exact submission" : "Plan approved; merchant commitment has not occurred";
+      task.blocker = record.view.mode === "fixture" ? "Fixture approval recorded. No merchant payment or order will be sent." : freeRegistration ? undefined : "Link Agent Wallet is not connected. Merchant spending requires separate verified Link approval.";
     }
     activity(record, `${task.lane}: manager ${decision === "approve" ? "approved the exact plan and reserved its budget" : "rejected the proposal"}.`, "approval", task.lane);
     refresh(record);
@@ -233,6 +238,8 @@ export async function decideTask(taskId: string, principal: Principal, exact: { 
 
 export async function resumeTask(taskId: string, principal: Principal, exact: { proposal_id: string; revision: number }) {
   const found = await findTask(taskId, principal.workspace_id);
+  const selected = found.view.tasks.find(x => x.id === taskId)!;
+  if (selected.proposal?.action_type === "free_registration") return resumeFreeRegistrationTask(taskId, principal, exact);
   return mutateRecord(found.id, principal.workspace_id, record => {
     const existing = record.view.tasks.find(x => x.id === taskId)!;
     const protectedCommitment = existing.status === "confirmed" || existing.status === "executing" || record.reservations.some(x => x.task_id === taskId && ["committed", "uncertain"].includes(x.state));

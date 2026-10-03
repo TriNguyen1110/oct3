@@ -1,0 +1,36 @@
+{
+  "checked_at": "2026-10-03T20:01:42.728Z",
+  "origin": "https://oct3-five.vercel.app",
+  "source_commit": "21377a8",
+  "mission_id": "fa208fd2-83d1-40d8-98c7-ba9be3fe2537",
+  "service_payment": {
+    "mode": "test",
+    "status": "paid",
+    "currency": "USD",
+    "reference": "pi_3UMZ7992qDIKX8Ve01ASi3RQ",
+    "amount_minor": 50
+  },
+  "eve_dispatch": "sent",
+  "settled": true,
+  "outcomes": [
+    {
+      "lane": "amazon",
+      "status": "needs_human",
+      "options": 0,
+      "blocker": "Amazon returned HTTP 503 before readable options were available. Wait until 2026-10-03T20:01:29.343Z before retrying this worker. Other lanes can continue."
+    },
+    {
+      "lane": "fiverr",
+      "status": "options_ready",
+      "options": 3,
+      "blocker": "Select an option and verify the final merchant checkout total, including fees, before a purchase proposal can be approved."
+    },
+    {
+      "lane": "event_tickets",
+      "status": "options_ready",
+      "options": 1,
+      "blocker": "Select an option and verify the final merchant checkout total, including fees, before a purchase proposal can be approved."
+    }
+  ],
+  "merchant_actions": 0
+}

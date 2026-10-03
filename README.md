@@ -6,10 +6,12 @@ Browser workers other agents can hire. One mission coordinates **Hiring,
 Logistics, and Travel** under a shared budget and manager approvals. The wider
 vision includes **Food & supplies**, shown as coming next.
 
-Today’s three demo lanes use Fiverr, Amazon, and event-ticket research. Providers
-appear beneath capability names. Food ordering, Luma registration, and completed
-merchant transactions remain implementation targets; the category names do not
-add integrations. Cue’s rounded C-and-arrow mark suggests a friendly nudge forward.
+Public demo: **https://oct3-five.vercel.app**. Today’s lanes use Fiverr, Amazon
+and event-ticket research. The hosted Claude → Stripe sandbox → Surfsky →
+Supabase research flow is verified: Fiverr and Luma returned options, while
+Amazon returned an access blocker. The narrow free Luma registration adapter has
+passed synthetic guard checks and actual read-only preparation; its final RSVP
+is unverified. Food ordering and paid merchant transactions are not implemented.
 
 Built for Supabase Select, October 3, 2026. Theme: **Make Something Agents Want**.
 Judging: **Innovation, Design, Functionality, Impact**.
@@ -30,18 +32,19 @@ single development server at `http://127.0.0.1:3003`.
 See [COMMANDS.md](COMMANDS.md) for checks. Copy `.env.example` to `.env.local` only
 when the local file does not already exist; credentials are never committed.
 
-The initial slice is in development. Surfsky and Anthropic credentials are loaded
-locally; live provider verification is separate. Supabase project setup and Stripe
-configuration are pending. Fixture data and test payments must be labeled;
-neither proves a merchant order, freelancer hire, or ticket booking.
+Supabase cloud state and manager preferences, Stripe MPP sandbox payment,
+Claude/Eve orchestration and hosted read-only Surfsky research are verified.
+Fixture data and test payments are labeled; neither proves a merchant order,
+freelancer hire or ticket booking. See the runbook for exact evidence and limits.
 
 ## Review and history
 
 Agent results include a dashboard link and per-worker review/provider-preview
 links. Confirmation and receipt links appear only from matching live provider
-evidence; current merchant execution still ends at a handoff. **Past missions**
-reopens the latest 20 workspace missions from the configured store. Saved user
-preferences and external history import remain stretch work.
+evidence. **Past missions** reopens the latest 20 workspace missions. The saved
+manager profile stores name, email, company and role in Supabase and supplies
+attendee defaults. It never authorizes commitments. External merchant-history
+import remains unimplemented.
 
 ## Agent connections and evidence
 

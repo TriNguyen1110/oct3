@@ -4,9 +4,10 @@ The stage starts with a fresh Claude Code terminal session. Connect oct3, give
 one manager request, follow the workers, approve exact commitments, then reveal
 the resulting merchant pages. Finish back in Claude with the same mission ID.
 
-This is the target demo. Current verified behavior is research, structured
-status, fixture planning and explicit handoffs. Merchant checkout, Fiverr order
-submission and ticket booking still need implementation and a real rehearsal.
+Public dashboard: **https://oct3-five.vercel.app**. A real fresh Claude Code
+caller has submitted sandbox-paid research and read the same hosted mission.
+Fiverr and Luma returned observed options; Amazon returned an explicit HTTP 503
+handoff. Actual orders and event registration have not been completed.
 
 Latest direction: make the story approachable and target **$0 in real merchant
 spending**. One request: “Get my team ready for a local event, under $25.” Show
@@ -21,8 +22,9 @@ behavior; its prices are illustrative and spend no real money.
 
 Stripe service-fee demonstration uses the sandbox. Both the ordinary Payments
 API and MPP payment gate are verified: a 50-cent test receipt was saved in
-Supabase and replayed without another charge. That gate test bypassed worker
-dispatch; the combined terminal-payment-browser sequence still needs rehearsal.
+Supabase and replayed without another charge. The later hosted rehearsal combined a fresh Claude Code caller, the real MPP
+verifier, Eve dispatch, Surfsky research and Supabase persistence. See
+[hosted evidence](../reports/performance/hosted-claude-paid-research.json).
 Rehearsals should read saved results, not repeatedly start three remote
 browsers or new model runs. Prepare one measured browser run, keep its timestamp
 visible, and refresh only a selected lane if needed. Browser/model usage can
@@ -39,16 +41,16 @@ still cost money or consume credits; $0 refers to merchant purchases.
   original hip-hop instrumental for the demo; confirm scope and usage rights
   before placing the order. The stage proof is order placement, not immediate
   delivery of a finished beat.
-- **Luma:** [Marketing Break on October 8](https://luma.com/ya263roy) lists free
-  admission at Dragon Horse in San Francisco, but explicitly requires host
-  approval. It is suitable for showing a registration request, not an instant
-  confirmed ticket. It remains an alternative while an immediate free RSVP is
-  selected. No RSVP has been made. Recheck the event's schedule before booking;
-  the title and description expose different start times.
+- **Selected free event:** [Open Together: AI Builders Unite](https://luma.com/OpenTogether),
+  October 16, 18:00–midnight PDT. Public inspection found one free Standard ticket
+  and a name/email form without a host-approval or waitlist gate. Availability
+  must be rechecked immediately before submission. The user selected this event
+  if registration is open; no actual RSVP has occurred. Optional HF username
+  stays blank. Private attendee details come from Supabase, not this document.
 
-Flights are deferred. The current event adapter supports Eventbrite only.
-Prefer a verified free Eventbrite event to avoid adding a provider during the
-demo sprint; Luma remains optional and needs an adapter change.
+Flights are deferred. Read-only research supports Eventbrite and Luma. The new
+free execution adapter is limited to the exact selected OpenTogether event;
+other Luma events and general merchant writes remain unsupported.
 
 ## Event versus room booking
 
@@ -98,6 +100,17 @@ browsers. A successful check proves the Claude Code → MCP connection, not any
 merchant action. HTTP configuration and environment substitution follow
 [Claude Code's MCP documentation](https://code.claude.com/docs/en/mcp).
 
+One scripted, live research rehearsal (uses model/browser credits and a sandbox
+service payment, but never commits a merchant action):
+
+```sh
+OCT3_BASE_URL=https://oct3-five.vercel.app node --env-file=.env.local scripts/claude-demo.mjs --rehearse examples/team-outing.json --key cue-stage-outing-001
+```
+
+Keep the same input/key when retrying; use status for the returned mission.
+The real hosted rehearsal cost $0.11198925 for the caller model. That excludes
+worker model and browser usage. Once prepared, reuse saved results on stage.
+
 ## Stage prompt
 
 Fill in the actual event/date and chosen requirements before rehearsal:
@@ -110,8 +123,8 @@ Fill in the actual event/date and chosen requirements before rehearsal:
 > for manager approval of any commitment. Report real outcomes and blockers.
 
 The public tools remain submit/status/list. The board handles approval; do not
-pretend Claude's caller credential can approve spending. The current backend
-returns handoffs instead of completed merchant transactions.
+pretend Claude's caller credential can approve spending. Amazon/Fiverr execution remains a handoff. The narrow free-event flow must be
+reviewed and separately approved by the manager before its one submission.
 
 ## Target sequence — two minutes, subject to measured rehearsal
 

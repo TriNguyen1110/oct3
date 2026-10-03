@@ -22,6 +22,9 @@ export interface Proposal {
   recipient_ref: string; deadline: string; subtotal_minor: number; tax_minor: number;
   shipping_minor: number; fees_minor: number; total_minor: number;
   currency: "USD"; expires_at: string;
+  /** Only the specialized zero-dollar registration path uses these fields. */
+  action_type?: "free_registration";
+  action_hash?: string;
 }
 export interface Approval {
   id: string; proposal_id: string; revision: number;

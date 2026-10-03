@@ -1,4 +1,5 @@
 import type { MissionInput, MissionView } from "../shared/contracts";
+import type { FreeRegistrationSnapshot, RegistrationAttendee } from "../shared/registration";
 import type { BrowserBlockerCode, ResearchTaskResult } from "../browser/types";
 import type { VerifiedServicePaymentProof } from "./service-payments";
 export interface ResearchAttempt {
@@ -38,6 +39,16 @@ export interface MissionRecord {
   /** Private operational metadata; never included in MissionView or model output. */
   research_attempts?: Record<string, ResearchAttempt>;
   approved_action_hashes?: Record<string, string>;
+  /** Private attendee data and provider identifiers; never copy into MissionView. */
+  prepared_registrations?: Record<string, {
+    revision: number;
+    proposal_id: string;
+    snapshot: FreeRegistrationSnapshot;
+    attendee: RegistrationAttendee;
+    profile_hash: string;
+    action_hash: string;
+    prepared_at: string;
+  }>;
   service_payment?: MissionServicePaymentState;
   eve_dispatch?: EveDispatchState;
   eve_session_id?: string;

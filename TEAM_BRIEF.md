@@ -71,8 +71,9 @@ supplies and freelancer previews, one verified free event RSVP if implemented,
 and Stripe sandbox payment. Use one coherent “get my team ready for a local
 event under $25” planning request. Review, change budget, invalidate old approval,
 then return evidence. Rehearsals reuse saved research to reduce browser/model
-usage. See [the stage runbook](docs/CLAUDE_DEMO.md). Free RSVP completion remains
-an implementation target; Eventbrite is the existing adapter. Flights deferred.
+usage. See [the stage runbook](docs/CLAUDE_DEMO.md). Free RSVP completion remains unverified. Read-only research supports Eventbrite
+and Luma; the narrow free execution path uses the selected OpenTogether event.
+Flights are deferred.
 
 The earlier expo scenario remains the labeled budget-revision fixture:
 
@@ -90,11 +91,11 @@ for verification, rehearsal and submission.
 
 Give the caller a dashboard link and each worker’s review/provider-preview link
 before ordering. Return observed confirmation and merchant receipt links after
-completion; missing evidence stays explicit. Local receipt presentation is wired,
-but live merchant execution/receipt capture is still unfinished.
+completion; missing evidence stays explicit. Receipt presentation is wired. Actual read-only Luma preparation and the
+manager review are verified; final registration and paid merchant checkout
+remain unverified.
 
-The site now exposes saved mission history through the existing authenticated
-workspace store. Once Supabase credentials and schema are ready, the same view
-reads cloud history. Stretch only: manager-editable saved preferences (usual
-budgets, preferred vendors, private delivery reference), then explicit import of
-past merchant data. Do not infer standing purchase approval from preferences.
+The site exposes saved mission history and a manager-editable attendee profile
+from actual Supabase tables. Profile fields are name, email, company and role.
+Usual budgets, preferred vendors, delivery addresses and external merchant
+history imports are not implemented. Preferences never grant standing approval.

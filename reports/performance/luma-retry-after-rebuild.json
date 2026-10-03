@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-03T19:56:44.236Z",
+  "scope": "Same-task Luma retry after rebuilding and restarting compiled Eve runtime",
+  "mission_id": "5a76b2de-c685-48e1-9bd6-efbe8821544e",
+  "lane": "event_tickets",
+  "status": "options_ready",
+  "options": 1,
+  "provider": "Luma",
+  "preview_url": "https://luma.com/OpenTogether",
+  "payment_reference": "pi_3UMYxr92qDIKX8Ve1HAx3sla",
+  "blocker": "Select an option and verify the final merchant checkout total, including fees, before a purchase proposal can be approved.",
+  "merchant_actions": 0
+}

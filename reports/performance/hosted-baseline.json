@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-10-03T20:02:26.614152+00:00",
+  "origin": "https://oct3-five.vercel.app",
+  "source_commit": "21377a8",
+  "public_dashboard_http": 200,
+  "authenticated_readiness_http": 200,
+  "authenticated_preferences_http": 200,
+  "eve_health_http": 200,
+  "profile_storage": "supabase",
+  "caller": {
+    "client": "Claude Code",
+    "model": "claude-sonnet-5-5",
+    "passed": true,
+    "tool_calls": [
+      "submit_mission",
+      "mission_status"
+    ],
+    "mission_submitted": true,
+    "cost_usd": 0.11198925,
+    "scope": "Sandbox-paid read-only research; merchant completion not tested"
+  },
+  "merchant_actions": 0
+}
