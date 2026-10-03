@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-10-03T21:18:01.274Z",
+  "origin": "https://oct3-five.vercel.app",
+  "source_commit": "1ae1ba0",
+  "mission_id": "fa208fd2-83d1-40d8-98c7-ba9be3fe2537",
+  "task_id": "fa208fd2-83d1-40d8-98c7-ba9be3fe2537:event_tickets",
+  "http": 200,
+  "elapsed_ms": 17330,
+  "status": "awaiting_approval",
+  "proposal": {
+    "id": "054c3386-f598-438e-8bab-ba12834fa308",
+    "revision": 1,
+    "title": "Open Together: AI Builders Unite — Standard",
+    "total_minor": 0,
+    "expires_at": "2026-10-03T21:47:59.450Z",
+    "action_type": "free_registration"
+  },
+  "review_matched": true,
+  "missing_passkey_http": 403,
+  "missing_passkey_code": "passkey_required",
+  "error_code": null,
+  "blocker": null,
+  "merchant_actions": 0,
+  "registration_submitted": false
+}

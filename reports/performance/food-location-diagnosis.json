@@ -1,0 +1,92 @@
+{
+  "checked_at": "2026-10-03T21:23:00Z",
+  "scope": "Two bounded actual Surfsky probes of the official Boba Guys Square location picker under the frozen read-only network guard",
+  "workspace": "oct3-demo",
+  "profile": "oct3-food",
+  "merchant_source": "https://boba-guys.square.site/",
+  "probe_limit": 2,
+  "probes_run": 2,
+  "probe_1": {
+    "http_status": 200,
+    "address_input_visible": true,
+    "potrero_visible_after_fixed_wait": false,
+    "visible_location_state": "Stale unsorted location list with +100 mile distances",
+    "classic_black_visible": false,
+    "cleanup": "confirmed"
+  },
+  "probe_2": {
+    "http_status": 200,
+    "address_input_visible": true,
+    "potrero_visible_after_bounded_wait": true,
+    "cleanup": "confirmed"
+  },
+  "blocked_requests": [
+    {
+      "method": "POST",
+      "host": "ogads-pa.clients6.google.com",
+      "path": "/$rpc/google.internal.onegoogle.asyncdata.v1.AsyncDataService/GetAsyncData"
+    },
+    {
+      "method": "POST",
+      "host": "play.google.com",
+      "path": "/log"
+    },
+    {
+      "method": "POST",
+      "host": "ec.editmysite.com",
+      "path": "/com.snowplowanalytics.snowplow/tp2"
+    },
+    {
+      "method": "POST",
+      "host": "sentry.io",
+      "path": "/api/1263158/envelope/"
+    },
+    {
+      "method": "POST",
+      "host": "boba-guys.square.site",
+      "path": "/ajax/api/JsonRPC/Commerce/",
+      "observed_jsonrpc_methods": [
+        "Checkout::getSquareStoreConfig",
+        "Checkout::getCurrentOrder",
+        "Checkout::hasCouponsAvailable"
+      ]
+    },
+    {
+      "method": "POST",
+      "host": "boba-guys.square.site",
+      "path": "/app/cms/api/v1/statistics"
+    }
+  ],
+  "diagnosis": "The location result was timing-sensitive. Potrero became visible during the second probe even though every non-GET/HEAD/OPTIONS request remained blocked. The observed Commerce RPC is therefore not proven essential to location search and remains blocked.",
+  "source_fix": {
+    "network_guard_weakened": false,
+    "adaptive_location_wait_ms": 8000,
+    "store_readback_required": [
+      "Boba Guys Potrero visible",
+      "1002 16th St, San Francisco CA 94107 address",
+      "Potrero radio selected"
+    ],
+    "modifier_readback_required": [
+      "16oz ICED selected",
+      "Boba selected",
+      "Organic Half + Half (Clover) selected",
+      "50% sweetness (recommended) selected"
+    ],
+    "terminal_control": "Add to order $6.60 visible but never activated"
+  },
+  "future_read_only_rpc_contract_for_review": {
+    "status": "not_enabled",
+    "reason": "No exception is needed based on current evidence. If later required, review must bind the exact HTTPS host and path, parse JSON-RPC bodies, allow only named read operations with validated parameter schemas, and continue blocking cart/order/payment mutations and all unknown methods."
+  },
+  "safety": {
+    "add_to_order_activated": false,
+    "cart_mutated": false,
+    "checkout_opened": false,
+    "order_submitted": false,
+    "payment_attempted": false,
+    "durable_leases_released": true,
+    "exact_profile_stopped": true,
+    "private_screenshot": "/tmp/oct3-food-diagnose.png",
+    "credentials_or_session_urls_recorded": false
+  }
+}

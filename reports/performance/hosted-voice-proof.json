@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-03T21:24:31.417Z",
+  "origin": "https://oct3-five.vercel.app",
+  "mode": "real_hosted_gemini_synthetic_microphone",
+  "passed": true,
+  "authenticated": true,
+  "fixture_sha256": "05b2916bc535c86c7fcef156f48536680750a4ccdc4dc4ef131ddf796469cd2d",
+  "voice_calls": 1,
+  "voice_http_status": 200,
+  "voice_roundtrip_ms": 3042,
+  "audio": {
+    "format": "pcm_s16le",
+    "sample_rate_hz": 16000,
+    "channels": 1,
+    "header_bytes": 44,
+    "total_bytes": 154988,
+    "duration_seconds": 4.842
+  },
+  "no_automatic_microphone": true,
+  "draft_waits_for_explicit_apply": true,
+  "applied_fields_verified": true,
+  "other_form_fields_preserved": true,
+  "tracks_stopped": true,
+  "forbidden_mutation_attempts": 0,
+  "mission_submission_count": 0,
+  "page_error_count": 0,
+  "failure_stage": null,
+  "limitations": [
+    "Synthetic microphone fixture; no real user microphone.",
+    "No mission submission, passkey ceremony, provider checkout or merchant action.",
+    "When the hosted route returns200, provider duration is included in roundtrip, not isolated; a timed-out upload does not prove provider completion."
+  ],
+  "upload_intercepted_at": "2026-10-03T21:24:33.954Z",
+  "voice_request_timing": {
+    "startTime": 1791062673959.2012,
+    "domainLookupStart": -1,
+    "domainLookupEnd": -1,
+    "connectStart": -1,
+    "secureConnectionStart": -1,
+    "connectEnd": -1,
+    "requestStart": 0.375,
+    "responseStart": 2689.897,
+    "responseEnd": 2704.213
+  },
+  "client_timeout_visible": false
+}

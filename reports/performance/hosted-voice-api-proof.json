@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-03T21:20:09.146Z",
+  "origin": "https://oct3-five.vercel.app",
+  "scope": "actual hosted API and Gemini; synthetic WAV and manager bearer; no UI",
+  "http": 200,
+  "elapsed_ms": 2596,
+  "model": "gemini-3.8-flash",
+  "draft_only": true,
+  "budget_minor": 1000,
+  "food_present": true,
+  "error_code": null,
+  "merchant_actions": 0
+}

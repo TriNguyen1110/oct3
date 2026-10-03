@@ -33,7 +33,7 @@ export function CinematicHero({ onNewMission, onConnect }: { onNewMission: () =>
     <div className="cue-sculpture" aria-hidden="true">
       <div className="cue-deco-arch"/>
       <div className="cue-sculpture-light"/>
-      <Image src="/images/cue-concierge-gold.png" width={1254} height={1254} alt="" priority sizes="(max-width: 590px) 300px, (max-width: 800px) 420px, 600px" className="cue-sculpture-image"/>
+      <Image src="/images/cue-concierge-statue.png" width={1254} height={1254} alt="" priority sizes="(max-width: 590px) 300px, (max-width: 800px) 420px, 600px" className="cue-sculpture-image"/>
       <div className="cue-sculpture-caption"><span/> THE CUE CONCIERGE <span/></div>
     </div>
   </section>;

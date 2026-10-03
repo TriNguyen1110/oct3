@@ -1,0 +1,24 @@
+{
+  "checked_at": "2026-10-03T21:28:13.030Z",
+  "origin": "https://oct3-five.vercel.app",
+  "source_commit": "1ae1ba0",
+  "cli_status_exit": 0,
+  "cli_live_event_confirmed": true,
+  "cli_dashboard_link_present": true,
+  "mcp_http": 200,
+  "mcp_tools": [
+    "submit_mission",
+    "mission_status",
+    "list_missions"
+  ],
+  "food_schema_present": true,
+  "approval_tool_exposed": false,
+  "claude_code_fresh_connection": {
+    "passed": true,
+    "tool_calls": [
+      "mcp__oct3__list_missions"
+    ],
+    "caller_cost_usd": 0.05330025
+  },
+  "merchant_actions": 0
+}

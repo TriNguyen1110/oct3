@@ -7,38 +7,26 @@ the resulting merchant pages. Finish back in Claude with the same mission ID.
 Public dashboard: **https://oct3-five.vercel.app**. A real fresh Claude Code
 caller has submitted sandbox-paid research and read the same hosted mission.
 Fiverr and Luma returned observed options; Amazon returned an explicit HTTP 503
-handoff. Actual orders and event registration have not been completed.
+handoff. One exact $0 Open Together RSVP is now confirmed; Amazon and Fiverr orders have not been completed.
 
 ## Current rehearsal additions
 
 - The optional fourth worker prepares boba pickup near the venue. Use
   `examples/boba-outing.json` with a new idempotency key; preserve the older
-  `examples/team-outing.json` request already used for hosted evidence.
-- New live approvals require a native passkey. Open the HTTPS dashboard, sign
-  in as manager, and enroll under Saved profile. Enrollment alone never approves
-  anything. Review the exact proposal, then use **Confirm with passkey**. The OS
-  chooses available biometrics or device verification; Cue stores public-key
-  verification data, never fingerprints. Local ceremonies require
-  `http://localhost:3003`, not `127.0.0.1`.
-- The first real Luma attempt stopped before sending its approved registration
-  POST because the observed request contained a blank optional phone field.
-  That narrow guard mismatch is fixed and tested. No RSVP was confirmed. A
-  fresh prepared proposal and the real manager's passkey are needed before a
-  new one-shot submit; never present the earlier attempt as a registration.
+  `examples/team-outing.json` request already used for hosted evidence. The latest food smoke failed closed after 25.665 seconds because Potrero was absent; do not present a prepared cart.
+- New live approvals require a native passkey. The real manager enrolled on the HTTPS dashboard and used **Confirm with passkey** for the exact $0 Open Together proposal. The OS chooses available biometrics or device verification; Cue stores public-key verification data, never fingerprints. Local ceremonies require `http://localhost:3003`, not `127.0.0.1`.
+- Preserve the first failed Luma attempt as historical evidence. A later fresh proposal took 17.330 seconds, native approval was recorded at 21:22:42.703Z, and matching provider confirmation arrived at 21:23:10.131Z. The 27.428-second interval includes the manager delay before **Register now**. Do not register again during rehearsal.
 - Saved profile and **Past missions** use Supabase. History preserves each
   mission's mode, evidence and observed receipts. It does not import external
   Amazon, Fiverr or food orders. Past actions never grant future approval.
 - Gemini voice controls and the draft-only API are implemented. Actual Gemini
   inference converted 4.842 seconds of synthetic speech into the correct boba
-  brief and $10 budget in 2.088 seconds. Hosted UI-to-provider proof is tracked
-  separately. Recording produces an editable draft and never submits a mission.
+  brief and $10 budget. The separate hosted browser-to-provider round trip passed in 3.042 seconds. Recording produces an editable draft and never submits a mission.
   Browser Use was cancelled; all current browser workers use Surfsky.
 
 Latest direction: make the story approachable and target **$0 in real merchant
 spending**. One request: “Get my team ready for a local event, under $25.” Show
-supplies and freelancer research as two reviewable previews. Aim for one free
-event RSVP as the real completed action only after that adapter is implemented
-and its exact event/form is verified. A planning budget is not purchase approval.
+supplies and freelancer research as two reviewable previews. Show the saved, confirmed free RSVP as the one real completed action. Do not resubmit it. A planning budget is not purchase approval.
 
 Use **Request → Review → Approve → Result** as the visible sequence. The memorable
 moment is a changed budget invalidating an old approval. The existing six-person
@@ -70,8 +58,7 @@ still cost money or consume credits; $0 refers to merchant purchases.
   October 16, 18:00–midnight PDT. Public inspection found one free Standard ticket
   and a name/email form without a host-approval or waitlist gate. Availability
   must be rechecked immediately before submission. The user selected this event
-  if registration is open; no actual RSVP has occurred. Optional HF username
-  stays blank. Private attendee details come from Supabase, not this document.
+  and the actual $0 RSVP now has matching provider confirmation. Optional HF username stayed blank. Do not resubmit it. Private attendee details come from Supabase, not this document.
 
 Flights are deferred. Read-only research supports Eventbrite and Luma. The new
 free execution adapter is limited to the exact selected OpenTogether event;
@@ -83,7 +70,7 @@ For today's stage, prefer a free event with immediate confirmation and a
 short form. If using Luma, [its registration guide](https://help.luma.com/p/event-registration-process)
 requires name/email, permits registration without an account, and distinguishes
 immediate confirmation from pending approval. This is platform documentation;
-oct3's actual browser submission still needs implementation and verification.
+Cue now has one verified exact Open Together submission and confirmation; this does not generalize to other Luma events.
 
 An a16z or Tech Week event can use the same Luma flow. Its branding does not
 remove approval requirements: [this Tech Week example](https://luma.com/14fq1fa2)
@@ -148,17 +135,18 @@ Fill in the actual event/date and chosen requirements before rehearsal:
 > for manager approval of any commitment. Report real outcomes and blockers.
 
 The public tools remain submit/status/list. The board handles approval; do not
-pretend Claude's caller credential can approve spending. Amazon/Fiverr execution remains a handoff. The narrow free-event flow must be
-reviewed and separately approved by the manager before its one submission.
+pretend Claude's caller credential can approve spending. Amazon/Fiverr execution remains a handoff. The narrow free-event flow was reviewed, passkey-approved and confirmed once; status reads must not resubmit it.
 
 ## Target sequence — two minutes, subject to measured rehearsal
+
+Begin on the Cue **ivory statue** home screen before moving to the terminal and saved mission.
 
 | Time | Screen | Visible proof |
 | --- | --- | --- |
 | 0–15 s | Terminal: open Claude, show `/mcp`, enter the request | An ordinary external agent connects to oct3 |
 | 15–40 s | Claude submits; board shows the same mission and three workers | A durable handle and observed progress |
 | 40–60 s | Board: review options, change the planning budget, show that an old approval is rejected | Code-enforced manager control; fixture labels remain visible where used |
-| 60–105 s | Supplies/freelancer preview links; the selected free event flow if verified | Two clearly labeled previews and, only if completed, one actual RSVP confirmation |
+| 60–105 s | Supplies/freelancer preview links and the saved selected-event confirmation | Two clearly labeled previews and one actual $0 RSVP confirmation |
 | 105–120 s | Return to Claude and request status for the same mission | Structured outcomes with source references and remaining work |
 
 These are presentation targets, not a claim that three merchant transactions
@@ -186,15 +174,12 @@ view. No synthetic receipt, email or DOM change represents merchant completion.
 
 1. Verify this real Claude Code → MCP connection.
 2. Select the free event/date, required attendee data and two useful supplier previews.
-3. Implement the selected free event registration flow with fresh form inspection and
-   distinct confirmed, pending-approval and waitlisted outcomes.
+3. Show the saved exact Open Together proposal, native passkey approval and matching provider confirmation; do not submit it again.
 4. Use the verified Supabase state store and MPP sandbox payment gate; rehearse
    the combined caller-payment-browser sequence.
    Keep its service-fee proof separate from any merchant result.
-5. Finish one free RSVP flow. Keep Amazon and Fiverr at reviewable research for
-   the default demo; final registration needs its own verified execution adapter.
-6. Rehearse the authorized free action once, record references/latencies, then freeze the
-   script. Keep current research/hand-off mode as a labeled fallback.
+5. Reuse the confirmed free RSVP evidence. Keep Amazon and Fiverr at reviewable research for the default demo.
+6. Rehearse status reads of the saved confirmed action without resubmitting it. Keep current research/hand-off mode as a labeled fallback.
 
 ## User handoff links
 
@@ -202,5 +187,4 @@ The caller session is instructed to share the returned dashboard and worker
 review/provider-preview links before any commitment, then recorded confirmation
 and receipt links after completion. The dashboard opens the precise mission and
 worker after manager sign-in. Past missions reopens the saved workspace history.
-Missing receipt links remain explicit; current merchant execution is still a
-handoff and cannot produce a real receipt yet.
+The confirmed free event has matching provider evidence but no captured receipt URL. Amazon and Fiverr remain handoffs.

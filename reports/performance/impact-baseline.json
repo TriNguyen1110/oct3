@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-03T21:25:00Z",
+  "scope": "Existing repository evidence only; no provider runs performed for this report",
+  "measured": {
+    "application_fixture": {
+      "source": "reports/performance/local-fixture.json",
+      "single_run": true,
+      "three_lane_time_to_results_ms": 78,
+      "api_operations": 5,
+      "lane_results": 3,
+      "merchant_actions": 0,
+      "limitations": "Fixture path; excludes browsers, models, payment processing, and human review."
+    },
+    "live_read_only_research": {
+      "source": "reports/performance/local-live.json",
+      "single_run": true,
+      "three_lane_wall_ms": 21036,
+      "submit_ms": 575,
+      "lane_attempts": 3,
+      "lanes_with_grounded_options": 2,
+      "fully_completed_commitments": 0,
+      "human_handoffs": 3,
+      "outcomes": {
+        "amazon": "needs_human; zero options",
+        "fiverr": "options_ready; final checkout total required",
+        "event_tickets": "options_ready; final checkout total required"
+      }
+    },
+    "paid_live_research": {
+      "source": "reports/performance/local-paid-research.json",
+      "single_run": true,
+      "end_to_end_wall_ms": 27428,
+      "submit_and_sandbox_payment_ms": 5390,
+      "lane_attempts": 3,
+      "lanes_with_grounded_options": 1,
+      "fully_completed_commitments": 0,
+      "service_fee_test_usd": 0.5,
+      "service_fee_livemode": false,
+      "merchant_actions": 0
+    },
+    "hosted_external_caller": {
+      "source": "reports/performance/hosted-baseline.json",
+      "client": "Claude Code",
+      "tool_calls": 2,
+      "reported_cost_usd": 0.11198925,
+      "scope": "One sandbox-paid read-only research call; merchant completion untested"
+    },
+    "component_form_preparation": {
+      "source": "reports/performance/local-components.json",
+      "wall_ms": 20654,
+      "reported_steps": 9,
+      "listed_tool_calls": 10,
+      "final_submit_count": 0,
+      "note": "The source's reported step count and listed tool-call count disagree; both are preserved.",
+      "environment": "Local synthetic HTML form plus actual Claude API; not merchant form"
+    },
+    "free_registration": {
+      "historical_prepare_source": "reports/performance/free-registration-prepare.json",
+      "historical_prepare_wall_ms": 22580,
+      "historical_prepare_status": "awaiting_approval",
+      "historical_failed_resume_source": "reports/performance/luma-registration-live.json",
+      "historical_failed_resume_wall_ms": 48852,
+      "historical_failed_resume_status": "needs_human",
+      "confirmed_run_proposal_source": "reports/performance/hosted-luma-passkey-review.json",
+      "confirmed_run_proposal_wall_ms": 17330,
+      "confirmed_run_proposal_status": "awaiting_approval",
+      "confirmed_run_source": "reports/performance/native-passkey-live-event.json",
+      "native_passkey_enrolled": true,
+      "approved_at": "2026-10-03T21:22:42.703Z",
+      "completed_at": "2026-10-03T21:23:10.131Z",
+      "approval_to_confirmation_ms": 27428,
+      "confirmed_total_minor": 0,
+      "matching_provider_confirmation": true,
+      "confirmed_free_registrations": 1,
+      "timing_caveat": "Approval-to-confirmation includes manager delay before Register now; it is not isolated execution latency or human-active time. Do not sum timings across these separate trials."
+    },
+    "concurrency_and_integrity": {
+      "source": "reports/performance/supabase-guards.json",
+      "concurrent_submissions": 4,
+      "unique_missions": 1,
+      "concurrent_approvals": 2,
+      "accepted_approvals": 1,
+      "database_constraint_rejected_overspend": true,
+      "exclusive_browser_lease": true,
+      "note": "Synthetic fixture data in actual Supabase. Two budget-conflicting approvals test atomic reservation/overspend prevention, not a global one-approval limit or capacity."
+    },
+    "approval_security": {
+      "source": "reports/performance/passkey-cloud-proof.json",
+      "synthetic_authenticator": true,
+      "concurrent_challenge_consume_winners": 1,
+      "assertion_replay_denied": true,
+      "exact_signed_approval_persisted": true,
+      "native_manager_passkey_enrolled": true,
+      "native_exact_approval_confirmed_provider_action": true,
+      "native_proof_source": "reports/performance/native-passkey-live-event.json"
+    },
+    "merchant_preflight": {
+      "source": "bounded session observation immediately preceding this report; no provider rerun for impact analysis",
+      "amazon": {
+        "product_page_loaded": true,
+        "account_state": "signed_out",
+        "cart_or_checkout_mutated": false,
+        "final_total_verified": false,
+        "required_human_step": "Sign in privately, add exact quantity one, and review the checkout total before ordering."
+      },
+      "fiverr": {
+        "gig_page_loaded": true,
+        "account_state": "signed_out",
+        "continue_control_visible": true,
+        "checkout_mutated": false,
+        "final_total_verified": false,
+        "required_human_step": "Sign in privately, select the exact package, and review total and fees before ordering or contacting the seller."
+      },
+      "cleanup_confirmed": true
+    },
+    "human_active_time_seconds": null,
+    "manual_baseline_seconds": null,
+    "stripe_processing_fee_usd": null,
+    "browser_provider_cost_usd": null,
+    "coordinator_model_cost_usd": null,
+    "production_infrastructure_cost_usd": null,
+    "hosted_voice_draft": {
+      "source": "reports/performance/hosted-voice-proof.json",
+      "roundtrip_ms": 3042,
+      "audio_seconds": 4.842,
+      "synthetic_microphone": true,
+      "actual_hosted_browser": true,
+      "actual_provider": true,
+      "mission_submission_count": 0,
+      "merchant_actions": 0,
+      "limitation": "Editable draft only; no real user microphone, mission submission, approval, or merchant action."
+    },
+    "food_release_smoke": {
+      "source": "reports/verification/food-readback-live.json",
+      "wall_ms": 25665,
+      "options": 0,
+      "blocker_code": "merchant_changed",
+      "selected_store_readback_completed": false,
+      "merchant_actions": 0,
+      "cleanup_confirmed": true,
+      "status": "handoff"
+    }
+  },
+  "derived": {
+    "live_lane_attempts_per_wall_hour_single_run": 513.406,
+    "live_grounded_option_lanes_per_wall_hour_single_run": 342.27,
+    "live_confirmed_commitments_per_wall_hour": 0,
+    "paid_live_lane_attempts_per_wall_hour_single_run": 393.758,
+    "paid_live_grounded_option_lanes_per_wall_hour_single_run": 131.253,
+    "paid_live_confirmed_commitments_per_wall_hour": 0,
+    "hosted_reported_caller_cost_per_lane_attempt_usd": 0.03732975,
+    "caveat": "Theoretical arithmetic from one run each, not sustained throughput, benchmark distribution or scale/capacity measurement. Lane attempts and options are not completed purchases.",
+    "confirmed_free_registrations_observed": 1,
+    "confirmed_paid_purchases_observed": 0,
+    "confirmed_event_throughput_per_hour": null,
+    "confirmed_event_throughput_note": "One confirmation is functional evidence only. The 27.428 s interval includes manager delay and is not a throughput benchmark."
+  },
+  "illustrative_projections": {
+    "formula_only": true,
+    "per_run_operating_cost": "caller_model_cost + coordinator_model_cost + browser_minutes*browser_rate + infrastructure_allocation + Stripe_processing_fee",
+    "gross_service_receipts": "successful_paid_missions * service_fee",
+    "contribution_before_labor": "gross_service_receipts - operating_costs - refunds",
+    "success_adjusted_throughput": "matched_quality_successful_outcomes / all_trial_wall_hours_including_failed_attempts",
+    "human_active_minutes_saved": "manual_active_minutes - Cue_active_minutes",
+    "monthly_human_hours_saved": "monthly_comparable_successful_tasks * median_paired_manual_minus_Cue_active_minutes / 60",
+    "reference_only": {
+      "at_100_runs_hosted_caller_component_usd": 11.198925,
+      "at_100_successfully_paid_test_fee_equivalents_usd": 50,
+      "warning": "The first value linearly extrapolates one observed caller cost; the second uses a sandbox fee and is not revenue evidence. Unknown costs are excluded."
+    },
+    "signed_difference_note": "Preserve negative differences as added labor. Report failure/handoff rates beside matched-success savings. Monthly projection is not measured scale."
+  },
+  "team_scope": {
+    "supported": [
+      "One workspace with scoped caller and manager identities",
+      "Exact-action passkey approval",
+      "Idempotent mission submission",
+      "Atomic budget reservation and overspend rejection",
+      "Exclusive browser lane leases"
+    ],
+    "not_supported": [
+      "Organization membership or team RBAC",
+      "Multiple manager roles or approval quorums",
+      "Per-person permission administration",
+      "Cross-workspace reporting",
+      "Measured multi-user throughput"
+    ]
+  },
+  "required_measurement_inputs": [
+    "At least 10 matched manual-versus-Cue trials per task class",
+    "Identical independently checked quality endpoint for both arms; time-to-blocker is not time-to-success; record unsuccessful trials and all their elapsed/active time",
+    "Separate human active-time and wall-time stopwatches",
+    "Strict success labels for grounded option, checkout-ready, and confirmed commitment",
+    "Provider and model invoices or metered unit rates",
+    "Production Stripe processing fees, failures, and refunds",
+    "Login-ready merchant accounts and exact checkout totals",
+    "Production completion rate and handoff resolution rate",
+    "Multi-user tests only after team RBAC exists"
+  ],
+  "independently_verified_at": "2026-10-03T21:15:34.984675+00:00"
+}

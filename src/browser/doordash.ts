@@ -51,6 +51,24 @@ export async function researchDoorDash(input:ResearchTaskInput):Promise<Research
     const run=await withSurfskyPage("food",signalFor(input),async page=>{
       await restrictFoodToReadOnly(page);
       const visible=async(locator:Locator)=>{for(const candidate of await locator.all())if(await candidate.isVisible().catch(()=>false))return candidate;return undefined;};
+      const waitVisible=async(locator:Locator,timeout=8_000)=>{const deadline=Date.now()+timeout;do{const candidate=await visible(locator);if(candidate)return candidate;await page.waitForTimeout(250);}while(Date.now()<deadline);return undefined;};
+      const selectAndReadBack=async(label:RegExp)=>{
+        const text=await waitVisible(page.getByText(label));if(!text)throw new BrowserIssue("merchant_changed",`The Classic Black form no longer exposes the observed ${label.source} choice.`);
+        const semantic=text.locator("xpath=ancestor-or-self::*[@role='radio' or @role='checkbox' or @aria-pressed][1]");
+        const field=text.locator("xpath=ancestor::label[.//input[@type='radio' or @type='checkbox']][1]").locator("input[type='radio'],input[type='checkbox']").first();
+        if(await field.count()){
+          if(!await field.isChecked().catch(()=>false))await text.locator("xpath=ancestor::label[1]").click();
+          if(!await field.isChecked().catch(()=>false))throw new BrowserIssue("merchant_changed",`Square did not retain the observed ${label.source} selection.`);
+          return;
+        }
+        if(await semantic.count()){
+          const selected=async()=>["true","checked"].includes((await semantic.getAttribute("aria-checked")||await semantic.getAttribute("aria-pressed")||"").toLowerCase());
+          if(!await selected())await semantic.click();
+          if(!await selected())throw new BrowserIssue("merchant_changed",`Square did not retain the observed ${label.source} selection.`);
+          return;
+        }
+        throw new BrowserIssue("merchant_changed",`The observed ${label.source} choice has no readable selected state.`);
+      };
       const response=await page.goto(storeUrl,{waitUntil:"domcontentloaded"});if(response&&response.status()>=400)throw new BrowserIssue(response.status()===403?"challenge":"provider_error",`Boba Guys' official Order Ahead page returned HTTP ${response.status()} before the menu was available.`);
       await page.waitForTimeout(3_000);
       if(new URL(page.url()).hostname!=="boba-guys.square.site")throw new BrowserIssue("merchant_changed","Boba Guys' official Order Ahead page redirected to an unsupported host.");
@@ -61,23 +79,28 @@ export async function researchDoorDash(input:ResearchTaskInput):Promise<Research
       if(await target.isVisible().catch(()=>false)){
         finderOpen=true;
         await target.fill(requirement.location);
-        await page.waitForTimeout(1_000);
       }
-      const potrero=await visible(page.getByText("Boba Guys Potrero",{exact:true}));
+      if(!finderOpen)throw new BrowserIssue("merchant_changed","The location picker must be open so the exact Potrero address and selected store can be verified.");
+      const potrero=await waitVisible(page.getByText("Boba Guys Potrero",{exact:true}));
       if(!potrero)throw new BrowserIssue("merchant_changed","The location search did not expose the observed Boba Guys Potrero result.");
-      if(finderOpen){const tile=potrero.locator("xpath=ancestor::label");if(!await tile.count())throw new BrowserIssue("merchant_changed","The Potrero result did not expose its observed selection control.");await tile.click({position:{x:12,y:12}});const confirm=await visible(page.getByRole("button",{name:/^(?:Confirm location|Update changes)$/}));if(!confirm)throw new BrowserIssue("merchant_changed","The location picker did not expose its observed confirmation control.");await confirm.click();}
-      await page.waitForTimeout(2_000);
-      let item=await visible(page.getByText("Classic Black",{exact:true}));
-      if(!item){const category=await visible(page.getByText("Build Your Drink",{exact:true}));if(category){await category.click();await page.waitForTimeout(1_000);item=await visible(page.getByText("Classic Black",{exact:true}));}}
+      if(finderOpen){
+        const tile=potrero.locator("xpath=ancestor::label");const radio=tile.locator('input[type="radio"]').first();
+        if(!await radio.count()||!/1002 16th St[\s\S]*San Francisco, CA 94107/.test(await tile.innerText()))throw new BrowserIssue("merchant_changed","The Potrero result did not match the observed store address and selection control.");
+        if(!await radio.isChecked().catch(()=>false))await tile.click({position:{x:12,y:12}});
+        if(!await radio.isChecked().catch(()=>false))throw new BrowserIssue("merchant_changed","Square did not retain Boba Guys Potrero as the selected store.");
+        const confirm=await waitVisible(page.getByRole("button",{name:/^(?:Confirm location|Update changes)$/}),3_000);if(!confirm)throw new BrowserIssue("merchant_changed","The location picker did not expose its observed confirmation control.");await confirm.click();
+      }
+      let item=await waitVisible(page.getByText("Classic Black",{exact:true}),8_000);
+      if(!item){const category=await waitVisible(page.getByText("Build Your Drink",{exact:true}),2_000);if(category){await category.click();item=await waitVisible(page.getByText("Classic Black",{exact:true}),4_000);}}
       if(!item)throw new BrowserIssue("merchant_changed","The official Potrero menu did not expose the observed Classic Black item.");
       await item.click();await page.waitForTimeout(1_000);
       for(const choice of [/16oz ICED/i,/^Boba(?:\s|$)/i,/Organic Half \+ Half \(Clover\)/i,/50% \(recommended\)/i]){
-        const control=await visible(page.getByText(choice));if(!control)throw new BrowserIssue("merchant_changed",`The Classic Black form no longer exposes the observed ${choice.source} choice.`);await control.click();
+        await selectAndReadBack(choice);
       }
-      const add=page.getByRole("button",{name:/Add to order\s+\$6\.60/i}).first();
-      if(!await add.isVisible().catch(()=>false))throw new BrowserIssue("merchant_changed","The configured item did not produce the observed $6.60 Add to order control.");
-      const menuProof=evidence(input,storeUrl,"Official Boba Guys pickup controls observed",`The page exposed the Boba Guys Potrero location result and Classic Black form. The worker interacted with the requested controls and observed “Add to order $6.60”, without activating it. Selected location and modifier values were not independently read back. No prepared cart or checkout is claimed.`);observations.push(menuProof);
-      const proof=evidence(input,storeUrl,"Classic Black item estimate",`Observed form labels include 16oz ICED, Boba, Organic Half + Half (Clover), and 50% sweetness (recommended). The Add to order control displayed $6.60 after the interactions. The final selected options, tax, total, pickup time and availability require review.`);observations.push(proof);
+      const add=await waitVisible(page.getByRole("button",{name:/Add to order\s+\$6\.60/i}),3_000);
+      if(!add)throw new BrowserIssue("merchant_changed","The configured item did not produce the observed $6.60 Add to order control.");
+      const menuProof=evidence(input,storeUrl,"Official Boba Guys pickup controls observed",`The page exposed the exact Boba Guys Potrero address and selected radio state, then the Classic Black form. The worker read back selected states for the requested controls and observed “Add to order $6.60”, without activating it. No prepared cart or checkout is claimed.`);observations.push(menuProof);
+      const proof=evidence(input,storeUrl,"Classic Black item estimate",`Selected-state readback passed for 16oz ICED, Boba, Organic Half + Half (Clover), and 50% sweetness (recommended). The Add to order control displayed $6.60. Tax, final total, pickup time and availability require review.`);observations.push(proof);
       const total=configuredItemMinor*requirement.quantity;
       const options:Option[]=[{id:id(input.task_id,storeUrl,"Classic Black",String(total)),title:"Classic Black",description:`Official Boba Guys pickup form showed a $6.60 item estimate. Suggested recipe: 16oz iced Classic Black with boba, Organic Half + Half (Clover), and 50% sweetness. Confirm the selected store, modifiers, tax, final total, availability and pickup time. This worker cannot place an order.`,source_url:storeUrl,merchant:"Boba Guys",amount_minor:total,currency:"USD",quantity:requirement.quantity,recommended:true,reason:"Observed menu controls and item estimate; selected-state and checkout verification remain incomplete.",evidence_ids:[menuProof.id,proof.id]}];
       return {options};

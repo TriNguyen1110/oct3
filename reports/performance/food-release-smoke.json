@@ -1,0 +1,41 @@
+{
+  "checked_at": "2026-10-03T21:18:44.212Z",
+  "scope": "One bounded actual Surfsky smoke of the frozen official Boba Guys food adapter",
+  "source_revision": "1ae1ba0",
+  "adapter_sha256": "9ecbf87f6505b90125ccf43ad1b742fe7d3edbe9f7df787c8933d6a8e6de0e01",
+  "workspace": "oct3-demo",
+  "profile": "oct3-food",
+  "input": {
+    "query": "classic milk tea with boba",
+    "fulfillment": "pickup",
+    "location": "580 20th Street, San Francisco, CA",
+    "quantity": 1,
+    "budget_minor": 1000,
+    "currency": "USD"
+  },
+  "actual_result": {
+    "elapsed_ms": 20081,
+    "options": 0,
+    "observations": 1,
+    "status": "handoff_required",
+    "blocker_code": "merchant_changed",
+    "blocker": "The location search did not expose the observed Boba Guys Potrero result.",
+    "observation_title": "Boba Guys pickup needs attention",
+    "source_host": "boba-guys.square.site"
+  },
+  "safety": {
+    "read_only_network_guard_enabled": true,
+    "add_to_cart_activated": false,
+    "checkout_opened": false,
+    "order_submitted": false,
+    "payment_attempted": false,
+    "merchant_mutations": 0,
+    "retry_count": 0
+  },
+  "terminal_state": {
+    "browser_cleanup": "confirmed",
+    "durable_lane_released": true,
+    "exact_profile_stopped": true
+  },
+  "honest_limit": "This release smoke did not reach the item form or reproduce the earlier observed $6.60 control. The adapter failed closed and requires a manager handoff or a later bounded rerun after the merchant page state changes."
+}

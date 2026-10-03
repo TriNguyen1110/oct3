@@ -73,7 +73,7 @@ supplies and freelancer previews, one verified free event RSVP if implemented,
 and Stripe sandbox payment. Use one coherent “get my team ready for a local
 event under $25” planning request. Review, change budget, invalidate old approval,
 then return evidence. Rehearsals reuse saved research to reduce browser/model
-usage. See [the stage runbook](docs/CLAUDE_DEMO.md). Free RSVP completion remains unverified. Read-only research supports Eventbrite
+usage. See [the stage runbook](docs/CLAUDE_DEMO.md). One actual free RSVP is now confirmed after native passkey approval; preserve its evidence and do not duplicate it for rehearsal. Read-only research supports Eventbrite
 and Luma; the narrow free execution path uses the selected OpenTogether event.
 Flights are deferred.
 
@@ -94,8 +94,8 @@ for verification, rehearsal and submission.
 Give the caller a dashboard link and each worker’s review/provider-preview link
 before ordering. Return observed confirmation and merchant receipt links after
 completion; missing evidence stays explicit. Receipt presentation is wired. Actual read-only Luma preparation and the
-manager review are verified; final registration and paid merchant checkout
-remain unverified.
+manager review are verified, and Luma confirmed one actual free registration
+after native passkey approval. Paid merchant checkout remains unverified.
 
 The site exposes saved mission history and a manager-editable attendee profile
 from actual Supabase tables. Profile fields are name, email, company and role.
@@ -104,12 +104,13 @@ history imports are not implemented. Preferences never grant standing approval.
 
 New live commitments require a device passkey bound to the exact action. Actual
 Supabase persistence and cryptographic approval/replay guards passed in an
-isolated synthetic workspace. The real manager still needs to enroll a native
-passkey on the HTTPS dashboard; test authenticators never enroll in their account.
+isolated synthetic workspace. The real manager enrolled a native
+passkey on the HTTPS dashboard and approved the exact free RSVP, which Luma
+confirmed. Test authenticators never enroll in their account.
 
 Voice is implemented for short Gemini audio input to an editable mission
 draft, followed by the existing review and passkey flow. Actual Gemini inference
 returned a correct boba request and $10 budget from synthetic speech in 2.088
-seconds after the project was funded. Hosted end-to-end verification is tracked
-separately. Browser Use was explicitly
+seconds after the project was funded. Actual hosted UI-to-Gemini drafting also
+passed in 3.042 seconds with synthetic audio and explicit Apply. Browser Use was explicitly
 cancelled by the user; browser execution uses Surfsky.

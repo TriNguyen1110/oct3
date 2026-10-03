@@ -1,0 +1,92 @@
+{
+  "checked_at": "2026-10-03T21:17:32.746Z",
+  "origin": "https://oct3-five.vercel.app",
+  "source_commit": "1ae1ba0dc323c4d7c3771856c5af3af13318194c",
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "elapsed_ms": 101,
+      "hero_present": true,
+      "image_present": true
+    },
+    {
+      "path": "/eve/v1/health",
+      "status": 200,
+      "elapsed_ms": 263
+    },
+    {
+      "path": "/api/readiness",
+      "status": 200,
+      "elapsed_ms": 120,
+      "services": [
+        {
+          "service": "Claude",
+          "configured": true
+        },
+        {
+          "service": "Gemini voice",
+          "configured": true
+        },
+        {
+          "service": "Surfsky",
+          "configured": true
+        },
+        {
+          "service": "Supabase",
+          "configured": true
+        },
+        {
+          "service": "Stripe MPP",
+          "configured": true
+        },
+        {
+          "service": "Link Agent Wallet",
+          "configured": false
+        }
+      ],
+      "storage": "supabase"
+    },
+    {
+      "path": "/api/preferences",
+      "status": 200,
+      "elapsed_ms": 418,
+      "top_level_keys": [
+        "profile_ref",
+        "preferences",
+        "updated_at",
+        "storage"
+      ]
+    },
+    {
+      "path": "/api/missions",
+      "status": 200,
+      "elapsed_ms": 1268,
+      "saved_missions": 5
+    },
+    {
+      "path": "/api/passkeys",
+      "status": 200,
+      "elapsed_ms": 433,
+      "enrolled": false,
+      "required": true
+    },
+    {
+      "path": "/images/cue-concierge-gold.png",
+      "status": 200,
+      "elapsed_ms": 113
+    },
+    {
+      "path": "/api/passkeys",
+      "principal": "anonymous",
+      "status": 403
+    },
+    {
+      "path": "/api/passkeys",
+      "principal": "agent",
+      "status": 403
+    }
+  ],
+  "merchant_actions": 0,
+  "passkey_enrollment_attempted": false
+}

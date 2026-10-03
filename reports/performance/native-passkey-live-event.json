@@ -1,0 +1,46 @@
+{
+  "checked_at": "2026-10-03T21:24:20.628Z",
+  "source_commit": "1ae1ba0",
+  "scope": "Read-only observation after the user completed native setup and exact approval in Chrome",
+  "native_passkey_enrolled": true,
+  "task_status": "confirmed",
+  "approval_state": "approved",
+  "confirmation_present": true,
+  "confirmation_url": "https://luma.com/OpenTogether",
+  "receipt_url": null,
+  "receipt_state": "not_captured",
+  "blocker": null,
+  "completed_at": "2026-10-03T21:23:10.131Z",
+  "approved_at": "2026-10-03T21:22:42.703Z",
+  "confirmation_evidence_count": 1,
+  "confirmed_total_minor": 0,
+  "matching_confirmation_reference": true,
+  "activity": [
+    {
+      "at": "2026-10-03T20:01:19.419Z",
+      "kind": "success"
+    },
+    {
+      "at": "2026-10-03T20:09:10.758Z",
+      "kind": "approval"
+    },
+    {
+      "at": "2026-10-03T20:28:09.113Z",
+      "kind": "approval"
+    },
+    {
+      "at": "2026-10-03T21:17:59.450Z",
+      "kind": "approval"
+    },
+    {
+      "at": "2026-10-03T21:22:42.703Z",
+      "kind": "approval"
+    },
+    {
+      "at": "2026-10-03T21:23:10.131Z",
+      "kind": "success"
+    }
+  ],
+  "approval_to_confirmation_ms": 27428,
+  "timing_scope": "Server timestamps; includes any manager delay between signed approval and Register now, not human-active time or isolated execution latency."
+}

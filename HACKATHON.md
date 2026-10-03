@@ -9,7 +9,7 @@ Latest user-approved additions: optional Food & supplies for boba pickup and
 native passkey confirmation before new live commitments. These supersede the
 original three-lane limit below for this narrow fourth worker. Browser Use is
 cancelled; use Surfsky. Gemini voice drafting passed actual audio-to-draft inference
-with synthetic speech; hosted end-to-end verification is tracked separately.
+with synthetic speech; hosted UI-to-Gemini verification passed in 3.042 seconds.
 External merchant order-history import remains deferred.
 
 Latest stage priority: a fresh Claude Code terminal session delegates preparation

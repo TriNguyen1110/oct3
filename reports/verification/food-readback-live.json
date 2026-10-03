@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-10-03T21:24:23.380Z",
+  "scope": "One coordinator-authorized read-only exact boba smoke; no mission state change",
+  "source_sha256": "f2e35cff8b53106955a99cd2d6dd09630f45e615eb4791a4ce195a08453fa747",
+  "preflight_stopped": true,
+  "lease_acquired": true,
+  "lease_released": true,
+  "cleanup_confirmed": true,
+  "elapsed_ms": 25665,
+  "options_count": 0,
+  "item_estimates_minor": [],
+  "blocker_code": "merchant_changed",
+  "blocker": "The location search did not expose the observed Boba Guys Potrero result.",
+  "adapter_cleanup": "confirmed",
+  "evidence_titles": [
+    "Boba Guys pickup needs attention"
+  ],
+  "automatic_ordering_implemented": false,
+  "add_to_order_activated": false,
+  "checkout_prepared": false,
+  "order_submitted": false,
+  "payment_attempted": false
+}

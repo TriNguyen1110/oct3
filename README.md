@@ -10,10 +10,12 @@ Public demo: **https://oct3-five.vercel.app**. Today’s lanes use Fiverr, Amazo
 and event-ticket research. The hosted Claude → Stripe sandbox → Surfsky →
 Supabase research flow is verified: Fiverr and Luma returned options, while
 Amazon returned an access blocker. The narrow free Luma registration adapter has
-passed synthetic guard checks and actual read-only preparation; its final RSVP
-is unverified. Boba Guys' official pickup form is reachable; final food checkout
+passed guard checks, read-only preparation, and an actual $0 registration after
+the manager enrolled a native passkey and approved the exact action. Matching
+Luma confirmation is saved; a separate receipt link was not captured. Boba Guys' official pickup form is reachable; final food checkout
 and paid merchant transactions remain unverified. New live approvals require
-the manager's device passkey. No test authenticator enrolls in their account.
+the manager's device passkey. Native setup and one exact signed live approval
+are verified; test authenticators never enroll in their account.
 
 Built for Supabase Select, October 3, 2026. Theme: **Make Something Agents Want**.
 Judging: **Innovation, Design, Functionality, Impact**.
@@ -50,8 +52,9 @@ import remains unimplemented.
 
 Short voice notes can draft the brief, budget and food request for explicit
 review. Actual Gemini audio-to-draft inference passed with a 4.842-second
-synthetic spoken request in 2.088 seconds; hosted end-to-end verification is
-tracked separately. Typed briefs remain usable.
+synthetic spoken request in 2.088 seconds. The real hosted browser-to-Gemini
+flow also passed in 3.042 seconds, with explicit draft application and no mission
+submission. Typed briefs remain usable.
 No voice result submits a mission or approves an action, and Cue does not save
 recordings.
 
@@ -60,6 +63,7 @@ recordings.
 - [Connect with CLI or MCP](docs/CONNECT.md)
 - [Sponsor integrations and proof](docs/SPONSORS.md)
 - [Demo runbook and latency](docs/DEMO.md)
+- [Measured impact baseline and comparison protocol](reports/verification/impact-baseline.md)
 - [Form components and bounded recovery](docs/RELIABILITY.md)
 - [Coding team models and thinking levels](MODEL_ROUTING.md)
 - [Independent local verification](reports/verification/passed-local.md)
@@ -77,9 +81,9 @@ and [card collection guide](https://docs.21st.dev/blog/react-card-components).
 The cinematic hero adapts the MIT-licensed
 [Kokonut Shape Hero](https://github.com/kokonut-labs/kokonutui/blob/main/components/kokonutui/shape-hero.tsx)
 found on [21st.dev](https://21st.dev/@kokonutd/components/shape-landing-hero),
-with CSS lighting and an original gold Art Deco concierge render. It uses a
-responsive raster asset, not WebGL. [Asset](public/images/cue-concierge-gold.png),
-[image prompt](public/images/cue-concierge-gold.prompt.txt),
+with CSS lighting and an original ivory Art Deco concierge statue. It uses a
+responsive raster asset, not WebGL. [Asset](public/images/cue-concierge-statue.png),
+[image prompt](public/images/cue-concierge-statue.prompt.txt),
 [component license](components/cinematic-hero.LICENSE.txt).
 
 ## Stack and boundaries

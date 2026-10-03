@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-03T21:18:32.224Z",
+  "origin": "https://oct3-five.vercel.app",
+  "mode": "real_hosted_gemini_synthetic_microphone",
+  "passed": false,
+  "authenticated": true,
+  "fixture_sha256": "05b2916bc535c86c7fcef156f48536680750a4ccdc4dc4ef131ddf796469cd2d",
+  "voice_calls": 1,
+  "voice_http_status": null,
+  "voice_roundtrip_ms": null,
+  "audio": {
+    "format": "pcm_s16le",
+    "sample_rate_hz": 16000,
+    "channels": 1,
+    "header_bytes": 44,
+    "total_bytes": 154988,
+    "duration_seconds": 4.842
+  },
+  "no_automatic_microphone": true,
+  "draft_waits_for_explicit_apply": false,
+  "applied_fields_verified": false,
+  "other_form_fields_preserved": false,
+  "tracks_stopped": false,
+  "forbidden_mutation_attempts": 0,
+  "mission_submission_count": 0,
+  "page_error_count": 0,
+  "failure_stage": "record_and_hosted_gemini",
+  "limitations": [
+    "Synthetic microphone fixture; no real user microphone.",
+    "No mission submission, passkey ceremony, provider checkout or merchant action.",
+    "UI request reaches real hosted voice route and Gemini; provider duration is included in roundtrip, not isolated."
+  ],
+  "evidence_limit": "The browser context was closed after the45second response waiter expired. No requestfailed or server timing was captured. UI35secondabort is an implementation expectation, not an observed network event in this failed run."
+}

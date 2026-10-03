@@ -70,6 +70,7 @@ export default function MissionDesk() {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [savedMissionId, setSavedMissionId] = useState<string | null>(null);
   const [history, setHistory] = useState<MissionView[]>([]);
+  const modalInteraction = useRef(0);
   const preview = mission.mission_id.startsWith("preview-");
   const selectedTask = mission.tasks.find(task => task.id === selectedTaskId);
 
@@ -78,12 +79,15 @@ export default function MissionDesk() {
   }, []);
 
   const loadLandingMission = useCallback(async () => {
+    const interactionAtStart = modalInteraction.current;
     const target = landing.current;
     const next = target
       ? await api<MissionView>(`/api/missions/${encodeURIComponent(target.missionId)}`)
       : (await api<{ mission: MissionView | null }>("/api/missions?latest=1")).mission;
     if (!next) return false;
     setMission(next); setMissionError(null);
+    // A delayed initial read must not close or replace a dialog the manager opened.
+    if (modalInteraction.current !== interactionAtStart) return true;
     if (target?.taskId) {
       if (next.tasks.some(task => task.id === target.taskId)) {
         setSelectedTaskId(target.taskId); setModal("task");
@@ -134,8 +138,8 @@ export default function MissionDesk() {
   }, [authenticated]);
 
   useEffect(() => { if (!toast) return; const timeout = setTimeout(() => setToast(null), 5500); return () => clearTimeout(timeout); }, [toast]);
-  const open = (next: typeof modal) => { setError(null); setModal(next); };
-  const close = () => { if (!busy) { setModal(null); setError(null); } };
+  const open = (next: typeof modal) => { modalInteraction.current++; setError(null); setModal(next); };
+  const close = () => { if (!busy) { modalInteraction.current++; setModal(null); setError(null); } };
   const inspectTask = (task: Task) => { setSelectedTaskId(task.id); open("task"); };
 
   async function signIn(event: React.FormEvent) {
