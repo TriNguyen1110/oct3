@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Lane, MissionInput, MissionView, RuntimeReadiness, Task, TaskStatus } from "@/src/shared/contracts";
 import { api, ApiError } from "@/src/client/api";
 import { createPreview, defaultInput } from "@/src/client/preview";
+import { CueMark } from "@/components/cue-mark";
 
 type IconName = "grid" | "arrow" | "chevron" | "check" | "clock" | "people" | "plus" | "sliders" | "link" | "code" | "activity" | "close" | "external" | "copy" | "shield" | "spark" | "box" | "ticket" | "design" | "warning";
 function Icon({ name, size = 18, className = "" }: { name: IconName; size?: number; className?: string }) {
@@ -17,9 +18,9 @@ function Icon({ name, size = 18, className = "" }: { name: IconName; size?: numb
 }
 
 const laneMeta: Record<Lane, { label: string; role: string; icon: IconName; domain: string; number: string }> = {
-  amazon: { label: "Amazon", role: "Supply worker", icon: "box", domain: "amazon.com", number: "01" },
-  fiverr: { label: "Fiverr", role: "Talent worker", icon: "design", domain: "fiverr.com", number: "02" },
-  event_tickets: { label: "Events", role: "Ticket worker", icon: "ticket", domain: "Event provider", number: "03" },
+  amazon: { label: "Logistics", role: "Logistics worker", icon: "box", domain: "Amazon", number: "01" },
+  fiverr: { label: "Hiring", role: "Hiring worker", icon: "people", domain: "Fiverr", number: "02" },
+  event_tickets: { label: "Travel", role: "Events & tickets worker", icon: "ticket", domain: "Event provider", number: "03" },
 };
 const statusText: Record<TaskStatus, string> = { queued: "In the queue", researching: "Finding options", options_ready: "Options found", prepared: "Ready to review", awaiting_approval: "Your call", executing: "Working on it", confirmed: "Confirmed", needs_human: "Needs a hand", failed: "Couldn't complete" };
 const money = (amount: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: amount % 100 ? 2 : 0 }).format(amount / 100);
@@ -170,7 +171,7 @@ export default function MissionDesk() {
 
   return <div className="app-shell">
     <aside className="sidebar">
-      <a href="/" className="brand" aria-label="oct3 home"><span className="brand-mark"><span/><span/><span/></span>oct3<span className="brand-period">.</span></a>
+      <a href="/" className="brand" aria-label="Cue home"><CueMark/><span className="brand-wordmark">cue</span></a>
       <div className="workspace-picker"><span className="workspace-icon">S</span><span><strong>Studio workspace</strong><small>Your work, in good hands</small></span></div>
       <div className="nav-label">WORKSPACE</div>
       <nav aria-label="Main navigation">
@@ -189,7 +190,14 @@ export default function MissionDesk() {
       <header className="topbar"><div className="breadcrumb">Workspace <span>/</span> <strong>Mission desk</strong></div><div className="topbar-right"><span className="today">SAT, OCT 03</span><span className={`environment-pill ${mission.mode === "live" ? "live" : ""}`}><span/>{preview ? "Preview workspace" : mission.mode === "live" ? "Live mission" : `${mission.mode === "fixture" ? "Example" : mission.mode} mission`}</span></div></header>
 
       <main>
-        <div className="page-heading"><div><p className="eyebrow">OCTOBER THIRD · AN AGENT PRODUCTION</p><h1>Good help. <em>On demand.</em></h1></div><button className="button primary" onClick={() => open(authenticated ? "new" : "auth")}><Icon name="plus" size={16}/>New mission</button></div>
+        <div className="page-heading"><div><p className="eyebrow">CUE · YOUR AGENT’S EXTRA HANDS</p><h1>Good help. <em>On demand.</em></h1></div><button className="button primary" onClick={() => open(authenticated ? "new" : "auth")}><Icon name="plus" size={16}/>New mission</button></div>
+
+        <ul className="capability-strip" aria-label="What Cue helps with">
+          <li className="capability capability-hiring"><Icon name="people" size={20}/><div><strong>Hiring</strong><span>Talent &amp; services</span></div></li>
+          <li className="capability capability-logistics"><Icon name="box" size={20}/><div><strong>Logistics</strong><span>Purchases &amp; delivery</span></div></li>
+          <li className="capability capability-food"><Icon name="spark" size={20}/><div><strong>Food &amp; supplies</strong><span>Coming next</span></div></li>
+          <li className="capability capability-travel"><Icon name="ticket" size={20}/><div><strong>Travel</strong><span>Events &amp; tickets</span></div></li>
+        </ul>
 
         <section className="mission-brief" aria-labelledby="mission-title">
           <div className="mission-heading"><div className="mission-symbol"><Icon name="spark" size={22}/></div><div><div className="brief-eyebrow">{preview ? "EXAMPLE MISSION" : "CURRENT MISSION"}<span>REV {String(mission.revision).padStart(2, "0")}</span></div><h2 id="mission-title">{/\bexpo\b/i.test(mission.objective) ? "Get the team expo-ready." : "Your mission, in motion."}</h2></div><span className="mission-status"><span className={workingCount > 0 ? "pulse" : ""}/>{mission.status === "completed" ? "Mission complete" : workingCount ? `${workingCount} workers active` : mission.status === "needs_attention" ? "Needs your attention" : needsReview ? "Ready for your review" : "In progress"}</span></div>
@@ -207,9 +215,9 @@ export default function MissionDesk() {
               {mission.tasks.map(task => {
                 const meta = laneMeta[task.lane]; const option = task.options.find(item => item.id === task.proposal?.option_id) ?? task.options[0];
                 return <article className={`worker-card lane-${task.lane}`} data-running={!preview && (task.status === "researching" || task.status === "executing")} key={task.id}>
-                  <div className="worker-card-top"><span className={`merchant-icon ${task.lane}`}>{task.lane === "amazon" ? <span className="amazon-a">a</span> : task.lane === "fiverr" ? <span className="fiverr-f">fi<span>●</span></span> : <Icon name="ticket" size={21}/>}</span><div><h4>{meta.label}</h4><span>{meta.role}</span></div><span className="worker-number">{meta.number}</span></div>
+                  <div className="worker-card-top"><span className={`merchant-icon ${task.lane}`}><Icon name={meta.icon} size={21}/></span><div><h4>{meta.label}</h4><span>{option?.merchant ?? meta.domain}</span></div><span className="worker-number">{meta.number}</span></div>
                   <WorkerArt lane={task.lane}/>
-                  <div className="worker-content"><div className="worker-intent">{task.title}</div><h5>{option?.title ?? (task.blocker ? "A quick handoff" : task.status === "queued" ? "Ready when you are" : "Finding the right fit")}</h5><p className="option-description">{option?.description ?? task.progress}</p><div className="option-meta"><span>{task.lane === "event_tickets" ? `${task.proposal?.quantity ?? mission.headcount} passes` : task.lane === "fiverr" ? "One clear brief" : "Booth essentials"}</span><strong>{task.proposal ? money(task.proposal.total_minor) : option && option.amount_minor > 0 ? money(option.amount_minor) : "—"}{task.proposal && <small> total</small>}</strong></div><div className={`task-progress ${task.status}`}><span className="status-dot"/><span>{preview ? "Example plan" : statusText[task.status]}</span>{task.evidence.length > 0 && <button aria-label={`View ${meta.label} evidence`} onClick={() => inspectTask(task)}>{task.evidence.length} {task.evidence.length === 1 ? "source" : "sources"}<Icon name="external" size={10}/></button>}</div></div>
+                  <div className="worker-content"><div className="worker-intent">{task.title}</div><h5>{option?.title ?? (task.blocker ? "A quick handoff" : task.status === "queued" ? "Ready when you are" : "Finding the right fit")}</h5><p className="option-description">{option?.description ?? task.progress}</p><div className="option-meta"><span>{task.lane === "event_tickets" ? `${task.proposal?.quantity ?? mission.headcount} passes` : task.lane === "fiverr" ? "One clear brief" : "Purchases & delivery"}</span><strong>{task.proposal ? money(task.proposal.total_minor) : option && option.amount_minor > 0 ? money(option.amount_minor) : "—"}{task.proposal && <small> total</small>}</strong></div><div className={`task-progress ${task.status}`}><span className="status-dot"/><span>{preview ? "Example plan" : statusText[task.status]}</span>{task.evidence.length > 0 && <button aria-label={`View ${meta.label} evidence`} onClick={() => inspectTask(task)}>{task.evidence.length} {task.evidence.length === 1 ? "source" : "sources"}<Icon name="external" size={10}/></button>}</div></div>
                   <button className="worker-action" onClick={() => inspectTask(task)}>{task.status === "confirmed" ? "View confirmation" : task.blocker ? "View handoff" : task.approval?.state === "approved" ? "View approved plan" : task.proposal ? "Review plan" : "View worker"}<Icon name="arrow" size={16}/></button>
                 </article>;
               })}

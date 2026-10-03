@@ -6,10 +6,19 @@ See `HACKATHON.md` for schedule, gates and fallback rules.
 
 ## Theme and product
 
+Product: **Cue — Your agent’s extra hands.** Repository and technical identifiers
+remain `oct3`. Use Cue in the site, pitch and audience-facing materials.
+
 **Make Something Agents Want** is the user-confirmed hackathon theme.
 
-We build browser workers other agents hire for **Amazon supplies, Fiverr services
-and event tickets**. A caller agent submits a mission and receives structured
+Lead with capabilities: **Hiring, Logistics, Food & supplies, and Travel**.
+Use provider names as secondary labels and in concrete evidence. Today’s three
+worker lanes remain Fiverr services, Amazon supplies, and event tickets.
+Food & supplies is explicitly **coming next**; DoorDash is not implemented.
+Travel currently means event/ticket research, not flight booking. The broader
+vision must not imply extra integrations or completed merchant transactions.
+
+We build browser workers other agents hire for these jobs. A caller agent submits a mission and receives structured
 outcomes. Managers control spending and commitments. Surfsky runs concurrent
 browsers, Claude/Eve coordinates them, Supabase stores shared state, Vercel hosts
 the app, and Stripe handles service fees and purchase flows separately.
