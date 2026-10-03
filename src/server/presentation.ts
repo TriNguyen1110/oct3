@@ -3,7 +3,7 @@ import type { Evidence, Lane, MissionView, TaskLinks } from "../shared/contracts
 const hosts: Record<Lane, string[]> = {
   amazon: ["amazon.com", "www.amazon.com"],
   fiverr: ["fiverr.com", "www.fiverr.com"],
-  event_tickets: ["eventbrite.com", "www.eventbrite.com"],
+  event_tickets: ["eventbrite.com", "www.eventbrite.com", "luma.com", "www.luma.com", "lu.ma", "www.lu.ma"],
 };
 
 /** Return an observed, navigable provider URL. Never expose browser-session links. */

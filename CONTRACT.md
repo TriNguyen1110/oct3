@@ -160,3 +160,73 @@ Current merchant execution remains a handoff, so no live receipt capture is clai
 The dashboard can reopen the latest 20 workspace-owned missions from existing
 storage. Supabase provides the same history once configured and migrated. External
 merchant-history imports and saved preferences are separate stretch work.
+
+## Demo completion slice — October 3, 12:45 PDT
+
+Preserve production MPP challenge behavior. Add an explicitly enabled sandbox
+payer for rehearsals only: `OCT3_TEST_PAYMENT_ENABLED=true`, `sk_test_` key and
+`profile_test_` profile are all required. It uses Stripe's test payment method,
+passes the generated credential through the existing real MPP verifier, persists
+the bound proof, then dispatches the existing mission exactly once. Never set
+paid state from a caller's assertion. No test credential appears in model output.
+
+- `POST /api/missions/:id/service-payment`, authenticated and workspace-scoped,
+  accepts exactly `{ "mode": "test" }`. Returns the presented MissionView with
+  verified service receipt after payment and dispatch. Replays reuse stored proof.
+- Mission submission may explicitly request this behavior with
+  `X-Cue-Test-Payment: authorized`; absent that header the normal 402 remains.
+  MCP's existing `submit_mission` gains optional `pay_test_service_fee: boolean`
+  and the CLI gains `--pay-test`. Both set that header only on explicit opt-in.
+- A 402/503 creation response must retain the saved mission and its dashboard
+  link in the UI. The board offers “Pay $0.50 in test mode & start” for an unpaid
+  live mission. It must label this as a developer-supplied sandbox payment, not
+  an autonomous real wallet or merchant checkout.
+
+The next merchant slice is one exact free event registration, pending the user's
+event/attendee selection. General remote component mutation stays disabled.
+Do not convert research estimates into exact checkout proposals or claim real
+registration from fixture data. Amazon/Fiverr commitments still require chosen
+destinations, verified checkout totals and separate authorization.
+
+User-authorized saved profile: authenticated `GET /api/preferences` returns the
+current workspace's `{profile_ref: "manager", preferences, updated_at, storage}`.
+Manager-only `PUT /api/preferences` stores exactly name, email, company and role
+in Supabase `oct3_preferences`; agents may read but cannot change it. A profile
+supplies form defaults and is never a standing approval to spend or register.
+The attendee reference `manager` resolves to this profile only when preparing
+the user-selected event action. Personal values belong in the private database,
+not committed fixtures or public evidence reports.
+
+## One free registration — frozen narrow execution contract
+
+Only `https://luma.com/OpenTogether`, one free ticket, and the saved `manager`
+profile are eligible in this slice. This does not enable generic browser writes.
+Browser interface types are in `src/shared/registration.ts`; browser owns
+`src/browser/luma-registration.ts` exports `prepareFreeRegistration` and
+`executeFreeRegistration`. Preparation is read-only, including opening the
+blank registration dialog. Execution receives only a server-validated immutable
+snapshot/attendee/approval/reservation/attempt and rechecks the exact free event.
+
+- Manager-only `POST /api/tasks/:id/prepare-registration` accepts exactly
+  `{expected_revision}` and returns the presented MissionView. It requires a
+  paid live event task, quantity one, current saved profile and the exact source.
+  Creates an expiring zero-total proposal with `action_type: free_registration`
+  and an `action_hash` binding the entire private snapshot and attendee. Private
+  prepared data stays out of MissionView; the review shows the event and saved
+  profile before approval. Profile changes invalidate execution.
+- Existing approval/resume endpoints remain the only execution path. An exact
+  zero-total free-registration approval requires no Link payment. All existing
+  manager, hash, revision, reservation, expiry and protected-commitment guards
+  still apply. Claim once before external work; never retry an uncertain submit.
+- Browser execution allows at most one validated POST to the observed Luma
+  registration endpoint, bound to event, ticket, count one, approved name/email,
+  zero amount/tax and no payment method. Block other remote mutations. Confirm
+  only an actual approved provider response with matching ticket reference.
+  Waitlist/pending/response loss stays unconfirmed and protected from replay.
+- Luma ticket/proxy query keys are private access credentials. Do not emit them
+  as public links. An actual confirmation may retain its provider reference and
+  public event source; receipt URL remains null if no safe receipt was observed.
+
+Implementation/tests do not authorize an actual RSVP. The user requested a
+review link before commitment; prepare that concrete result before asking them
+to approve the final registration.

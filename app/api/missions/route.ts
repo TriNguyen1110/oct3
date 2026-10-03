@@ -5,6 +5,7 @@ import { handle } from "@/src/server/errors";
 import { createMission } from "@/src/server/missions";
 import { missionSchema } from "@/src/server/schema";
 import { gateMissionServicePayment } from "@/src/server/service-payment-gate";
+import { payMissionServiceFeeForTest } from "@/src/server/service-test-payment";
 import { listRecords } from "@/src/server/store";
 
 export const runtime = "nodejs";
@@ -19,6 +20,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   return handle(async () => {
     const principal = requireAuth(request);
+    const paymentRequest = request.clone();
     const parsed = missionSchema.parse(await request.json());
     const { mode = process.env.OCT3_DEMO_MODE === "true" ? "fixture" : "live", ...input } = parsed;
     const result = await createMission(input, principal, request.headers.get("Idempotency-Key") || "", mode);
@@ -28,9 +30,11 @@ export async function POST(request: Request) {
       return Response.json(presentMission(view, origin), { status: result.created ? 202 : 200, headers: { "cache-control": "no-store" } });
     }
 
-    const payment = await gateMissionServicePayment(request, result.record.id, principal.workspace_id, origin);
+    const payment = request.headers.get("x-cue-test-payment") === "authorized"
+      ? await payMissionServiceFeeForTest(paymentRequest, result.record.id, principal.workspace_id, origin)
+      : await gateMissionServicePayment(paymentRequest, result.record.id, principal.workspace_id, origin);
     if (payment.kind === "challenge") return payment.response;
-    if (payment.kind === "blocked") {
+    if (payment.kind === "blocked" || payment.kind === "failed") {
       const presented = presentMission(payment.record.view, origin);
       return Response.json({
         error: { code: payment.code, message: payment.message },

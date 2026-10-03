@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const services: RuntimeReadiness[] = [
       { service: "Claude", ready: !!process.env.ANTHROPIC_API_KEY, detail: process.env.ANTHROPIC_API_KEY ? "API key configured; coordinator uses claude-sonnet-5-5." : "Add ANTHROPIC_API_KEY to enable planning." },
       { service: "Surfsky", ready: !!process.env.SURFSKY_API_KEY, detail: process.env.SURFSKY_API_KEY ? "Key configured. Each destination still needs an observed browser result." : "Add SURFSKY_API_KEY to enable remote browsers." },
-      { service: "Supabase", ready: storageMode() === "supabase", detail: storageMode() === "supabase" ? "Supabase persistence configured; apply the checked-in migration." : "Local development JSON storage. Connect Supabase for deployment." },
+      { service: "Supabase", ready: storageMode() === "supabase", detail: storageMode() === "supabase" ? "Supabase persistence configured. Connection health is verified separately." : "Local development JSON storage. Connect Supabase for deployment." },
       { service: "Stripe MPP", ready: stripe.ready, detail: stripe.detail },
       { service: "Link Agent Wallet", ready: false, detail: "Not connected. Merchant commitments require separate manager and Link approval." },
     ];

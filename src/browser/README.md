@@ -12,7 +12,9 @@ refuses existing running or duplicate oct3 profiles. The backend must hold a
 cross-instance lane lease; the in-process lock alone is not a distributed lock.
 
 Amazon reads search-result cards; Fiverr reads visible gig-card starting prices;
-Eventbrite reads the selected event's JSON-LD offers. Options have source links,
+Eventbrite and Luma read the selected event's JSON-LD offers. Luma accepts exact
+`luma.com/<event-slug>` and `lu.ma/<event-slug>` pages; discovery calendars such
+as `/sf` are rejected, and all event URL query parameters are removed. Options have source links,
 observed timestamps and raw observation summaries. At most three survive.
 Claude Sonnet 5.5 ranks existing candidates for relevance; only observed indices
 can be selected, so model text cannot fabricate a price or URL. Model failure
@@ -20,7 +22,23 @@ falls back to the lowest observed prices, with a different reason label.
 
 All displayed prices are estimates until checkout. Event quantity is requested
 quantity, not verified group inventory. AggregateOffer prices are identified as
-listed minima. Fiverr sourcing is not a hire. No hidden fees are assumed zero.
+listed minima. A Luma event is free only when its offer explicitly states a zero
+USD price; a missing price is not treated as free. Approval-required, direct
+registration and waitlist text are recorded as observed page state. Research
+evidence is marked `readOnly=true` in its detail and as an observation; it never
+claims that a registration request or RSVP was submitted or confirmed. Fiverr
+sourcing is not a hire. No hidden fees are assumed zero.
+
+## Public Luma shortlist on October 3, 2026
+
+Public, read-only browsing of `https://luma.com/sf` and the exact event pages
+found these candidates. No account was used and no form was submitted.
+
+| Event | Date | Observed qualification | Direct source |
+|---|---|---|---|
+| Marketing Break: A 3PM Networking Event for Marketers #SFTechWeek | Oct 8, 2026, 2:30–4:30 PM PDT | JSON-LD offer is USD 0 and InStock; page says Approval Required / Request to Join, so acceptance is not immediate | https://luma.com/ya263roy |
+| AI & The Future of Marketing — SF Tech Week Meetup | Oct 9, 2026, 7:00–9:00 PM PDT | Page explicitly says Admission: Free and Approval Required / Request to Join | https://luma.com/vv59zi0w |
+| Open Together: AI Builders Unite | Oct 16, 2026, 6:00 PM PDT | Page says free for everyone and currently shows Register without an approval label; availability can change and no RSVP was attempted | https://luma.com/OpenTogether |
 
 `executeApprovedTask` requires the expected unexpired approval and reservation,
 then revisits the selected merchant. It currently returns `needs_human` with a

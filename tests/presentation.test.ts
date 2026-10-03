@@ -85,6 +85,20 @@ test("Cue result links with synthetic records only", async t => {
     assert.equal(new URL(revised.tasks[0].links!.review_url).searchParams.get("revision"), "4");
   });
 
+  await t.test("Luma research links use exact allowed hosts without implying RSVP confirmation", () => {
+    for (const host of ["luma.com", "www.luma.com", "lu.ma", "www.lu.ma"]) {
+      const view = mission();
+      view.tasks[2].proposal!.source_url = `https://${host}/synthetic-event`;
+      const links = present(view).tasks[2].links!;
+      assert.equal(links.preview_url, `https://${host}/synthetic-event`);
+      assert.equal(links.preview_kind, "provider_page");
+      assert.equal(links.confirmation_url, null);
+      assert.equal(links.receipt_url, null);
+      view.tasks[2].proposal!.source_url += "?token=synthetic-private";
+      assert.equal(present(view).tasks[2].links!.preview_url, null);
+    }
+  });
+
   await t.test("bound live checkout observations override provider pages; stale and foreign observations do not", () => {
     const view = mission();
     const target = view.tasks[0];

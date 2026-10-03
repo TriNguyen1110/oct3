@@ -149,6 +149,9 @@ export async function gateMissionServicePayment(
     }
     current.service_payment.external_id = binding.externalId;
     current.service_payment.scope = binding.scope;
+    if (proofMatches(current.service_payment.proof, binding)) {
+      delete current.service_payment.test_payment_credential;
+    }
   });
 
   if (proofMatches(record.service_payment?.proof, binding)) {
@@ -218,6 +221,9 @@ export async function gateMissionServicePayment(
       throw new AppError(409, "payment_proof_conflict", "This mission already has a different Stripe payment reference.");
     }
     current.service_payment.proof = payment.proof;
+    // Once the verified proof is durable, the private sandbox credential is no
+    // longer needed for replay and should not remain in mission state.
+    delete current.service_payment.test_payment_credential;
     current.view.service_payment = {
       status: "paid",
       amount_minor: MISSION_SERVICE_FEE_MINOR,

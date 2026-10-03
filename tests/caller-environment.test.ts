@@ -45,7 +45,7 @@ console.log(JSON.stringify({ message: { content: [{ type: "tool_result", tool_us
 console.log(JSON.stringify({ type: "result", is_error: false }));
 `;
   await writeFile(join(directory, "claude"), fake, { mode: 0o700 });
-  const env: NodeJS.ProcessEnv = { ...allowed };
+  const env: NodeJS.ProcessEnv = { NODE_ENV: "test", ...allowed };
   for (const key of denied) env[key] = `synthetic-private-${key}`;
   // Valid parent runtime flag, which must still not reach the caller child.
   env.NODE_OPTIONS = "--no-warnings";

@@ -15,6 +15,13 @@ export interface MissionServicePaymentState {
   external_id?: string;
   scope?: string;
   first_credential_attempt_at?: string;
+  /** Private sandbox credential selected by CAS; never expose through MissionView. */
+  test_payment_credential?: {
+    credential: string;
+    challenge: string;
+    credential_header: string;
+    expires_at: string;
+  };
   proof?: VerifiedServicePaymentProof;
 }
 export interface EveDispatchState {

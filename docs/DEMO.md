@@ -21,6 +21,34 @@ rehearsal and Link merchant spending still need their own evidence.
 
 ## Readiness audit — October 3, source f9d3de1
 
+**Superseding implementation update:** the sandbox payer, saved-mission payment
+recovery, Luma research and saved manager profile are now implemented. Explicit
+CLI `--pay-test` or MCP `pay_test_service_fee: true` uses the developer-supplied
+Stripe test method through the real MPP verifier. It is not an external real
+wallet. Normal calls still return a payment challenge. Manager profile data is
+stored in Supabase; agents can read defaults, but only the manager can edit them.
+
+Independent local verification: 88 passes, zero failures, one opt-in integration
+skip; typecheck and production build pass. The new combined real CLI/API →
+Stripe sandbox → Eve/Claude → Surfsky → Supabase run returned a paid mission in
+5.390 seconds and settled in 27.428 seconds, with Fiverr options, Amazon HTTP503,
+and a stale compiled worker rejecting Luma. The verified payment replay retained
+the same mission and payment. The Luma worker is being rebuilt and retried on
+that existing mission; do not call all three lanes successful from this run.
+See `reports/performance/local-paid-research.json` and
+`reports/verification/demo-completion.md`. Free RSVP execution remains separate
+work and no actual registration or purchase has occurred.
+
+To explicitly rehearse the research API with sandbox payment:
+
+```sh
+npm run cli -- submit examples/team-outing.json --key cue-stage-outing-001 --pay-test
+npm run cli -- status <returned-mission-id>
+```
+
+Reuse the same input and key on retry. The sample is live **read-only research**,
+with a planning budget, not authorization to spend or register.
+
 **The complete planned live demo is not verified or implemented end to end.**
 The following distinctions come from saved test evidence plus a read-only audit
 of the current code. Current local dashboard, readiness and authenticated history

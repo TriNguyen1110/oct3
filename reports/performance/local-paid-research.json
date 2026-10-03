@@ -1,0 +1,52 @@
+{
+  "checked_at": "2026-10-03T19:51:47.117Z",
+  "scope": "Actual CLI -> local HTTP API -> Stripe sandbox MPP -> Eve/Claude -> Surfsky research -> Supabase",
+  "origin": "http://127.0.0.1:3003",
+  "mission_id": "5a76b2de-c685-48e1-9bd6-efbe8821544e",
+  "idempotency_key": "cue-outing-paid-research-20261003-01",
+  "service_payment": {
+    "mode": "test",
+    "status": "paid",
+    "currency": "USD",
+    "reference": "pi_3UMYxr92qDIKX8Ve1HAx3sla",
+    "amount_minor": 50
+  },
+  "receipt_present": true,
+  "same_id_on_replay": true,
+  "same_payment_on_replay": true,
+  "submit_ms": 5390,
+  "total_ms": 27428,
+  "settled": true,
+  "outcomes": [
+    {
+      "lane": "amazon",
+      "status": "needs_human",
+      "options": 0,
+      "provider": null,
+      "preview_url": null,
+      "blocker": "Amazon returned HTTP 503 before readable options were available. Wait until 2026-10-03T19:51:50.279Z before retrying this worker. Other lanes can continue."
+    },
+    {
+      "lane": "fiverr",
+      "status": "options_ready",
+      "options": 3,
+      "provider": "Fiverr",
+      "preview_url": "https://www.fiverr.com/alfaclar/do-house-music-into-all-genre-by-request",
+      "blocker": "Select an option and verify the final merchant checkout total, including fees, before a purchase proposal can be approved."
+    },
+    {
+      "lane": "event_tickets",
+      "status": "needs_human",
+      "options": 0,
+      "provider": null,
+      "preview_url": null,
+      "blocker": "This worker supports only its selected merchant domain. Wait until 2026-10-03T19:51:43.703Z before retrying this worker. Other lanes can continue."
+    }
+  ],
+  "merchant_actions": 0,
+  "notes": [
+    "Live browser research only; no order, hire, form fill or RSVP.",
+    "Stripe uses a developer-supplied sandbox payment method; no real funds.",
+    "This run uses the actual CLI, not the Claude terminal caller."
+  ]
+}

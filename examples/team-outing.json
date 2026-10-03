@@ -1,0 +1,13 @@
+{
+  "objective": "Research a low-cost team outing: toothpaste on Amazon, a beat-making gig on Fiverr, and one free Open Together event registration. Return source and review links. Do not order, contact sellers, or register anyone.",
+  "mode": "live",
+  "currency": "USD",
+  "purchase_budget_minor": 2500,
+  "deadline": "2026-10-16T18:00:00-07:00",
+  "headcount": 1,
+  "requirements": {
+    "amazon": { "category": "toothpaste", "delivery_ref": "manager-office" },
+    "fiverr": { "category": "beat maker", "brief": "Research a basic beat-making gig around $5. Do not contact or hire the seller.", "due_date": "2026-10-15T17:00:00-07:00" },
+    "event_tickets": { "event_url": "https://luma.com/OpenTogether", "date": "2026-10-16T18:00:00-07:00", "quantity": 1, "attendee_ref": "manager" }
+  }
+}

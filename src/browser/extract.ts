@@ -10,10 +10,20 @@ export function publicSourceUrl(value: string, lane: Lane): string {
   const host = url.hostname.toLowerCase();
   const permitted = lane === "amazon" ? host === "www.amazon.com" || host === "amazon.com"
     : lane === "fiverr" ? host === "www.fiverr.com" || host === "fiverr.com"
-    : host === "www.eventbrite.com" || host === "eventbrite.com";
+    : host === "www.eventbrite.com" || host === "eventbrite.com" || host === "luma.com" || host === "www.luma.com" || host === "lu.ma" || host === "www.lu.ma";
   if (!permitted) throw new BrowserIssue("unsupported_url", "This worker supports only its selected merchant domain.");
   url.hash = "";
-  for (const key of [...url.searchParams.keys()]) if (!(["k", "query"] as string[]).includes(key)) url.searchParams.delete(key);
+  const allowedQuery = lane === "amazon" ? new Set(["k"]) : lane === "fiverr" ? new Set(["query"]) : new Set<string>();
+  for (const key of [...url.searchParams.keys()]) if (!allowedQuery.has(key)) url.searchParams.delete(key);
+  if (lane === "event_tickets") {
+    if (host === "eventbrite.com" || host === "www.eventbrite.com") {
+      if (!url.pathname.startsWith("/e/")) throw new BrowserIssue("missing_event", "Use an individual Eventbrite event URL, not a search or discovery page.");
+    } else {
+      const segments = url.pathname.split("/").filter(Boolean);
+      const reserved = new Set(["sf", "san-francisco", "discover", "calendar", "user", "pricing", "signin"]);
+      if (segments.length !== 1 || !/^[A-Za-z0-9_-]+$/.test(segments[0]) || reserved.has(segments[0].toLowerCase())) throw new BrowserIssue("missing_event", "Use an individual Luma event slug, not the /sf discovery calendar or another listing page.");
+    }
+  }
   return url.href;
 }
 export function researchUrl(input: ResearchTaskInput): string {
@@ -25,10 +35,8 @@ export function researchUrl(input: ResearchTaskInput): string {
     if (!("category" in input.requirements)) throw new BrowserIssue("configuration", "Fiverr needs a service category.");
     return `https://www.fiverr.com/search/gigs?query=${encodeURIComponent(input.requirements.category)}`;
   }
-  if (!("event_url" in input.requirements) || !input.requirements.event_url) throw new BrowserIssue("missing_event", "Choose the exact Eventbrite event URL so the ticket worker can inspect six passes.");
-  const source = publicSourceUrl(input.requirements.event_url, "event_tickets");
-  if (!new URL(source).pathname.startsWith("/e/")) throw new BrowserIssue("missing_event", "Use an individual Eventbrite event URL, not a search or discovery page.");
-  return source;
+  if (!("event_url" in input.requirements) || !input.requirements.event_url) throw new BrowserIssue("missing_event", "Choose the exact Eventbrite or Luma event URL so the ticket worker can inspect the requested passes.");
+  return publicSourceUrl(input.requirements.event_url, "event_tickets");
 }
 export async function detectAccessBlocker(page: Page): Promise<void> {
   const url = new URL(page.url());
@@ -85,6 +93,12 @@ export async function collectCandidates(page: Page, lane: Lane, input: ResearchT
     });
   }
   const source = publicSourceUrl(page.url(), lane);
+  const eventHost = new URL(source).hostname.toLowerCase();
+  const isLuma = eventHost === "luma.com" || eventHost === "www.luma.com" || eventHost === "lu.ma" || eventHost === "www.lu.ma";
+  const visibleText = isLuma ? await page.locator("body").innerText({ timeout: 8_000 }).catch(() => "") : "";
+  const lumaWaitlist = /\b(?:waitlist|join the waitlist|event is full|sold out)\b/i.test(visibleText);
+  const lumaApproval = /\bapproval required\b|subject to host approval|request to join/i.test(visibleText);
+  const lumaDirectRegistration = !lumaWaitlist && !lumaApproval && /\bRegistration\b[\s\S]{0,300}\bRegister\b/i.test(visibleText);
   const data = await page.locator('script[type="application/ld+json"]').allTextContents();
   const events: Record<string, unknown>[] = [];
   function visit(value: unknown) {
@@ -105,14 +119,23 @@ export async function collectCandidates(page: Page, lane: Lane, input: ResearchT
       const offer = value as Record<string, unknown>;
       const isMinimum = offer.price === undefined && offer.lowPrice !== undefined;
       const rawAmount = offer.price ?? offer.lowPrice;
-      if (rawAmount === undefined || rawAmount === null || rawAmount === "") continue;
-      const amount = Number(rawAmount);
+      const amount = typeof rawAmount === "number" ? rawAmount
+        : typeof rawAmount === "string" && /^\d+(?:\.\d{1,2})?$/.test(rawAmount.trim()) ? Number(rawAmount.trim())
+        : Number.NaN;
       const currency = String(offer.priceCurrency || "").toUpperCase();
       if (!Number.isFinite(amount) || amount < 0 || currency !== "USD" || !event.name) continue;
       const availability = String(offer.availability || "");
       const eventDate = typeof event.startDate === "string" ? event.startDate : undefined;
       if ("date" in input.requirements && /^\d{4}-\d{2}-\d{2}/.test(input.requirements.date) && eventDate && input.requirements.date.slice(0,10) !== eventDate.slice(0,10)) throw new BrowserIssue("merchant_changed", "The event listing date differs from the requested date. Confirm the exact event before proceeding.");
-      candidates.push({ title: String(event.name).slice(0,220), source_url: source, price_text: `${isMinimum ? "From " : ""}$${amount.toFixed(2)} per ticket${isMinimum ? " (listed minimum)" : ""}`, amount_minor: Math.round(amount * 100) * quantity, quantity, available: /SoldOut|OutOfStock|Discontinued/i.test(availability) ? false : quantity === 1 && /InStock|PreOrder|LimitedAvailability/i.test(availability) ? true : undefined, delivery_date: eventDate, description: `${typeof event.description === "string" ? event.description.replace(/<[^>]+>/g, " ").slice(0,500) : "Event listing"}. Listed ${eventDate || "date not confirmed"}; ${quantity} requested passes using ${isMinimum ? "the listed minimum" : "the listed price"} $${amount.toFixed(2)} each. Ticket type, fees and availability for the full group still require checkout verification.` });
+      const registration = isLuma ? lumaWaitlist
+        ? "The public page currently shows a waitlist or full state; no RSVP was attempted."
+        : lumaApproval
+          ? "The public page requires host approval; a request to join would not confirm an RSVP, and none was submitted."
+          : lumaDirectRegistration
+            ? "The public page currently offers registration without an observed approval label; no registration or RSVP was submitted or confirmed."
+            : "The public page did not expose a supported registration-state signal; no registration or RSVP was attempted."
+        : "No ticket purchase or registration was attempted.";
+      candidates.push({ title: String(event.name).slice(0,220), source_url: source, price_text: `${isMinimum ? "From " : ""}$${amount.toFixed(2)} per ticket${isMinimum ? " (listed minimum)" : ""}`, amount_minor: Math.round(amount * 100) * quantity, quantity, available: lumaWaitlist || /SoldOut|OutOfStock|Discontinued/i.test(availability) ? false : !isLuma && quantity === 1 && /InStock|PreOrder|LimitedAvailability/i.test(availability) ? true : undefined, delivery_date: eventDate, description: `${typeof event.description === "string" ? event.description.replace(/<[^>]+>/g, " ").slice(0,500) : "Event listing"}. Listed ${eventDate || "date not confirmed"}; ${quantity} requested passes using ${isMinimum ? "the listed minimum" : "the listed price"} $${amount.toFixed(2)} each. ${registration} Ticket type, fees and availability for the full group still require checkout verification.` });
     }
   }
   return candidates;

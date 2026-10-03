@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Lane, MissionInput, MissionView, RuntimeReadiness, Task, TaskStatus } from "@/src/shared/contracts";
 import { api, ApiError } from "@/src/client/api";
 import { createPreview, defaultInput } from "@/src/client/preview";
+import { SavedProfile } from "@/components/saved-profile";
+import type { PreferencesView } from "@/src/shared/preferences";
 import { CueMark } from "@/components/cue-mark";
 
 type IconName = "grid" | "arrow" | "chevron" | "check" | "clock" | "people" | "plus" | "sliders" | "link" | "code" | "activity" | "close" | "external" | "copy" | "shield" | "spark" | "box" | "ticket" | "design" | "warning";
@@ -59,7 +61,7 @@ export default function MissionDesk() {
   const [mission, setMission] = useState<MissionView>(() => createPreview());
   const [authenticated, setAuthenticated] = useState(false);
   const [services, setServices] = useState<RuntimeReadiness[]>([]);
-  const [modal, setModal] = useState<"auth" | "new" | "budget" | "connections" | "result" | "connect" | "task" | "history" | null>(null);
+  const [modal, setModal] = useState<"auth" | "new" | "budget" | "connections" | "result" | "connect" | "task" | "history" | "profile" | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [token, setToken] = useState("");
   const [draft, setDraft] = useState<MissionInput>(defaultInput);
@@ -67,13 +69,16 @@ export default function MissionDesk() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [hasSavedProfile, setHasSavedProfile] = useState(false);
   const [online, setOnline] = useState(true);
   const [createMode, setCreateMode] = useState<"fixture" | "live">("fixture");
   const [copied, setCopied] = useState(false);
-  const pendingSubmission = useRef<{ body: string; key: string } | null>(null);
+  const pendingSubmission = useRef<{ body: string; key: string; missionId?: string } | null>(null);
   const landing = useRef<{ missionId: string; taskId: string | null } | null>(null);
   const [linkedRevision, setLinkedRevision] = useState<number | null>(null);
   const [missionError, setMissionError] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [savedMissionId, setSavedMissionId] = useState<string | null>(null);
   const [history, setHistory] = useState<MissionView[]>([]);
   const preview = mission.mission_id.startsWith("preview-");
   const selectedTask = mission.tasks.find(task => task.id === selectedTaskId);
@@ -131,6 +136,13 @@ export default function MissionDesk() {
     return () => { active = false; clearInterval(timer); };
   }, [mission.mission_id, preview, authenticated, missionError]);
 
+  useEffect(() => {
+    if (!authenticated) { setHasSavedProfile(false); return; }
+    let active = true;
+    api<PreferencesView>("/api/preferences").then(view => { if (active) setHasSavedProfile(Boolean(view.preferences)); }).catch(() => { /* Profile settings expose any load error when opened. */ });
+    return () => { active = false; };
+  }, [authenticated]);
+
   useEffect(() => { if (!toast) return; const timeout = setTimeout(() => setToast(null), 5500); return () => clearTimeout(timeout); }, [toast]);
   const open = (next: typeof modal) => { setError(null); setModal(next); };
   const close = () => { if (!busy) { setModal(null); setError(null); } };
@@ -151,13 +163,57 @@ export default function MissionDesk() {
     event.preventDefault(); setBusy(true); setError(null);
     try {
       if (!authenticated) { setModal("auth"); return; }
-      const input = { ...draft, mode: createMode, requirements: { ...draft.requirements, event_tickets: { ...draft.requirements.event_tickets, quantity: draft.headcount, event_url: draft.requirements.event_tickets.event_url || (createMode === "fixture" ? "https://www.eventbrite.com/" : "") } } };
+      const input = { ...draft, mode: createMode, requirements: { ...draft.requirements, event_tickets: { ...draft.requirements.event_tickets, attendee_ref: createMode === "live" && hasSavedProfile && draft.requirements.event_tickets.attendee_ref === "demo-team" ? "manager" : draft.requirements.event_tickets.attendee_ref, quantity: draft.headcount, event_url: draft.requirements.event_tickets.event_url || (createMode === "fixture" ? "https://www.eventbrite.com/" : "") } } };
       const body = JSON.stringify(input);
       if (!pendingSubmission.current || pendingSubmission.current.body !== body) pendingSubmission.current = { body, key: crypto.randomUUID() };
-      const created = await api<MissionView>("/api/missions", { method: "POST", headers: { "Idempotency-Key": pendingSubmission.current.key }, body });
+      const created = pendingSubmission.current.missionId
+        ? await api<MissionView>(`/api/missions/${pendingSubmission.current.missionId}`)
+        : await api<MissionView>("/api/missions", { method: "POST", headers: { "Idempotency-Key": pendingSubmission.current.key }, body });
       pendingSubmission.current = null;
       selectMission(created); setToast(createMode === "fixture" ? "Preview run created. All results will be labeled as examples." : "Mission dispatched. Your workers are on it.");
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn't start this mission."); }
+    } catch (cause) {
+      const savedId = cause instanceof ApiError ? cause.metadata.missionId : undefined;
+      if (savedId) {
+        if (pendingSubmission.current) pendingSubmission.current.missionId = savedId;
+        setSavedMissionId(savedId);
+        const url = new URL(window.location.href);
+        url.search = new URLSearchParams({ mission: savedId }).toString();
+        window.history.replaceState(null, "", url);
+        try {
+          selectMission(await api<MissionView>(`/api/missions/${savedId}`));
+          setPaymentError(cause instanceof ApiError && cause.status === 402 ? null : cause instanceof Error ? cause.message : "Service payment needs attention.");
+          setToast("Mission saved. Continue service payment below.");
+        } catch {
+          setModal(null);
+          setMissionError("Your mission is saved. Reopen it to check payment and worker status; do not submit a new mission.");
+        }
+      } else setError(cause instanceof Error ? cause.message : "Couldn't start this mission. Retry this same brief to reuse its submission key.");
+    }
+    finally { setBusy(false); }
+  }
+
+  async function servicePayment(checkOnly = false) {
+    if (preview || !authenticated) return;
+    setBusy(true); setPaymentError(null);
+    const id = mission.mission_id;
+    try {
+      const next = await api<MissionView>(`/api/missions/${id}${checkOnly ? "" : "/service-payment"}`, checkOnly ? {} : { method: "POST", body: JSON.stringify({ mode: "test" }) });
+      setMission(current => current.mission_id === id ? next : current);
+      setToast(next.service_payment.status === "paid" ? "Service payment verified. Worker status is updating." : "Saved payment status refreshed.");
+    } catch (cause) {
+      setPaymentError(`${cause instanceof Error ? cause.message : "Payment could not be verified."} Check saved status before retrying. Continue on this mission; no new mission is needed.`);
+      try {
+        const next = await api<MissionView>(`/api/missions/${id}`);
+        setMission(current => current.mission_id === id ? next : current);
+      } catch { /* Keep the saved mission and offer an explicit status refresh. */ }
+    } finally { setBusy(false); }
+  }
+
+  async function reopenSavedMission() {
+    if (!savedMissionId) return;
+    setBusy(true);
+    try { selectMission(await api<MissionView>(`/api/missions/${savedMissionId}`)); }
+    catch { setMissionError("The saved mission is temporarily unavailable. Try reopening it again, or reload this dashboard link."); }
     finally { setBusy(false); }
   }
 
@@ -185,7 +241,7 @@ export default function MissionDesk() {
   }
 
   function selectMission(next: MissionView) {
-    landing.current = null; setLinkedRevision(null); setMissionError(null);
+    landing.current = null; setLinkedRevision(null); setMissionError(null); setSavedMissionId(null); setPaymentError(null);
     setMission(next); setSelectedTaskId(null); setModal(null);
     const url = new URL(window.location.href);
     url.search = new URLSearchParams({ mission: next.mission_id }).toString();
@@ -231,7 +287,8 @@ export default function MissionDesk() {
       <div className="sidebar-note"><div className="note-symbol"><Icon name="spark" size={21}/></div><p>A brief from your agent.<br/>A team to get it done.</p><span>Three workers. One shared plan.</span></div>
       <div className="sidebar-bottom">
         <button className="nav-item" onClick={() => { if (authenticated) void refreshServices(); open("connections"); }}><Icon name="link"/>Connections<span className={`connection-dot ${services.length && services.every(service => service.ready) ? "connected" : ""}`}/></button>
-        <button className="profile" onClick={() => authenticated ? open("connections") : open("auth")}><span className="avatar">{authenticated ? "M" : "G"}</span><span><strong>{authenticated ? "Manager" : "Guest preview"}</strong><small>{authenticated ? "Workspace access" : "Connect to start a mission"}</small></span><Icon name="chevron" size={14}/></button>
+        <button className="nav-item" onClick={() => open(authenticated ? "profile" : "auth")} aria-label="Saved profile"><Icon name="people"/>Saved profile</button>
+        <button className="profile" onClick={() => authenticated ? open("profile") : open("auth")}><span className="avatar">{authenticated ? "M" : "G"}</span><span><strong>{authenticated ? "Manager" : "Guest preview"}</strong><small>{authenticated ? "Workspace access" : "Connect to start a mission"}</small></span><Icon name="chevron" size={14}/></button>
       </div>
     </aside>
 
@@ -248,15 +305,28 @@ export default function MissionDesk() {
           <li className="capability capability-travel"><Icon name="ticket" size={20}/><div><strong>Travel</strong><span>Events &amp; tickets</span></div></li>
         </ul>
 
-        {missionError && <div className="inline-notice error" role="alert"><Icon name="warning" size={17}/>{missionError}</div>}
+        {missionError && <div className="inline-notice error" role="alert"><Icon name="warning" size={17}/>{missionError}{savedMissionId && <button className="button secondary" disabled={busy} onClick={() => void reopenSavedMission()}>Reopen saved mission</button>}</div>}
         {linkedRevision !== null && !preview && linkedRevision !== mission.revision && <div className="inline-notice" role="status"><Icon name="warning" size={17}/>This link was for revision {linkedRevision}. You’re reviewing the current plan, revision {mission.revision}.</div>}
         {landing.current && preview && !authenticated && <div className="inline-notice"><Icon name="shield" size={17}/>Sign in to view the mission your agent shared.</div>}
 
         <section className="mission-brief" aria-labelledby="mission-title">
-          <div className="mission-heading"><div className="mission-symbol"><Icon name="spark" size={22}/></div><div><div className="brief-eyebrow">{preview ? "EXAMPLE MISSION" : "CURRENT MISSION"}<span>REV {String(mission.revision).padStart(2, "0")}</span></div><h2 id="mission-title">{/\bexpo\b/i.test(mission.objective) ? "Get the team expo-ready." : "Your mission, in motion."}</h2></div><span className="mission-status"><span className={workingCount > 0 ? "pulse" : ""}/>{mission.status === "completed" ? "Mission complete" : workingCount ? `${workingCount} workers active` : mission.status === "needs_attention" ? "Needs your attention" : needsReview ? "Ready for your review" : "In progress"}</span></div>
+          <div className="mission-heading"><div className="mission-symbol"><Icon name="spark" size={22}/></div><div><div className="brief-eyebrow">{preview ? "EXAMPLE MISSION" : "CURRENT MISSION"}<span>REV {String(mission.revision).padStart(2, "0")}</span></div><h2 id="mission-title">{/\bexpo\b/i.test(mission.objective) ? "Get the team expo-ready." : "Your mission, in motion."}</h2></div><span className="mission-status"><span className={workingCount > 0 ? "pulse" : ""}/>{mission.mode === "live" && mission.service_payment.status !== "paid" ? "Awaiting service payment" : mission.status === "completed" ? "Mission complete" : workingCount ? `${workingCount} workers active` : mission.status === "needs_attention" ? "Needs your attention" : needsReview ? "Ready for your review" : "In progress"}</span></div>
           <p className="mission-objective">{mission.objective}</p>
           <div className="mission-facts"><span><Icon name="people" size={15}/>{mission.headcount} teammates</span><span><Icon name="clock" size={15}/>By {readableDate(mission.deadline)}</span><span><Icon name="shield" size={15}/>You approve every commitment</span>{!preview && mission.dashboard_url && <button onClick={() => void copyDashboard()}><Icon name="link" size={14}/>Copy dashboard link</button>}<button onClick={() => { setBudget(String(mission.budget.limit_minor / 100)); open("budget"); }}><Icon name="sliders" size={14}/>Edit constraints</button></div>
         </section>
+
+        {!preview && mission.mode === "live" && <section className="service-payment-panel" aria-labelledby="service-payment-title">
+          <div><span className="eyebrow">SEPARATE SERVICE FEE · {mission.service_payment.mode === "test" ? "STRIPE TEST MODE" : "PAYMENT STATUS"}</span>
+            <h3 id="service-payment-title">{mission.service_payment.status === "paid" ? "Service payment verified" : mission.service_payment.status === "pending" ? "Payment needs reconciliation" : "Your mission is saved. Ready to start?"}</h3>
+            <p>{mission.service_payment.status === "paid" ? `${money(mission.service_payment.amount_minor)} service fee verified${mission.service_payment.mode === "test" ? " in test mode. Zero real funds were charged" : ""}. This is not a merchant payment, order or RSVP confirmation.` : mission.service_payment.status === "pending" ? "A payment attempt is pending. Check payment to reconcile the existing attempt and continue this saved mission. The server must verify it before workers start." : "Start research with a developer-supplied Stripe sandbox payment. Zero real funds. This does not use your real wallet or pay any merchant."}</p>
+            {mission.service_payment.status === "paid" && mission.service_payment.reference && <p className="service-payment-reference">Service receipt reference: <code>{mission.service_payment.reference}</code></p>}
+            {paymentError && <p className="form-error" role="alert">{paymentError}</p>}
+          </div>
+          {mission.service_payment.status !== "paid" && <div className="service-payment-actions">
+            <button className="button primary" disabled={busy || !authenticated} onClick={() => void servicePayment()}>{busy ? "Checking payment…" : mission.service_payment.status === "pending" ? "Check payment & continue" : `Pay ${money(mission.service_payment.amount_minor)} in test mode & start`}</button>
+            <button className="button secondary" disabled={busy || !authenticated} onClick={() => void servicePayment(true)}>Check saved status</button>
+          </div>}
+        </section>}
 
         {!online && <div className="inline-notice error"><Icon name="warning" size={17}/>Updates paused. Showing the last saved mission state.</div>}
         {preview && <div className="preview-notice"><span className="preview-badge">PREVIEW</span><span>A look at how a mission comes together. These are example plans; no workers have run or purchases been made.</span></div>}
@@ -294,6 +364,8 @@ export default function MissionDesk() {
     {modal === "auth" && <Modal title="Connect your workspace" onClose={close}><p className="modal-description">Use your manager access key to start missions and review commitments.</p><form onSubmit={signIn}><label className="field">Manager access key<input type="password" autoComplete="off" value={token} onChange={event => setToken(event.target.value)} placeholder="Enter your workspace key" required autoFocus/></label><p className="field-hint">Your access key stays private. It isn't included in a mission or sent to a worker.</p>{error && <p className="form-error" role="alert">{error}</p>}<button type="submit" className="button primary full" disabled={busy || !token.trim()}>{busy ? "Connecting…" : "Connect workspace"}<Icon name="arrow" size={16}/></button></form></Modal>}
 
     {modal === "new" && <Modal title="What needs doing?" onClose={close} wide><p className="modal-description">One brief for three workers. Set the boundaries, then let them find a plan.</p><form onSubmit={createMission}><label className="field">The brief<textarea value={draft.objective} onChange={event => setDraft({ ...draft, objective: event.target.value })} rows={3} required/></label><div className="form-row"><label className="field">Purchase budget · USD<input type="number" min="1" step="0.01" value={draft.purchase_budget_minor / 100} onChange={event => setDraft({ ...draft, purchase_budget_minor: Math.round(Number(event.target.value) * 100) })} required/></label><label className="field">Team size<input type="number" min="1" max="50" value={draft.headcount} onChange={event => setDraft({ ...draft, headcount: Number(event.target.value) })} required/></label></div><label className="field">Event page URL<input type="url" value={draft.requirements.event_tickets.event_url} placeholder="https://eventbrite.com/e/your-event" onChange={event => setDraft({ ...draft, requirements: { ...draft.requirements, event_tickets: { ...draft.requirements.event_tickets, event_url: event.target.value } } })} required={createMode === "live"}/></label><div className="form-row"><label className="field">Supplies to find<input value={draft.requirements.amazon.category} onChange={event => setDraft({ ...draft, requirements: { ...draft.requirements, amazon: { ...draft.requirements.amazon, category: event.target.value } } })} required/></label><label className="field">Needed by<input type="date" value={draft.deadline.slice(0, 10)} onChange={event => setDraft({ ...draft, deadline: `${event.target.value}T09:00:00-07:00`, requirements: { ...draft.requirements, event_tickets: { ...draft.requirements.event_tickets, date: `${event.target.value}T09:00:00-07:00` } } })} required/></label></div><div className="mode-picker" role="group" aria-label="Mission mode"><button type="button" className={createMode === "fixture" ? "selected" : ""} onClick={() => setCreateMode("fixture")}><strong>Example run</strong><span>Explore the flow with labeled fixtures</span></button><button type="button" className={createMode === "live" ? "selected" : ""} onClick={() => setCreateMode("live")}><strong>Live workers</strong><span>Research the actual sites</span></button></div><p className="field-hint">{createMode === "fixture" ? "Example data only. No actual site activity or purchases." : "Research does not purchase anything. Every commitment requires your review."} The service fee is separate from your purchase budget.</p>{error && <p className="form-error" role="alert">{error}</p>}<button className="button primary full" type="submit" disabled={busy}>{busy ? "Starting mission…" : createMode === "fixture" ? "Start example mission" : "Send in the workers"}<Icon name="arrow" size={16}/></button></form></Modal>}
+
+    {modal === "profile" && authenticated && <Modal title="Saved profile" onClose={close}><SavedProfile onProfileChange={setHasSavedProfile}/></Modal>}
 
     {modal === "history" && <Modal title="The work so far" onClose={close} wide><p className="modal-description">Your workspace’s latest 20 missions, with their plans, evidence, and recorded receipts.</p>{busy ? <p className="field-hint">Loading past missions…</p> : history.length ? <div className="mission-history">{history.map(item => <button className="history-item" key={item.mission_id} onClick={() => selectMission(item)}><div><span className="mode-tag">{item.mode === "fixture" ? "EXAMPLE" : item.mode.toUpperCase()}</span><time>{readableDate(item.created_at)}</time></div><strong>{item.objective}</strong><span>{item.tasks.filter(task => task.status === "confirmed").length} of {item.tasks.length} confirmed · {item.tasks.filter(task => task.links?.receipt_state === "available").length} receipts <Icon name="arrow" size={16}/></span></button>)}</div> : <p className="field-hint">Your first mission will appear here once it’s saved.</p>}{error && <p className="form-error" role="alert">{error}</p>}</Modal>}
 
