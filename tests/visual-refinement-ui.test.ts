@@ -67,3 +67,40 @@ test("refined mission desk preserves local fixture controls, dialog access and r
     await context.close();
   });
 });
+
+test("live-shaped task cards and pinned review finish entrance animation fully visible", { skip: !base }, async t => {
+  const { createPreview } = await import("../src/client/preview");
+  const origin = new URL(base!); assert.ok(["127.0.0.1", "localhost", "[::1]"].includes(origin.hostname));
+  const mission = createPreview(); mission.mission_id = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"; mission.mode = "live"; mission.headcount = 1;
+  mission.service_payment = { status: "paid", amount_minor: 50, currency: "USD", mode: "test", reference: "pi_synthetic_ui" };
+  for (const task of mission.tasks) { task.id = `${mission.mission_id}:${task.lane}`; task.proposal!.task_id = task.id; task.progress = "Synthetic live-shaped review"; }
+  const task = mission.tasks.find(task => task.lane === "event_tickets")!, proposal = task.proposal!;
+  Object.assign(proposal, { action_type: "free_registration", action_hash: "a".repeat(64), source_url: "https://luma.com/OpenTogether", quantity: 1, total_minor: 0, subtotal_minor: 0, fees_minor: 0, expires_at: new Date(Date.now() + 600_000).toISOString() });
+  const review = { proposal_id: proposal.id, revision: proposal.revision, attendee: { name: "Synthetic Attendee", email: "synthetic@example.test" }, event_title: "Synthetic free event", event_start_at: "2026-10-17T01:00:00Z", ticket_name: "Standard", source_url: proposal.source_url, total_minor: 0, expires_at: proposal.expires_at, profile_unchanged: true };
+  const browser = await chromium.launch({ executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless: true }); t.after(() => browser.close());
+  for (const width of [1440, 390]) for (const reducedMotion of ["no-preference", "reduce"] as const) await t.test(`${width}px ${reducedMotion}`, async () => {
+    const context = await browser.newContext({ viewport: { width, height: 1000 }, reducedMotion });
+    const errors: string[] = [], mutations: string[] = [];
+    await context.route("**/*", async route => {
+      const request = route.request(), url = new URL(request.url()); if (url.origin !== origin.origin) return route.abort();
+      if (!url.pathname.startsWith("/api/")) return route.continue();
+      if (request.method() !== "GET") mutations.push(url.pathname);
+      const body = url.pathname === "/api/auth" ? { authenticated: true, role: "manager" } : url.pathname === "/api/readiness" ? { services: [] } : url.pathname.endsWith("/registration-review") ? review : url.pathname === "/api/preferences" ? { preferences: null } : mission;
+      await route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
+    });
+    const page = await context.newPage(); page.on("pageerror", error => errors.push(error.message));
+    await page.goto(`${origin.origin}/?mission=${mission.mission_id}&task=${encodeURIComponent(task.id)}&revision=1`);
+    const dialog = page.getByRole("dialog"); await dialog.getByText("synthetic@example.test", { exact: true }).waitFor();
+    await page.evaluate(async () => { await Promise.all(document.getAnimations().filter(animation => animation.effect?.getTiming().iterations !== Infinity).map(animation => animation.finished.catch(() => {}))); });
+    assert.equal(await dialog.getByRole("button", { name: "Approve free RSVP", exact: true }).isEnabled(), true);
+    const states = await page.locator(".worker-card, dialog[open]").evaluateAll(nodes => nodes.map(node => ({ opacity: getComputedStyle(node).opacity, visibility: getComputedStyle(node).visibility, display: getComputedStyle(node).display, area: node.getBoundingClientRect().width * node.getBoundingClientRect().height })));
+    assert.equal(states.length, 4); assert.ok(states.every(state => state.opacity === "1" && state.visibility === "visible" && state.display !== "none" && state.area > 0), JSON.stringify(states));
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    await page.screenshot({ path: `/tmp/cue-screen-live-${width}-${reducedMotion}.png` });
+    await page.keyboard.press("Escape"); await dialog.waitFor({ state: "hidden" });
+    await page.locator(".worker-card").first().scrollIntoViewIfNeeded();
+    assert.equal(await page.locator(".worker-card").first().evaluate(node => getComputedStyle(node).opacity), "1");
+    await page.screenshot({ path: `/tmp/cue-screen-live-cards-${width}-${reducedMotion}.png` });
+    assert.deepEqual(errors, []); assert.deepEqual(mutations, []); await context.close();
+  });
+});
