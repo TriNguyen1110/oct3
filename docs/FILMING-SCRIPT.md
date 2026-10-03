@@ -18,7 +18,7 @@
 | Time | Picture and edit | Voiceover | Criterion |
 |---|---|---|---|
 | **0:00–0:08** | Black frame, then the automatically moving 3D Cue emblem. Title: **HANDS FREE. IN GOOD HANDS.** Cut to Hiring · Logistics · Travel. | “Agents can plan almost anything. But the moment work reaches a browser—hiring someone, moving goods, booking travel—they still need a human.” | Impact, Design |
-| **0:08–0:20** | Claude Code. Show `/mcp` with Cue connected and its three tools. Flash the verified `submit_mission` → mission handle, then call `mission_status` for the same ID. | “Cue gives agents hands. Claude connects through our MCP, sends one mission, and gets back a durable dashboard, review links, and structured results.” | Innovation, Functionality |
+| **0:08–0:20** | Claude Code. Show `/mcp` with Cue connected, type **Order the usual**, then flash the verified `submit_mission` → mission handle and same-ID `mission_status`. | “Cue gives agents hands. Claude connects through our MCP, sends one mission, and gets back a durable dashboard, review links, and structured results.” | Innovation, Functionality |
 | **0:20–0:35** | Cut to the exact mission dashboard. Pan across Hiring, Logistics, Travel & booking; show the workers operating concurrently. | “One request fans out into browser workers: source talent, buy supplies, prepare pickup, and book an event. Supabase keeps every worker, budget, retry, and result in one shared mission.” | Innovation, Functionality |
 | **0:35–0:49** | Open two review cards. Show source link, observed price, preview, and explicit blocker. Avoid long scrolling. | “Every worker returns something inspectable. A real source. The observed amount. A preview. And when a site blocks automation, an honest handoff instead of a fake success.” | Design, Functionality |
 | **0:49–1:03** | Switch to the labeled budget example. Change $900 to $650 and show the prior approval becoming stale. Overlay: **REVISION + EXACT ACTION + BUDGET HOLD**. | “The model can propose; code keeps authority. Every commitment is bound to the exact item, amount, mission revision, and budget hold. Change the plan, and the old approval stops working.” | Functionality, Originality |
@@ -31,11 +31,13 @@
 ## Exact Claude prompt on camera
 
 ```text
-Use oct3 to read mission status for 421d6be5-462d-4848-bd7a-223cf3dd6cd4.
-Return every worker's current status, dashboard link, exact review and provider
-links, observed outcomes, and remaining blockers. Do not submit, retry, approve,
-register, purchase, or contact anyone.
+Order the usual.
 ```
+
+The demo launcher maps this phrase to the tested four-lane preset, calls
+`submit_mission` once, then reads the returned mission once. Its exact three MCP
+tools are pre-authorized in Claude's automatic permission mode. Cue still stops
+merchant commitments at its deterministic approval boundary.
 
 Launch Claude Code with Cue already connected:
 

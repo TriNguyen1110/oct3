@@ -61,7 +61,7 @@ The organizer advertises **100K+ shared participant credits** and a separate
 Latest additions: Supabase also stores passkey credentials (public keys only)
 and short-lived exact-action challenges. Its atomic consume RPC and counter CAS
 passed real-crypto tests and an isolated actual-cloud proof; see
-[passkey proof](../reports/performance/passkey-cloud-proof.json). The real manager enrolled a native passkey and used it to approve the exact $0 Luma action; matching provider confirmation was recorded. [Native proof](../reports/performance/native-passkey-live-event.json). The optional food worker uses Surfsky for Boba Guys. Its latest 25.665-second selected-state smoke failed closed when Potrero was absent, with no cart or checkout; food remains a handoff. Browser Use was explicitly cancelled.
+[passkey proof](../reports/performance/passkey-cloud-proof.json). The real manager enrolled a native passkey and used it to approve the exact $0 Luma action; matching provider confirmation was recorded. [Native proof](../reports/performance/native-passkey-live-event.json). The food worker now uses Browserless for a bounded real DoorDash read. It observed Boba Guys, Pickup and Classic Black at $6.90 in 15.397 seconds, then returned the provider/review links without opening modifiers, cart or checkout. Browser Use was explicitly cancelled.
 
 Gemini voice drafting uses the audio-capable Interactions API with strict
 structured output, no tools, and `store:false`. After project funding, an actual

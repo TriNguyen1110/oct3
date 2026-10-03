@@ -89,6 +89,13 @@ Displayed item prices are arithmetic research subtotals only. Required size,
 sweetness, ice and boba modifiers, pickup availability, taxes, fees and timing
 remain unverified until the exact item dialog and cart are observed.
 
+The current Browserless path reached the real Boba Guys DoorDash store with
+HTTP 200, observed the Pickup label and Classic Black card at $6.90, returned
+the exact provider URL, and cleaned up in 15.397 seconds. Its network guard
+blocks modifier, cart, checkout and payment routes, so this is an observed menu
+option and handoff rather than an order. See
+`reports/performance/doordash-browserless-proof.json`.
+
 An earlier layout probe reached a public Safeway Deli page and proved grounded
 menu extraction, Pickup/Delivery detection and confirmed cleanup. It is not boba
 evidence. Two later bounded Boba Guys pickup URLs both returned DoorDash's HTTP

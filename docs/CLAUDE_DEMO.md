@@ -101,9 +101,12 @@ node --env-file=.env.local scripts/claude-demo.mjs
 ```
 
 The launcher opens Claude Sonnet 5.5 with medium effort in a temporary caller
-directory, connected only to oct3's three MCP tools. It does not edit global
-Claude configuration. Use `/mcp` on stage to show the connection, then paste the
-manager request. Authentication and account login should already be ready;
+directory, connected only to oct3's three MCP tools. Those exact tools are
+pre-authorized and the session starts in Claude's automatic permission mode, so
+the terminal does not stop at the **manual mode** harness. This does not bypass
+Cue's own exact-action and passkey checks. The launcher does not edit global
+Claude configuration. Use `/mcp` on stage to show the connection, then enter
+**Order the usual.** Authentication and account login should already be ready;
 the visible setup is the agent connecting to the product.
 
 Read-only preflight, which makes one real Claude call:
@@ -148,6 +151,10 @@ immediately instead of interviewing the presenter:
 > Demo Cue with DoorDash. Prepare one Classic Black boba for pickup, under $8,
 > with 50% sweetness. Use the supported stage preset for everything else. Do not
 > purchase anything. Give me the dashboard and exact review/provider links.
+
+On camera, the shortest equivalent prompt is simply: **“Order the usual.”** The
+launcher maps that exact phrase to the same fixed stage preset and does not ask
+for missing fields.
 
 The launcher maps this request to the tracked venue, OpenTogether, toothpaste
 and beat-maker values, stable key `cue-doordash-stage-20261003`, and the Stripe
