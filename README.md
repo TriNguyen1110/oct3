@@ -17,9 +17,9 @@ read-only preparation, and an actual $0 registration after
 the manager enrolled a native passkey and approved the exact action. Matching
 Luma confirmation is saved; a separate receipt link was not captured. Boba Guys'
 official pickup form is reachable; final food checkout and Fiverr ordering remain
-unverified. New live approvals require
-the manager's device passkey. Native setup and one exact signed live approval
-are verified; test authenticators never enroll in their account.
+unverified. The hackathon deployment uses a one-click manager confirmation while
+the server still binds the exact proposal, revision, total and budget. WebAuthn
+remains available for ordinary deployments outside demo mode.
 
 Built for Supabase Select, October 3, 2026. Theme: **Make Something Agents Want**.
 Judging: **Innovation, Design, Functionality, Impact**.

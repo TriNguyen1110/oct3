@@ -110,7 +110,7 @@ test("independent real WebAuthn crypto with virtual authenticator and isolated C
     assert.ok(tables.get("oct3_passkey_challenges")!.find(row => row.id === second.challenge_id)!.consumed_at);
     assert.equal((await getRecord(planned.id, manager.workspace_id)).reservations.length, 0);
   });
-  await t.test("HTTP approval cannot inject a verified hash or omit native proof for a new live decision", async () => {
+  await t.test("HTTP approval rejects injected hashes, requires proof normally, and derives its own exact hash in demo mode", async () => {
     // Auth uses a fixed demo workspace, so this row exists only in the mocked
     // database. No credential is enrolled for the demo manager or workspace.
     const routePrincipal = { ...manager, workspace_id: "oct3-demo" };
@@ -124,6 +124,19 @@ test("independent real WebAuthn crypto with virtual authenticator and isolated C
     const missing = await approveRoute(request(selection), { params: Promise.resolve({ id: routeTask.id }) });
     assert.equal(missing.status, 403); assert.equal((await missing.json()).error.code, "passkey_required");
     assert.equal((await getRecord(planned.id, routePrincipal.workspace_id)).reservations.length, 0);
+    const previousDemo = process.env.OCT3_DEMO_MODE;
+    process.env.OCT3_DEMO_MODE = "true";
+    try {
+      assert.deepEqual(await passkeyStatus(routePrincipal), { enrolled: false, required: false, demo_approval: true });
+      const demo = await approveRoute(request(selection), { params: Promise.resolve({ id: routeTask.id }) });
+      assert.equal(demo.status, 200);
+      const saved = await getRecord(planned.id, routePrincipal.workspace_id);
+      assert.equal(saved.reservations.filter(item => item.state === "reserved").length, 1);
+      assert.equal(saved.view.tasks[0].approval?.proposal_id, selection.proposal_id);
+      assert.equal(saved.view.tasks[0].approval?.revision, selection.revision);
+    } finally {
+      if (previousDemo === undefined) delete process.env.OCT3_DEMO_MODE; else process.env.OCT3_DEMO_MODE = previousDemo;
+    }
   });
   await t.test("all new live approvals need verified exact hash and CAS rejects post-verification changes", async () => {
     await assert.rejects(decideTask(task.id, manager, exact, "approve"), code("passkey_required"));

@@ -13,6 +13,7 @@ import type { Principal } from "./auth";
 import { AppError } from "./errors";
 import { approvalRequirement } from "./missions";
 import { storageMode } from "./store";
+import { demoApprovalEnabled } from "./approval-policy";
 
 type Kind = "registration" | "approval";
 interface CredentialRow { workspace_id:string; principal_id:string; credential_id:string; public_key:string; counter:number; transports:string[]; device_type:string; backed_up:boolean }
@@ -74,7 +75,11 @@ function challengeRow(principal:Principal,kind:Kind,challenge:string,binding?:{t
   return {id:randomUUID(),workspace_id:principal.workspace_id,principal_id:principal.id,kind,challenge,task_id:binding?.task_id||null,proposal_id:binding?.proposal_id||null,revision:binding?.revision||null,action_hash:binding?.action_hash||null,expires_at:new Date(Date.now()+5*60_000).toISOString(),consumed_at:null};
 }
 
-export async function passkeyStatus(principal:Principal){manager(principal);return {enrolled:Boolean(await credential(principal)),required:true as const};}
+export async function passkeyStatus(principal:Principal){
+  manager(principal);
+  if(demoApprovalEnabled())return {enrolled:false,required:false as const,demo_approval:true as const};
+  return {enrolled:Boolean(await credential(principal)),required:true as const};
+}
 export async function registrationOptions(principal:Principal){
   manager(principal);
   if(await credential(principal))throw new AppError(409,"passkey_already_enrolled","This manager already has a passkey. Additional enrollment is not available in this demo.");

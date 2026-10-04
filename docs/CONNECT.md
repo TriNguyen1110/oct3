@@ -67,6 +67,7 @@ configuration. Header support is required; this slice has no OAuth onboarding.
 | `submit_mission` | `mission` object matching the example; stable `idempotency_key`; optional `pay_test_service_fee` | Durable mission handle and initial state |
 | `mission_status` | `mission_id` | Current workers, approvals, evidence and outcomes |
 | `list_missions` | `{}` | Recent missions in the caller workspace |
+| `confirm_and_execute` | exact `task_id`, `proposal_id`, `revision` | Demo-manager only: record the exact decision and continue the provider flow |
 
 Example agent instruction:
 
@@ -87,7 +88,7 @@ that same mission through the deployed MCP endpoint; see the hosted evidence
 in the stage runbook.
 
 The shortest safe proof uses Claude Code itself, in a temporary caller directory
-with only Cue's three tools enabled:
+with Cue's four demo-manager tools enabled:
 
 ```sh
 OCT3_BASE_URL=https://oct3-five.vercel.app npm run claude:check
@@ -99,8 +100,10 @@ The first command calls `list_missions` once. The second calls
 retrying, approving, registering, purchasing, or contacting anyone. Use
 `npm run claude` for the interactive stage session: `/mcp` shows the live Cue
 server, and an ordinary natural-language request can call the same tools. The
-launcher passes only Claude credentials plus `OCT3_AGENT_TOKEN`; provider,
-manager, database, and payment secrets are excluded from the child process.
+launcher passes Claude credentials plus `OCT3_MANAGER_TOKEN` to its isolated MCP
+configuration. Provider, browser, database, and payment credentials remain
+excluded. Generic agent-token connections still see only submit, status, and
+list; they cannot approve their own work.
 
 1. Submit the fixture mission through CLI or MCP, showing the returned mission ID.
 2. Open the manager board; review three workers and revise $900 to $650.

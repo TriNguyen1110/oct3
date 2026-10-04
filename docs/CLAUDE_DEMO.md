@@ -16,7 +16,7 @@ did not run through the deployed Cue mission runner; no Fiverr order was placed.
 - The optional fourth worker prepares boba pickup near the venue. Use
   `examples/boba-outing.json` with a new idempotency key; preserve the older
   `examples/team-outing.json` request already used for hosted evidence. The latest food smoke failed closed after 25.665 seconds because Potrero was absent; do not present a prepared cart.
-- New live approvals require a native passkey. The real manager enrolled on the HTTPS dashboard and used **Confirm with passkey** for the exact $0 Open Together proposal. The OS chooses available biometrics or device verification; Cue stores public-key verification data, never fingerprints. Local ceremonies require `http://localhost:3003`, not `127.0.0.1`.
+- The hackathon deployment skips the passkey ceremony. The manager can confirm the exact proposal from the board or Claude terminal; the server still checks its task, revision, expiry, total and budget. WebAuthn remains available when demo mode is disabled.
 - Preserve the first failed Luma attempt as historical evidence. A later fresh proposal took 17.330 seconds, native approval was recorded at 21:22:42.703Z, and matching provider confirmation arrived at 21:23:10.131Z. The 27.428-second interval includes the manager delay before **Register now**. Do not register again during rehearsal.
 - Saved profile and **Past missions** use Supabase. History preserves each
   mission's mode, evidence and observed receipts. It does not import external
@@ -89,9 +89,10 @@ fit this browser-booking demo. Other libraries must be checked individually.
 
 ## Open the terminal session
 
-Before presenting, configure the agent credential privately in `.env.local` and
-start the app. No manager, Surfsky, Stripe or Supabase credential is passed to
-the caller session. For the deployed app, set `OCT3_BASE_URL` to its verified
+Before presenting, configure the manager credential privately in `.env.local` and
+start the app. The isolated Claude MCP configuration receives that manager
+credential so it can call `confirm_and_execute`; Surfsky, Stripe and Supabase
+credentials are never passed to Claude Code. For the deployed app, set `OCT3_BASE_URL` to its verified
 HTTPS origin; otherwise the launcher uses the running local app.
 
 From the oct3 repository with Node 24:

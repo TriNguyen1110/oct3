@@ -25,18 +25,27 @@ export async function confirmProposalWithPasskey(taskId: string, proposalId: str
   return { challenge_id: challenge.challenge_id, response };
 }
 
-export function PasskeyControl({ onReady, disabled = false }: { onReady?: (ready: boolean) => void; disabled?: boolean }) {
-  const [state, setState] = useState<"loading" | "ready" | "missing" | "unsupported" | "error">("loading");
+/** Uses WebAuthn in normal deployments and the shorter server-bound demo flow when enabled. */
+export async function confirmProposalApproval(taskId: string, proposalId: string, revision: number) {
+  const status = await api<{ enrolled: boolean; required: boolean }>("/api/passkeys");
+  if (!status.required) return undefined;
+  return confirmProposalWithPasskey(taskId, proposalId, revision);
+}
+
+export function PasskeyControl({ onReady, onRequired, disabled = false }: { onReady?: (ready: boolean) => void; onRequired?: (required: boolean) => void; disabled?: boolean }) {
+  const [state, setState] = useState<"loading" | "ready" | "missing" | "unsupported" | "error" | "skipped">("loading");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const refresh = useCallback(async () => {
     setState("loading"); setError(null); onReady?.(false);
-    if (!browserSupportsWebAuthn()) { setState("unsupported"); return; }
     try {
       const status = await api<{ enrolled: boolean; required: boolean }>("/api/passkeys");
+      onRequired?.(status.required);
+      if (!status.required) { setState("skipped"); onReady?.(true); return; }
+      if (!browserSupportsWebAuthn()) { setState("unsupported"); return; }
       setState(status.enrolled ? "ready" : "missing"); onReady?.(status.enrolled === true);
     } catch (cause) { setState("error"); setError(passkeyError(cause)); }
-  }, [onReady]);
+  }, [onReady, onRequired]);
   useEffect(() => { void refresh(); }, [refresh]);
 
   async function enroll() {
@@ -51,6 +60,7 @@ export function PasskeyControl({ onReady, disabled = false }: { onReady?: (ready
     finally { setBusy(false); }
   }
 
+  if (state === "skipped") return null;
   return <section className="passkey-control" aria-label="Device confirmation">
     <svg className="passkey-glyph" width="29" height="29" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><path d="M7 15a9 9 0 0 1 18 0v4m-22-5a13 13 0 0 1 26 0M11 16a5 5 0 0 1 10 0v5c0 3-1 6-3 8M7 20c0 4-1 6-2 8m11-13v7c0 3-1 6-3 8m12-7c0 3-1 5-2 7M11 20v2c0 3-1 5-2 7"/></svg>
     <div><strong>{busy ? "Follow your device’s prompt" : state === "ready" ? "Passkey ready" : state === "loading" ? "Checking device confirmation…" : "Make approvals yours"}</strong>

@@ -15,13 +15,13 @@ test("caller launcher inherits only allowed runtime and caller credentials", asy
   const denied = [
     "STRIPE_SECRET_KEY", "STRIPE_PROFILE_ID", "STRIPE_PUBLISHABLE_KEY", "SURFSKY_API_KEY", "SURFSKY_API_TOKEN",
     "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_ANON_KEY", "DATABASE_URL", "MPP_SECRET_KEY",
-    "OCT3_MANAGER_TOKEN", "UNKNOWN_FUTURE_SECRET", "PAYMENT_AUTHORIZATION", "OCT3_PAYMENT_AUTHORIZATION",
+    "OCT3_AGENT_TOKEN", "UNKNOWN_FUTURE_SECRET", "PAYMENT_AUTHORIZATION", "OCT3_PAYMENT_AUTHORIZATION",
     "STRIPE_PAYMENT_AUTHORIZATION", "NODE_OPTIONS",
   ];
   const allowed = {
     HOME: directory, PATH: `${directory}:${dirname(process.execPath)}:/usr/bin:/bin`, SHELL: "/bin/zsh",
     ANTHROPIC_API_KEY: "synthetic-caller-anthropic", CLAUDE_CODE_OAUTH_TOKEN: "synthetic-caller-oauth",
-    OCT3_AGENT_TOKEN: "synthetic-caller-agent", OCT3_BASE_URL: "https://cue.synthetic.test",
+    OCT3_MANAGER_TOKEN: "synthetic-caller-manager", OCT3_BASE_URL: "https://cue.synthetic.test",
     LANG: "en_US.UTF-8", TERM: "xterm-256color",
   };
   const fake = `#!${process.execPath}
@@ -42,7 +42,7 @@ const args = process.argv.slice(2);
 assert.ok(args.includes("--strict-mcp-config"));
 assert.ok(args.includes("--bare"));
 assert.equal(args[args.indexOf("--tools") + 1], "");
-assert.equal(args[args.indexOf("--allowedTools") + 1], "mcp__oct3__submit_mission,mcp__oct3__mission_status,mcp__oct3__list_missions");
+assert.equal(args[args.indexOf("--allowedTools") + 1], "mcp__oct3__submit_mission,mcp__oct3__mission_status,mcp__oct3__list_missions,mcp__oct3__confirm_and_execute");
 assert.equal(args[args.indexOf("--permission-mode") + 1], "auto");
 const system = args[args.indexOf("--system-prompt") + 1];
 assert.ok(system.includes("An explicitly named provider always takes precedence"));
@@ -70,7 +70,7 @@ console.log(JSON.stringify({ type: "result", is_error: false }));
   assert.equal(output.mission_submitted, false);
   assert.deepEqual(output.tool_calls, ["mcp__oct3__list_missions"]);
   assert.deepEqual(JSON.parse(await readFile(marker, "utf8")), { passed: true, checkedBlockedKeys: denied.length });
-  assert.doesNotMatch(result.stdout + result.stderr, /synthetic-private-|synthetic-caller-(?:anthropic|oauth|agent)/);
+  assert.doesNotMatch(result.stdout + result.stderr, /synthetic-private-|synthetic-caller-(?:anthropic|oauth|manager)/);
 
   const statusResult = await promisify(execFile)(process.execPath, [launcher, "--status", missionId], { cwd: directory, env, timeout: 10000 });
   const statusOutput = JSON.parse(statusResult.stdout.trim());
@@ -78,5 +78,5 @@ console.log(JSON.stringify({ type: "result", is_error: false }));
   assert.equal(statusOutput.mission_submitted, false);
   assert.equal(statusOutput.scope, "read one saved mission; no mutation permitted");
   assert.deepEqual(statusOutput.tool_calls, ["mcp__oct3__mission_status"]);
-  assert.doesNotMatch(statusResult.stdout + statusResult.stderr, /synthetic-private-|synthetic-caller-(?:anthropic|oauth|agent)/);
+  assert.doesNotMatch(statusResult.stdout + statusResult.stderr, /synthetic-private-|synthetic-caller-(?:anthropic|oauth|manager)/);
 });

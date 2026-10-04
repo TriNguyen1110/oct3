@@ -4,7 +4,7 @@
       "type": "http",
       "url": "${OCT3_BASE_URL:-http://127.0.0.1:3003}/api/mcp",
       "headers": {
-        "Authorization": "Bearer ${OCT3_AGENT_TOKEN}"
+        "Authorization": "Bearer ${OCT3_MANAGER_TOKEN}"
       }
     }
   }

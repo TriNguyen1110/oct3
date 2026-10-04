@@ -5,6 +5,9 @@ import { requireAuth } from "@/src/server/auth";
 import { missionSchema } from "@/src/server/schema";
 import { GET as listMissions, POST as submitMission } from "@/app/api/missions/route";
 import { GET as getMission } from "@/app/api/missions/[id]/route";
+import { POST as approveTask } from "@/app/api/tasks/[id]/approve/route";
+import { POST as resumeTask } from "@/app/api/tasks/[id]/resume/route";
+import { demoApprovalEnabled } from "@/src/server/approval-policy";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -15,7 +18,7 @@ async function handler(request: Request): Promise<Response> {
     if (!request.headers.get("authorization")?.match(/^Bearer\s+\S+/i)) {
       throw new AppError(401, "agent_token_required", "Connect with an oct3 agent bearer token.");
     }
-    requireAuth(request);
+    const principal = requireAuth(request);
     const origin = new URL(request.url).origin;
     const headers = { authorization: request.headers.get("authorization")!, "content-type": "application/json" };
     const callRequest = (path: string, method = "GET", body?: unknown, key?: string, payTestServiceFee = false) => new Request(new URL(path, origin), {
@@ -38,7 +41,7 @@ async function handler(request: Request): Promise<Response> {
     const mcp = createMcpHandler(server => {
       server.registerTool("submit_mission", {
         title: "Submit a browser-worker mission",
-        description: "Submit only the work lanes the user requested: requirements.amazon for Amazon, requirements.fiverr for Fiverr, requirements.event_tickets for an event provider, and requirements.food for DoorDash boba pickup. Never add or ask about unrelated lanes. Returns a durable mission ID and dashboard_url. Reuse the same idempotency key and exact mission on retry. In the Cue developer demo, set pay_test_service_fee=true immediately; this uses the developer-supplied $0.50 Stripe sandbox fee, moves no real funds, and does not need a user wallet or confirmation. Research does not approve purchases; the manager must confirm each exact live commitment with a passkey.",
+        description: "Submit only the work lanes the user requested: requirements.amazon for Amazon, requirements.fiverr for Fiverr, requirements.event_tickets for an event provider, and requirements.food for DoorDash boba pickup. Never add or ask about unrelated lanes. Returns a durable mission ID and dashboard_url. Reuse the same idempotency key and exact mission on retry. In the Cue developer demo, set pay_test_service_fee=true immediately; this uses the developer-supplied $0.50 Stripe sandbox fee, moves no real funds, and does not need a user wallet or confirmation. Research does not approve purchases; the manager must confirm each exact live commitment on the mission board.",
         inputSchema: z.object({ mission: missionSchema, idempotency_key: z.string().regex(/^[A-Za-z0-9_.:-]{8,160}$/), pay_test_service_fee: z.boolean().optional() }),
         annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
       }, async ({ mission, idempotency_key, pay_test_service_fee }) => result(await submitMission(callRequest("/api/missions", "POST", mission, idempotency_key, pay_test_service_fee === true))));
@@ -54,6 +57,18 @@ async function handler(request: Request): Promise<Response> {
         inputSchema: z.object({}),
         annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
       }, async () => result(await listMissions(callRequest("/api/missions"))));
+      if (principal.role === "manager" && demoApprovalEnabled()) server.registerTool("confirm_and_execute", {
+        title: "Confirm an exact plan and continue it",
+        description: "Demo-only manager action. Confirm the exact stored task proposal and immediately continue its existing provider flow. This can create a real commitment when a verified merchant executor is connected. Use only after the user explicitly asked to order, hire, book or register. The server rechecks the task, proposal, revision, expiry and budget; never infer a completed purchase without provider confirmation and receipt evidence.",
+        inputSchema: z.object({ task_id: z.string().min(3).max(220), proposal_id: z.string().min(3).max(220), revision: z.number().int().min(1) }),
+        annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
+      }, async ({ task_id, proposal_id, revision }) => {
+        const exact = { proposal_id, revision };
+        const context = { params: Promise.resolve({ id: task_id }) };
+        const approved = await approveTask(callRequest(`/api/tasks/${encodeURIComponent(task_id)}/approve`, "POST", exact), context);
+        if (!approved.ok) return result(approved);
+        return result(await resumeTask(callRequest(`/api/tasks/${encodeURIComponent(task_id)}/resume`, "POST", exact), context));
+      });
     }, { serverInfo: { name: "oct3", version: "0.1.0" }, verboseLogs: false });
     return await mcp(request);
   } catch (error) {

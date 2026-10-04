@@ -294,7 +294,7 @@ export function walletAction(record: MissionRecord, taskId: string, exact: { pro
   const task = validateProposal(record, taskId, exact, reconcileExisting && Boolean(record.wallet_spends?.[taskId]?.request_id));
   if (record.view.mode !== "live" || record.view.service_payment.status !== "paid" || task.proposal!.action_type === "free_registration") throw new AppError(409, "wallet_action_invalid", "A paid live merchant task is required for wallet preparation.");
   if (["executing", "confirmed"].includes(task.status) || record.reservations.some(r => r.task_id === taskId && ["committed", "uncertain"].includes(r.state))) throw new AppError(409, "execution_locked", "Reconcile the existing merchant commitment first.");
-  if (!exactStoredApproval(task, exact) || !exactApprovedAction(record, task) || !exactHeldReservation(record, taskId, exact.proposal_id, task.proposal!.total_minor)) throw new AppError(403, "approval_required", "The current exact action needs passkey approval and a held budget reservation.");
+  if (!exactStoredApproval(task, exact) || !exactApprovedAction(record, task) || !exactHeldReservation(record, taskId, exact.proposal_id, task.proposal!.total_minor)) throw new AppError(403, "approval_required", "The current exact action needs manager approval and a held budget reservation.");
   if (!task.evidence.some(e => e.kind === "checkout_preview" && e.mode === "live" && e.proposal_id === exact.proposal_id && e.revision === exact.revision && e.source_url === task.proposal!.source_url)) throw new AppError(409, "checkout_required", "Verify the merchant checkout and final total before requesting wallet payment.");
   return { task, proposal: task.proposal!, action_hash: approvedActionHash(record, task) };
 }
