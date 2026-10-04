@@ -14,6 +14,7 @@ import { VoiceBrief } from "@/components/voice-brief";
 import { CinematicHero } from "@/components/cinematic-hero";
 import { FoodMissionFields, defaultFoodRequest } from "@/components/food-mission-fields";
 import { PasskeyControl, confirmProposalApproval, passkeyError } from "@/components/passkey-control";
+import { LiveAgentProof } from "@/components/live-agent-proof";
 
 type IconName = "grid" | "arrow" | "chevron" | "check" | "clock" | "people" | "plus" | "sliders" | "link" | "code" | "activity" | "close" | "external" | "copy" | "shield" | "spark" | "box" | "ticket" | "design" | "warning";
 type MissionDraft = MissionInput & { requirements: MissionInput["requirements"] & {
@@ -319,6 +320,8 @@ export default function MissionDesk() {
           <li className="capability capability-food"><Icon name="spark" size={20}/><div><strong>Food &amp; supplies</strong><span>Meals &amp; pickup options</span></div></li>
           <li className="capability capability-travel"><Icon name="ticket" size={20}/><div><strong>Travel</strong><span>Events &amp; tickets</span></div></li>
         </ul>
+
+        <LiveAgentProof/>
 
         {missionError && <div className="inline-notice error" role="alert"><Icon name="warning" size={17}/>{missionError}{savedMissionId && <button className="button secondary" disabled={busy} onClick={() => void reopenSavedMission()}>Reopen saved mission</button>}</div>}
         {linkedRevision !== null && !preview && linkedRevision !== mission.revision && <div className="inline-notice" role="status"><Icon name="warning" size={17}/>This link was for revision {linkedRevision}. You’re reviewing the current plan, revision {mission.revision}.</div>}
