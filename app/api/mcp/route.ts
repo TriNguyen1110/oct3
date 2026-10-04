@@ -36,6 +36,19 @@ async function handler(request: Request): Promise<Response> {
       if (receipt) data.service_payment_receipt = receipt;
       return { content: [{ type: "text" as const, text: JSON.stringify(data) }], structuredContent: data, ...(!response.ok ? { isError: true } : {}) };
     };
+    const waitForMission = async (missionId: string, waitSeconds: number) => {
+      const deadline = Date.now() + waitSeconds * 1000;
+      let response: Response;
+      do {
+        response = await getMission(callRequest(`/api/missions/${missionId}`), { params: Promise.resolve({ id: missionId }) });
+        if (!response.ok) return result(response);
+        const mission = await response.clone().json() as { tasks?: Array<{ status?: string; options?: unknown[]; proposal?: unknown }> };
+        const ready = mission.tasks?.length && mission.tasks.every(task =>
+          Boolean(task.proposal) || Boolean(task.options?.length) || !["queued", "researching"].includes(task.status || ""));
+        if (ready || Date.now() >= deadline) return result(response);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } while (true);
+    };
     // Per-request server avoids retaining credentials between callers. Transport
     // is stateless; mission durability belongs to the existing backend.
     const mcp = createMcpHandler(server => {
@@ -51,6 +64,12 @@ async function handler(request: Request): Promise<Response> {
         inputSchema: z.object({ mission_id: z.string().uuid() }),
         annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
       }, async ({ mission_id }) => result(await getMission(callRequest(`/api/missions/${mission_id}`), { params: Promise.resolve({ id: mission_id }) })));
+      server.registerTool("wait_for_mission", {
+        title: "Wait for worker results",
+        description: "Wait on one existing mission for its workers to produce options, a proposal, or a terminal blocker. Use this once immediately after submit_mission instead of reading status repeatedly or submitting another mission. Returns after the requested bounded wait even if a worker is still running.",
+        inputSchema: z.object({ mission_id: z.string().uuid(), wait_seconds: z.number().int().min(1).max(45).default(40) }),
+        annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+      }, async ({ mission_id, wait_seconds }) => waitForMission(mission_id, wait_seconds));
       server.registerTool("list_missions", {
         title: "List recent missions",
         description: "List the latest missions belonging to the authenticated caller workspace, with dashboard and review links for each.",

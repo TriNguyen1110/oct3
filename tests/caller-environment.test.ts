@@ -42,7 +42,7 @@ const args = process.argv.slice(2);
 assert.ok(args.includes("--strict-mcp-config"));
 assert.ok(args.includes("--bare"));
 assert.equal(args[args.indexOf("--tools") + 1], "");
-assert.equal(args[args.indexOf("--allowedTools") + 1], "mcp__oct3__submit_mission,mcp__oct3__mission_status,mcp__oct3__list_missions,mcp__oct3__confirm_and_execute");
+assert.equal(args[args.indexOf("--allowedTools") + 1], "mcp__oct3__submit_mission,mcp__oct3__mission_status,mcp__oct3__wait_for_mission,mcp__oct3__list_missions,mcp__oct3__confirm_and_execute");
 assert.equal(args[args.indexOf("--permission-mode") + 1], "auto");
 const system = args[args.indexOf("--system-prompt") + 1];
 assert.ok(system.includes("An explicitly named provider always takes precedence"));

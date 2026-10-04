@@ -45,7 +45,7 @@ test("real MCP handshake, three tools, CLI and manager handoff share one fixture
   const notified = await fetch(endpoint, { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json", accept: "application/json, text/event-stream" }, body: JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) });
   assert.equal(notified.status, 202);
   const listed = await rpc("tools/list", {});
-  assert.deepEqual(listed.result?.tools?.map(tool => tool.name).sort(), ["list_missions", "mission_status", "submit_mission"]);
+  assert.deepEqual(listed.result?.tools?.map(tool => tool.name).sort(), ["list_missions", "mission_status", "submit_mission", "wait_for_mission"]);
 
   const mission = JSON.parse(await readFile(new URL("../examples/expo.json", import.meta.url), "utf8"));
   mission.objective = "[Verifier fixture] " + mission.objective;
