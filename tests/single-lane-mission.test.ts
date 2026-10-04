@@ -35,6 +35,7 @@ test("a named provider can create one lane without unrelated requirements", asyn
   const created = await createMission(input, principal, "single-lane-fiverr", "fixture");
   const result = await runFixture(created.record.id, principal.workspace_id);
   assert.deepEqual(result.view.tasks.map(task => task.lane), ["fiverr"]);
+  assert.equal(result.view.tasks[0].title, "Find a beat maker");
   assert.ok(result.view.tasks[0].proposal);
   assert.equal(missionSchema.safeParse({ ...parsed, requirements: {} }).success, false);
 });

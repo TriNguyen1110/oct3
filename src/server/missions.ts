@@ -10,7 +10,15 @@ import { constraintsSchema } from "./schema";
 import { createRecord, findTask, getRecord, mutateRecord } from "./store";
 
 const lanes: Lane[] = ["amazon", "fiverr", "event_tickets", "food"];
-const titles: Record<Lane, string> = { amazon: "Source booth supplies", fiverr: "Find a flyer designer", event_tickets: "Secure team event passes", food: "Find food for the team" };
+function taskTitle(lane: Lane, input: MissionInput) {
+  if (lane === "amazon") return `Source ${input.requirements.amazon!.category}`;
+  if (lane === "fiverr") {
+    const category = input.requirements.fiverr!.category.trim().toLowerCase();
+    return `Find ${/^(?:a|an|the)\b/.test(category) ? category : `${/^[aeiou]/.test(category) ? "an" : "a"} ${category}`}`;
+  }
+  if (lane === "event_tickets") return input.requirements.event_tickets!.quantity === 1 ? "Secure an event pass" : `Secure ${input.requirements.event_tickets!.quantity} event passes`;
+  return `Find ${input.requirements.food!.query}`;
+}
 export function activity(record: MissionRecord, text: string, kind: "info" | "decision" | "approval" | "warning" | "success" = "info", lane?: Lane) {
   record.view.activity.push({ id: randomUUID(), at: new Date().toISOString(), kind, text, ...(lane ? { lane } : {}) });
   record.view.activity = record.view.activity.slice(-100);
@@ -92,7 +100,7 @@ export async function createMission(input: MissionInput, principal: Principal, k
       headcount: input.headcount, created_at: now, updated_at: now, mode,
       budget: { limit_minor: input.purchase_budget_minor, proposed_minor: 0, reserved_minor: 0, committed_minor: 0, uncertain_minor: 0, available_minor: input.purchase_budget_minor },
       service_payment: { status: mode === "fixture" ? "waived_fixture" : paymentReady ? "payment_required" : "not_configured", amount_minor: 50, currency: "USD", mode: mode === "fixture" ? "fixture" : "test" },
-      tasks: lanes.filter(lane => input.requirements[lane]).map(lane => ({ id: `${id}:${lane}`, lane, title: titles[lane], status: "queued", progress: "Waiting to start", options: [], evidence: [] })), evidence: [], blockers: [], next_actions: [], activity: [],
+      tasks: lanes.filter(lane => input.requirements[lane]).map(lane => ({ id: `${id}:${lane}`, lane, title: taskTitle(lane, input), status: "queued", progress: "Waiting to start", options: [], evidence: [] })), evidence: [], blockers: [], next_actions: [], activity: [],
     },
   };
   activity(record, mode === "fixture"
