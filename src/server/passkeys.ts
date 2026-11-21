@@ -14,10 +14,12 @@ type WebAuthnLibrary = Pick<typeof simpleWebAuthn, "generateRegistrationOptions"
 let webAuthnLibrary: WebAuthnLibrary = simpleWebAuthn;
 /**
  * Test seam: node tests swap in a fake WebAuthn library so the server-side binding, scope, expiry
- * and single-use checks below run without real authenticator crypto. Refused outside a test run.
+ * and single-use checks below run without real authenticator crypto. Refused outside the node test
+ * runner (NODE_TEST_CONTEXT), in a deployment and in a production build.
  */
 export function setWebAuthnLibraryForTests(library: WebAuthnLibrary | null) {
-  const testRun = Boolean(process.env.NODE_TEST_CONTEXT) || process.env.NODE_ENV === "test";
+  // Only the node test runner's own marker counts; NODE_ENV=test alone is an ordinary env value.
+  const testRun = Boolean(process.env.NODE_TEST_CONTEXT);
   if (!testRun || process.env.VERCEL || process.env.NODE_ENV === "production") throw new Error("The WebAuthn test seam is only available in tests.");
   const previous = webAuthnLibrary;
   webAuthnLibrary = library ?? simpleWebAuthn;

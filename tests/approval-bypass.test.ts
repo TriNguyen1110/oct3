@@ -153,14 +153,22 @@ test("live approval bypass attempts are refused", async t => {
   });
 });
 
-test("the WebAuthn test seam is refused in a deployment or production build", t => {
-  for (const changes of [{ VERCEL: "1", NODE_ENV: undefined }, { VERCEL: undefined, NODE_ENV: "production" }]) {
-    const previous = { VERCEL: process.env.VERCEL, NODE_ENV: process.env.NODE_ENV };
+test("the WebAuthn test seam is refused in a deployment, a production build and outside the test runner", () => {
+  for (const changes of [
+    { VERCEL: "1", NODE_ENV: undefined },
+    { VERCEL: undefined, NODE_ENV: "production" },
+    // Outside the node test runner, with or without NODE_ENV=test.
+    { VERCEL: undefined, NODE_ENV: undefined, NODE_TEST_CONTEXT: undefined },
+    { VERCEL: undefined, NODE_ENV: "test", NODE_TEST_CONTEXT: undefined },
+  ] as Array<Record<string, string | undefined>>) {
+    const previous = { VERCEL: process.env.VERCEL, NODE_ENV: process.env.NODE_ENV, NODE_TEST_CONTEXT: process.env.NODE_TEST_CONTEXT };
     for (const [key, value] of Object.entries(changes)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; }
     try { assert.throws(() => setWebAuthnLibraryForTests(fakeWebAuthn), /only available in tests/); }
     finally { for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } }
   }
-  t.diagnostic("seam refused outside tests");
+  // Inside the runner (this process) the seam works and hands back the library it replaced.
+  assert.ok(process.env.NODE_TEST_CONTEXT);
+  const previous = setWebAuthnLibraryForTests(fakeWebAuthn); setWebAuthnLibraryForTests(previous);
 });
 
 test("wallet gate: merchant lookalike hosts, charges and checkout totals", async t => {
