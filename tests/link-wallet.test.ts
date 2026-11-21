@@ -90,7 +90,7 @@ test("Link wallet exact-action and reconciliation boundary", async t => {
         id: `checkout-${sequence}`, task_id: taskId, source_url: proposal.source_url,
         observed_at: "2026-10-03T00:00:00.000Z", title: "Synthetic exact checkout",
         detail: "Synthetic checkout preview only", mode: "live", kind: "checkout_preview",
-        proposal_id: proposal.id, revision: proposal.revision,
+        proposal_id: proposal.id, revision: proposal.revision, amount_minor: proposal.total_minor,
       });
     });
     if (options.approve !== false) {
