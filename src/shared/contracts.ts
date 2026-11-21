@@ -72,7 +72,7 @@ export interface MissionInput {
     amazon?: { category: string; delivery_ref: string };
     fiverr?: { category: string; brief: string; due_date: string };
     event_tickets?: { event_url: string; date: string; quantity: number; attendee_ref: string };
-    food?: { query: string; fulfillment: "pickup" | "delivery"; location: string; quantity: number };
+    food?: { query: string; fulfillment: "pickup" | "delivery"; location: string; quantity: number; /** Options to select on the item, e.g. size or sweetness, read back after selecting. */ modifiers?: string[] };
   };
 }
 export interface MissionView {

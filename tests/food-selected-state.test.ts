@@ -4,8 +4,8 @@ import { chromium } from 'playwright-core';
 import { researchDoorDash } from '../src/browser/doordash';
 
 test('food preparation requires selected store proof and verified modifier state without adding to cart', async t => {
-  for (const [key, value] of Object.entries({ SURFSKY_API_KEY: 'synthetic-provider', SURFSKY_API_BASE_URL: 'https://food.synthetic.surfsky.io' })) {
-    const previous = process.env[key]; process.env[key] = value; t.after(() => { if (previous === undefined) delete process.env[key]; else process.env[key] = previous; });
+  for (const [key, value] of Object.entries({ SURFSKY_API_KEY: 'synthetic-provider', SURFSKY_API_BASE_URL: 'https://food.synthetic.surfsky.io', BROWSERLESS_TOKEN: undefined, ANTHROPIC_API_KEY: undefined })) {
+    const previous = process.env[key]; if (value === undefined) delete process.env[key]; else process.env[key] = value; t.after(() => { if (previous === undefined) delete process.env[key]; else process.env[key] = previous; });
   }
   t.mock.method(globalThis, 'fetch', async (resource: string | URL | Request) => {
     const url = new URL(resource instanceof Request ? resource.url : resource); assert.equal(url.hostname, 'food.synthetic.surfsky.io');
@@ -22,7 +22,7 @@ test('food preparation requires selected store proof and verified modifier state
       await page.route('**/*', route => route.fulfill({ contentType: 'text/html', body: html }));
       return page;
     } }], close: async () => {} }));
-    const result = await researchDoorDash({ task_id: 'synthetic-food', lane: 'food', requirements: { query: 'boba milk tea', fulfillment: 'pickup', location: '580 20th Street, San Francisco', quantity: 1 }, deadline: '2026-10-04', budget_minor: 1000, attempt_key: `synthetic-${variant}`, timeout_ms: 30000 });
+    const result = await researchDoorDash({ task_id: 'synthetic-food', lane: 'food', requirements: { query: 'Classic Black boba milk tea', fulfillment: 'pickup', location: '580 20th Street, San Francisco', quantity: 1, modifiers: ['16oz ICED', 'Boba', 'Organic Half + Half (Clover)', '50% (recommended)'] }, deadline: '2026-10-04', budget_minor: 1000, attempt_key: `synthetic-${variant}`, timeout_ms: 30000 });
     assert.equal(result.cleanup, 'confirmed'); assert.equal(cartClicks, 0);
     if (variant === 'valid' || variant === 'autocomplete' || variant === 'responsive-category' || variant === 'native-select' || variant === 'linked-label') { assert.equal(result.options.length, 1, result.blocker); assert.equal(result.options[0].amount_minor, 660); assert.equal(result.blocker_code, 'checkout_handoff'); assert.match(result.blocker!, /not implemented/); }
     else { assert.equal(result.options.length, 0, 'Unverified store must not produce a quoted option'); assert.equal(result.blocker_code, 'merchant_changed'); assert.equal(result.evidence.some(e => /exact Boba Guys Potrero address and selected radio state/.test(e.detail)), false); }
