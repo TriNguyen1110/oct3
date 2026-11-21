@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { chromium } from "playwright-core";
-import { pickFoodItem, searchPick, storeLooksClosed, validateFoodChoice, type FoodRequirement } from "../src/browser/food-choice";
+import { distinguishingWords, itemMatches, pickFoodItem, searchPick, storeLooksClosed, validateFoodChoice, type FoodRequirement } from "../src/browser/food-choice";
 import { researchDoorDash } from "../src/browser/doordash";
 import type { ResearchTaskInput } from "../src/browser/types";
 
@@ -31,15 +31,47 @@ test("store closed wording is detected", () => {
   assert.equal(storeLooksClosed("Boba Guys · Pickup · Menu"), false);
 });
 
-test("word search picks the best match and breaks ties by page order, never by price", () => {
+const generic = ["tea", "milk", "boba", "drink"];
+
+test("word search picks the closest match and refuses a tie instead of using page order", () => {
   const items = [
     { title: "Jasmine Green Milk Tea", context: "" },
     { title: "Classic Black Milk Tea", context: "" },
     { title: "Classic Black Milk Tea Small", context: "" },
   ];
-  assert.deepEqual(searchPick(items, "classic black milk tea"), { ok: true, index: 1, picked_by: "search" });
-  assert.deepEqual(searchPick(items, "milk tea"), { ok: true, index: 0, picked_by: "search" });
-  assert.equal(searchPick(items, "matcha latte").ok, false);
+  assert.deepEqual(searchPick(items, "classic black milk tea", generic), { ok: true, index: 1, picked_by: "search" });
+  // Only generic words: every item shares them, so the request is ambiguous.
+  const tie = searchPick(items, "milk tea", generic);
+  assert.equal(tie.ok, false); assert.match((tie as { reason: string }).reason, /more than one menu item/);
+  assert.equal(searchPick(items, "matcha latte", generic).ok, false);
+  // Two items that both carry every distinguishing word and differ in nothing the request said are refused.
+  const twins = searchPick([{ title: "Classic Black (Hot)", context: "" }, { title: "Classic Black (Iced)", context: "" }], "classic black", generic);
+  assert.equal(twins.ok, false);
+});
+
+test("one shared generic word is not a match: Classic Black boba milk tea never picks Jasmine Green Milk Tea", () => {
+  const query = "Classic Black boba milk tea";
+  const jasmine = { title: "Jasmine Green Milk Tea", context: "Green tea with milk and boba", unit_minor: 550 };
+  assert.deepEqual(distinguishingWords(query, generic), ["classic", "black"]);
+  assert.equal(itemMatches(jasmine, query, generic), false);
+  assert.equal(searchPick([jasmine], query, generic).ok, false);
+  assert.equal((validateFoodChoice(jasmine, request(query), { open: true }, generic) as { code: string }).code, "item_mismatch");
+  // A partial distinguishing match is not enough either.
+  assert.equal(itemMatches({ title: "Classic Jasmine Milk Tea", context: "" }, query, generic), false);
+  const menu = [jasmine, { title: "Classic Black", context: "", unit_minor: 660 }, { title: "Brown Sugar Boba Milk", context: "", unit_minor: 700 }];
+  assert.deepEqual(searchPick(menu, query, generic), { ok: true, index: 1, picked_by: "search" });
+  assert.deepEqual(validateFoodChoice(menu[1], request(query), { open: true }, generic), { ok: true });
+  // Without the policy's generic words every request word must match, which is stricter, never looser.
+  assert.equal(itemMatches(menu[1], query), false);
+});
+
+test("a model pick must meet the same distinguishing-word bar", async t => {
+  setEnv(t, { ANTHROPIC_API_KEY: "synthetic-not-a-key" });
+  const items = [{ title: "Jasmine Green Milk Tea", context: "" }, { title: "Classic Black", context: "" }];
+  t.mock.method(globalThis, "fetch", async () => Response.json({ id: "msg_synthetic", type: "message", role: "assistant", model: "claude-sonnet-5-5", content: [{ type: "text", text: "{\"index\":0}" }], stop_reason: "end_turn", stop_sequence: null, usage: { input_tokens: 1, output_tokens: 1 } }));
+  const pick = await pickFoodItem(items, request("Classic Black boba milk tea"), undefined, generic);
+  assert.deepEqual(pick, { ok: true, index: 0, picked_by: "model" });
+  assert.equal((validateFoodChoice({ ...items[0], unit_minor: 550 }, request("Classic Black boba milk tea"), { open: true }, generic) as { code: string }).code, "item_mismatch");
 });
 
 test("the model picks by index, and a failed or out-of-range answer falls back to the word search", async t => {
@@ -89,12 +121,13 @@ test("the order page worker returns the drink the request names, at the price th
   });
   const browser = await chromium.launch({ executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless: true }); t.after(() => browser.close());
   const menu: Record<string, string> = { "Classic Black": "6.60", "Jasmine Green": "5.50", "Taro Slush": "7.10" };
-  const page = (closed: boolean) => `<!doctype html><body>${closed ? "<p>Currently closed</p>" : ""}<input placeholder="Search by city, state, or ZIP"><label><input type="radio" name="store"><span>Boba Guys Potrero</span><span>1002 16th St, San Francisco, CA 94107</span></label><button>Confirm location</button>${Object.entries(menu).map(([name, price]) => `<button onclick="document.querySelector('#add').textContent='Add to order $${price}'">${name}</button>`).join("")}<label><input type="checkbox"><span>Boba</span></label><button id="add" onclick="window.canaryAdd()">Add to order</button></body>`;
-  const research = async (query: string, closed = false, modifiers?: string[]) => {
+  // clearing: choosing Pudding silently clears Boba, so only a final read-back of every option catches it.
+  const page = (closed: boolean, clearing = false) => `<!doctype html><body>${closed ? "<p>Currently closed</p>" : ""}<input placeholder="Search by city, state, or ZIP"><label><input type="radio" name="store"><span>Boba Guys Potrero</span><span>1002 16th St, San Francisco, CA 94107</span></label><button>Confirm location</button>${Object.entries(menu).map(([name, price]) => `<button onclick="document.querySelector('#add').textContent='Add to order $${price}'">${name}</button>`).join("")}<label><input type="checkbox" id="boba"><span>Boba</span></label>${clearing ? `<label><input type="checkbox" onchange="document.querySelector('#boba').checked=false"><span>Pudding</span></label>` : ""}<button id="add" onclick="window.canaryAdd()">Add to order</button></body>`;
+  const research = async (query: string, closed = false, modifiers?: string[], clearing = false) => {
     const context = await browser.newContext(); let cartClicks = 0;
     t.mock.method(chromium, "connectOverCDP", async () => ({ contexts: () => [{ newPage: async () => {
       const tab = await context.newPage(); await tab.exposeFunction("canaryAdd", () => { cartClicks++; });
-      await tab.route("**/*", route => route.fulfill({ contentType: "text/html", body: page(closed) }));
+      await tab.route("**/*", route => route.fulfill({ contentType: "text/html", body: page(closed, clearing) }));
       return tab;
     } }], close: async () => {} }));
     const input: ResearchTaskInput = { task_id: "synthetic-food", lane: "food", requirements: request(query, modifiers ? { modifiers } : {}), deadline: "2026-10-04", budget_minor: 1000, attempt_key: `synthetic-${query}`, timeout_ms: 30000 };
@@ -117,4 +150,6 @@ test("the order page worker returns the drink the request names, at the price th
   assert.equal(shut.options.length, 0); assert.match(shut.blocker!, /not open/);
   const noModifier = await research("Classic Black", false, ["Oat milk"]);
   assert.equal(noModifier.options.length, 0); assert.match(noModifier.blocker!, /does not offer the requested option "Oat milk"/);
+  const kept = await research("Classic Black boba milk tea", false, ["Boba"]);
+  assert.equal(kept.options[0].title, "Classic Black"); assert.match(kept.options[0].description, /Boba \(selected and read back\)/);
 });

@@ -46,6 +46,8 @@ export const installationPolicySchema = z.object({
   merchants: z.object({ amazon: hostList, fiverr: hostList, event_tickets: hostList, food: hostList }).strict(),
   food: z.object({
     max_quantity: z.number().int().min(1).max(25),
+    /** Words that say what kind of item, not which one (tea, milk, boba, drink). A request's other words must all match the item. */
+    generic_words: z.array(z.string().trim().toLowerCase().regex(/^[a-z0-9]+$/)).max(100).default([]),
     stores: z.array(foodStoreSchema).max(20),
   }).strict(),
   defaults: z.object({ mission_mode: z.enum(["fixture", "live"]).optional() }).strict().default({}),

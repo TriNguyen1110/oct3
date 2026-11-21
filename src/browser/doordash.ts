@@ -53,7 +53,7 @@ function foodOption(input: ResearchTaskInput, requirement: FoodRequirement, stor
   };
 }
 
-async function researchDoorDashMenu(input: ResearchTaskInput, requirement: FoodRequirement, store: FoodStorePolicy & { doordash_url: string }, started: number): Promise<ResearchTaskResult> {
+async function researchDoorDashMenu(input: ResearchTaskInput, requirement: FoodRequirement, store: FoodStorePolicy & { doordash_url: string }, genericWords: readonly string[], started: number): Promise<ResearchTaskResult> {
   const observations: Evidence[] = [];
   const storeUrl = new URL(store.doordash_url);
   try {
@@ -84,10 +84,10 @@ async function researchDoorDashMenu(input: ResearchTaskInput, requirement: FoodR
       }
       const items = parseMenuRows(rows);
       if (!items.length) throw new BrowserIssue("merchant_changed", `DoorDash showed no priced menu items for ${store.name}.`);
-      const pick = await pickFoodItem(items, requirement, input.signal);
+      const pick = await pickFoodItem(items, requirement, input.signal, genericWords);
       if (!pick.ok) throw new BrowserIssue("no_options", `${pick.reason} Searched ${items.length} ${store.name} menu items for "${requirement.query}".`);
       const item = items[pick.index];
-      const check = validateFoodChoice(item, requirement, { open });
+      const check = validateFoodChoice(item, requirement, { open }, genericWords);
       if (!check.ok) throw new BrowserIssue(check.code === "store_closed" ? "merchant_changed" : "no_options", check.message);
       const menuProof = evidence(input, store.doordash_url, `DoorDash ${store.name} pickup menu observed`, `DoorDash exposed Pickup and ${items.length} priced menu items. ${item.title} showed ${`$${(item.unit_minor! / 100).toFixed(2)}`}. The worker did not open modifiers, add an item to cart, checkout, or payment.`);
       observations.push(menuProof);
@@ -103,7 +103,7 @@ async function researchDoorDashMenu(input: ResearchTaskInput, requirement: FoodR
   }
 }
 
-async function researchStoreOrderPage(input: ResearchTaskInput, requirement: FoodRequirement, store: FoodStorePolicy & { order_url: string; store_label: string; store_address: string }, started: number): Promise<ResearchTaskResult> {
+async function researchStoreOrderPage(input: ResearchTaskInput, requirement: FoodRequirement, store: FoodStorePolicy & { order_url: string; store_label: string; store_address: string }, genericWords: readonly string[], started: number): Promise<ResearchTaskResult> {
   const observations: Evidence[] = [];
   const orderHost = new URL(store.order_url).hostname;
   try {
@@ -185,22 +185,22 @@ async function researchStoreOrderPage(input: ResearchTaskInput, requirement: Foo
       const open = !storeLooksClosed(await page.locator("body").innerText().catch(() => ""));
 
       let items = await menuItems();
-      let pick = await pickFoodItem(items, requirement, input.signal);
+      let pick = await pickFoodItem(items, requirement, input.signal, genericWords);
       for (const category of store.menu_categories) {
-        if (pick.ok && validateFoodChoice({ ...items[pick.index], unit_minor: 1 }, requirement, { open: true }).ok) break;
+        if (pick.ok && validateFoodChoice({ ...items[pick.index], unit_minor: 1 }, requirement, { open: true }, genericWords).ok) break;
         const opener = await waitVisible(page.getByText(category, { exact: true }), 2_000); if (!opener) continue;
         await opener.click(); await page.waitForTimeout(500);
-        items = await menuItems(); pick = await pickFoodItem(items, requirement, input.signal);
+        items = await menuItems(); pick = await pickFoodItem(items, requirement, input.signal, genericWords);
       }
       if (!pick.ok) throw new BrowserIssue("no_options", `${pick.reason} Searched ${items.length} ${store.name} menu items for "${requirement.query}".`);
       const chosen = items[pick.index];
-      const nameCheck = validateFoodChoice({ ...chosen, unit_minor: 1 }, requirement, { open: true });
+      const nameCheck = validateFoodChoice({ ...chosen, unit_minor: 1 }, requirement, { open: true }, genericWords);
       if (!nameCheck.ok) throw new BrowserIssue("no_options", nameCheck.message);
       await chosen.locator.click(); await page.waitForTimeout(1_000);
       for (const modifier of requirement.modifiers ?? []) await selectAndReadBack(modifier);
       const add = await waitVisible(page.getByRole("button", { name: /Add to order\s+\$\d{1,3}(?:,\d{3})*\.\d{2}/i }), 3_000);
       const unit = add ? priceMinor(await add.innerText()) : null;
-      const check = validateFoodChoice({ title: chosen.title, context: chosen.context, unit_minor: unit }, requirement, { open });
+      const check = validateFoodChoice({ title: chosen.title, context: chosen.context, unit_minor: unit }, requirement, { open }, genericWords);
       if (!check.ok) throw new BrowserIssue(check.code === "store_closed" ? "merchant_changed" : check.code === "price_missing" ? "merchant_changed" : "no_options", check.message);
       const price = `$${(unit! / 100).toFixed(2)}`;
       const storeProof = evidence(input, store.order_url, `${store.name} pickup store and item observed`, `The page showed ${store.store_label} at ${store.store_address} with its selection control checked, then the ${chosen.title} form. Requested options read back: ${modifiersText(requirement)}. It showed "Add to order ${price}" without activating it. No cart or checkout is claimed.`);
@@ -227,7 +227,7 @@ export async function researchDoorDash(input: ResearchTaskInput): Promise<Resear
   if (requirement.fulfillment !== "pickup") return configuration(started, "The food worker supports pickup only.", "Choose pickup for the food worker.");
   const store = foodStoreFor(loaded.policy, requirement.location);
   if (!store) return configuration(started, "No configured food store serves this pickup address. Add the store to the installation policy.", "Use a pickup address a configured store serves.");
-  if (browserlessConfigured() && store.doordash_url) return researchDoorDashMenu(input, requirement, { ...store, doordash_url: store.doordash_url }, started);
-  if (store.order_url && store.store_label && store.store_address) return researchStoreOrderPage(input, requirement, { ...store, order_url: store.order_url, store_label: store.store_label, store_address: store.store_address }, started);
+  if (browserlessConfigured() && store.doordash_url) return researchDoorDashMenu(input, requirement, { ...store, doordash_url: store.doordash_url }, loaded.policy.food.generic_words, started);
+  if (store.order_url && store.store_label && store.store_address) return researchStoreOrderPage(input, requirement, { ...store, order_url: store.order_url, store_label: store.store_label, store_address: store.store_address }, loaded.policy.food.generic_words, started);
   return configuration(started, `${store.name} has no page this worker can read here. Configure Browserless for its DoorDash page, or add its order page to the policy.`, "Configure a readable page for this store.");
 }

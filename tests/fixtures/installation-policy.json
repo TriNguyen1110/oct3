@@ -39,6 +39,12 @@
   },
   "food": {
     "max_quantity": 1,
+    "generic_words": [
+      "tea",
+      "milk",
+      "boba",
+      "drink"
+    ],
     "stores": [
       {
         "id": "boba-guys-potrero",
