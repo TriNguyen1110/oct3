@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { chromium } from 'playwright-core';
 import { researchDoorDash } from '../src/browser/doordash';
+import { launchTestChrome } from './helpers/test-chrome';
 
 test('food preparation requires selected store proof and verified modifier state without adding to cart', async t => {
   for (const [key, value] of Object.entries({ SURFSKY_API_KEY: 'synthetic-provider', SURFSKY_API_BASE_URL: 'https://food.synthetic.surfsky.io', BROWSERLESS_TOKEN: undefined, ANTHROPIC_API_KEY: undefined })) {
@@ -13,7 +14,7 @@ test('food preparation requires selected store proof and verified modifier state
     if (url.pathname.endsWith('/start')) return Response.json({ success: true, internal_uuid: 'synthetic-session', ws_url: 'wss://food.synthetic.surfsky.io/cdp' });
     assert.ok(url.pathname.endsWith('/stop')); return Response.json({ success: true });
   });
-  const browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true }); t.after(() => browser.close());
+  const browser = await launchTestChrome(t);
   for (const variant of ['no-finder', 'wrong-address', 'valid', 'autocomplete', 'responsive-category', 'native-select', 'linked-label'] as const) await t.test(variant, async () => {
     const context = await browser.newContext(); let cartClicks = 0;
     const html = `<!doctype html><body>${variant === 'no-finder' ? '<div>Boba Guys Potrero</div>' : `<input placeholder="Search by city, state, or ZIP">${variant === 'autocomplete' ? `<button onclick="document.querySelector('#store-result').hidden=false;this.remove()">580 20th Street, San Francisco, California, USA</button>` : ''}<label id="store-result" ${variant === 'autocomplete' ? 'hidden' : ''}><input type="radio" name="store"><span>Boba Guys Potrero</span><span>${variant === 'wrong-address' ? '999 Other St' : '1002 16th St, San Francisco, CA 94107'}</span></label><button>Confirm location</button>`}${variant === 'responsive-category' ? `<button style="position:fixed;left:-3000px">Build Your Drink</button><button onclick="document.querySelector('#classic').hidden=false">Build Your Drink</button>` : ''}<button id="classic" ${variant === 'responsive-category' ? 'hidden' : ''}>Classic Black</button>${variant === 'native-select' ? '<select><option value="">Select one</option><option value="iced">16oz ICED</option></select>' : ''}${(variant === 'native-select' ? ['Boba', 'Organic Half + Half (Clover)', '50% (recommended)'] : ['16oz ICED', 'Boba', 'Organic Half + Half (Clover)', '50% (recommended)']).map((label, index) => variant === 'linked-label' ? `<input id="modifier${index}" type="checkbox"><label for="modifier${index}"> \n ${label} \n </label>` : `<label><input type="checkbox" name="modifier${index}"><span>${label}</span></label>`).join('')}<button onclick="window.canaryAdd()">Add to order $6.60</button></body>`;

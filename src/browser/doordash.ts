@@ -121,9 +121,10 @@ async function researchStoreOrderPage(input: ResearchTaskInput, requirement: Foo
         return fallback;
       };
       const waitVisible = async (locator: Locator, timeout = 8_000) => { const deadline = Date.now() + timeout; do { const candidate = await visible(locator); if (candidate) return candidate; await page.waitForTimeout(250); } while (Date.now() < deadline); return undefined; };
+      // Whole-label match, so "Boba" never selects a store or item that merely contains the word.
+      const wholeLabel = (name: string) => new RegExp(`^\\s*${escapeRegExp(name)}\\s*$`, "i");
       const selectAndReadBack = async (name: string) => {
-        // Whole-label match, so "Boba" never selects a store or item that merely contains the word.
-        const label = new RegExp(`^\\s*${escapeRegExp(name)}\\s*$`, "i");
+        const label = wholeLabel(name);
         for (const select of await page.locator("select").all()) {
           if (!await select.isVisible().catch(() => false)) continue;
           const option = await select.locator("option").evaluateAll((options, source) => options.map(node => ({ label: (node as HTMLOptionElement).label, value: (node as HTMLOptionElement).value })).find(option => new RegExp(source, "i").test(option.label)), label.source);
@@ -166,14 +167,21 @@ async function researchStoreOrderPage(input: ResearchTaskInput, requirement: Foo
       };
 
       const response = await page.goto(store.order_url, { waitUntil: "domcontentloaded" }); if (response && response.status() >= 400) throw new BrowserIssue(response.status() === 403 ? "challenge" : "provider_error", `${store.name}'s order page returned HTTP ${response.status()} before the menu was available.`);
-      await page.waitForTimeout(3_000);
-      if (new URL(page.url()).hostname !== orderHost) throw new BrowserIssue("merchant_changed", `${store.name}'s order page redirected to an unsupported host.`);
       const pickup = page.getByText("Pickup", { exact: true }).first();
-      if (await pickup.isVisible().catch(() => false)) await pickup.click();
       const target = page.locator('input[placeholder="Search by city, state, or ZIP"],input[placeholder*="address" i],input[aria-label*="address" i]').first();
-      if (!await target.isVisible().catch(() => false)) throw new BrowserIssue("merchant_changed", "The location picker must be open so the pickup address and selected store can be verified.");
+      // Wait until the page shows its pickup toggle or location picker, not a fixed time.
+      await waitVisible(pickup.or(target), 5_000);
+      if (new URL(page.url()).hostname !== orderHost) throw new BrowserIssue("merchant_changed", `${store.name}'s order page redirected to an unsupported host.`);
+      const pickupShown = await pickup.isVisible().catch(() => false);
+      if (pickupShown) await pickup.click();
+      if (!(pickupShown ? await waitVisible(target, 3_000) : await target.isVisible().catch(() => false))) throw new BrowserIssue("merchant_changed", "The location picker must be open so the pickup address and selected store can be verified.");
       await target.fill(requirement.location);
-      if (store.location_suggestion) { const suggestion = await waitVisible(page.getByText(store.location_suggestion, { exact: true }), 3_000); if (suggestion) await suggestion.click(); }
+      if (store.location_suggestion) {
+        // Stop waiting as soon as either the address suggestion or the store result shows.
+        const suggestionText = page.getByText(store.location_suggestion, { exact: true });
+        await waitVisible(suggestionText.or(page.getByText(store.store_label, { exact: true })), 3_000);
+        const suggestion = await visible(suggestionText); if (suggestion) await suggestion.click();
+      }
       const result = await waitVisible(page.getByText(store.store_label, { exact: true }));
       if (!result) throw new BrowserIssue("merchant_changed", `The location search did not show ${store.store_label}.`);
       const tile = result.locator("xpath=ancestor::label"); const radio = tile.locator('input[type="radio"]').first();
@@ -196,7 +204,8 @@ async function researchStoreOrderPage(input: ResearchTaskInput, requirement: Foo
       const chosen = items[pick.index];
       const nameCheck = validateFoodChoice({ ...chosen, unit_minor: 1 }, requirement, { open: true }, genericWords);
       if (!nameCheck.ok) throw new BrowserIssue("no_options", nameCheck.message);
-      await chosen.locator.click(); await page.waitForTimeout(1_000);
+      await chosen.locator.click();
+      await waitVisible(page.getByRole("button", { name: /Add to order/i }), 3_000);
       for (const modifier of requirement.modifiers ?? []) await selectAndReadBack(modifier);
       const add = await waitVisible(page.getByRole("button", { name: /Add to order\s+\$\d{1,3}(?:,\d{3})*\.\d{2}/i }), 3_000);
       const unit = add ? priceMinor(await add.innerText()) : null;

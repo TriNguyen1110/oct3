@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { chromium } from "playwright-core";
 import { distinguishingWords, itemMatches, pickFoodItem, searchPick, storeLooksClosed, validateFoodChoice, type FoodRequirement } from "../src/browser/food-choice";
 import { researchDoorDash } from "../src/browser/doordash";
+import { launchTestChrome } from "./helpers/test-chrome";
 import type { ResearchTaskInput } from "../src/browser/types";
 
 const request = (query: string, extra: Partial<FoodRequirement> = {}): FoodRequirement => ({ query, fulfillment: "pickup", location: "580 20th Street, San Francisco", quantity: 1, ...extra });
@@ -119,9 +120,8 @@ test("the order page worker returns the drink the request names, at the price th
     if (url.pathname.endsWith("/start")) return Response.json({ success: true, internal_uuid: "synthetic-session", ws_url: "wss://food.synthetic.surfsky.io/cdp" });
     assert.ok(url.pathname.endsWith("/stop")); return Response.json({ success: true });
   });
-  const browser = await chromium.launch({ executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless: true }); t.after(() => browser.close());
+  const browser = await launchTestChrome(t);
   const menu: Record<string, string> = { "Classic Black": "6.60", "Jasmine Green": "5.50", "Taro Slush": "7.10" };
-  // clearing: choosing Pudding silently clears Boba, so only a final read-back of every option catches it.
   const page = (closed: boolean, clearing = false) => `<!doctype html><body>${closed ? "<p>Currently closed</p>" : ""}<input placeholder="Search by city, state, or ZIP"><label><input type="radio" name="store"><span>Boba Guys Potrero</span><span>1002 16th St, San Francisco, CA 94107</span></label><button>Confirm location</button>${Object.entries(menu).map(([name, price]) => `<button onclick="document.querySelector('#add').textContent='Add to order $${price}'">${name}</button>`).join("")}<label><input type="checkbox" id="boba"><span>Boba</span></label>${clearing ? `<label><input type="checkbox" onchange="document.querySelector('#boba').checked=false"><span>Pudding</span></label>` : ""}<button id="add" onclick="window.canaryAdd()">Add to order</button></body>`;
   const research = async (query: string, closed = false, modifiers?: string[], clearing = false) => {
     const context = await browser.newContext(); let cartClicks = 0;
