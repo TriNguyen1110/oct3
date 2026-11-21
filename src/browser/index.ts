@@ -74,8 +74,9 @@ export async function researchTask(input: ResearchTaskInput): Promise<ResearchTa
       const options: Option[] = ranked.candidates.map((candidate,index) => {
         const proof = evidence(input,candidate.source_url,candidate.title,`${candidate.price_text}. ${candidate.description}`,true);
         observations.push(proof);
-        const reason = ranked.usedClaude ? "Claude selected this from observed merchant options for the brief and budget. Final scope and checkout total still need verification." : index===0?"Lowest displayed price among the observed options; checkout total and deadline still need verification.":"Alternative observed on the merchant page; compare scope and final total before approval.";
-        return { id: id(input.task_id,candidate.source_url,String(candidate.amount_minor)), title:candidate.title, description:candidate.description, source_url:candidate.source_url, merchant:providerName(input.lane,candidate.source_url), amount_minor:candidate.amount_minor,currency:"USD",quantity:candidate.quantity,delivery_date:candidate.delivery_date,available:candidate.available,recommended:index===0,reason:input.lane === "event_tickets" ? `${reason} This read-only result does not claim a registration request or confirmed RSVP.` : reason,evidence_ids:[proof.id] };
+        const isRanked = ranked.ranking.status === "ranked";
+        const reason = isRanked ? "Claude selected this from observed merchant options for the brief and budget. Final scope and checkout total still need verification." : `Ranking unavailable (${ranked.ranking.status === "unavailable" ? ranked.ranking.reason : ""}). Shown in page order, not recommended; compare scope and final total before approval.`;
+        return { id: id(input.task_id,candidate.source_url,String(candidate.amount_minor)), title:candidate.title, description:candidate.description, source_url:candidate.source_url, merchant:providerName(input.lane,candidate.source_url), amount_minor:candidate.amount_minor,currency:"USD",quantity:candidate.quantity,delivery_date:candidate.delivery_date,available:candidate.available,recommended:isRanked && index===0,reason:input.lane === "event_tickets" ? `${reason} This read-only result does not claim a registration request or confirmed RSVP.` : reason,evidence_ids:[proof.id] };
       });
       if (!options.length) {
         observations.push(evidence(input,source!,`${provider} page inspected`,"The page was accessible, but no supported USD options with a grounded title, source and price could be extracted. No purchase or registration was attempted.",true));
@@ -96,7 +97,8 @@ export async function researchTask(input: ResearchTaskInput): Promise<ResearchTa
         run = await withBrowserlessPage(input.lane, input.attempt_key, signal, input.timeout_ms ?? 90_000, work(true));
       }
     }
-    const message = run.value.options.length ? `Observed ${run.value.options.length} ${providerName(input.lane,source)} option${run.value.options.length === 1 ? "" : "s"}. Prices are research estimates, not checkout totals; event research does not confirm an RSVP.` : run.value.blocker!;
+    const rankingNote = run.value.options.length && !run.value.options.some(option => option.recommended) ? " Ranking unavailable; none is recommended." : "";
+    const message = run.value.options.length ? `Observed ${run.value.options.length} ${providerName(input.lane,source)} option${run.value.options.length === 1 ? "" : "s"}.${rankingNote} Prices are research estimates, not checkout totals; event research does not confirm an RSVP.` : run.value.blocker!;
     await progress(input,message);
     return { ...run.value,...(inspection?{inspection}:{}),evidence:observations,progress:message,elapsed_ms:Date.now()-started,cleanup:run.cleanup,...(run.cleanup === "unconfirmed"?{blocker:"Browser cleanup could not be confirmed. Reconcile this worker session before another run.",blocker_code:"provider_error" as const}:{}) };
   } catch (error) {
