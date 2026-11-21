@@ -123,6 +123,22 @@ async function researchStoreOrderPage(input: ResearchTaskInput, requirement: Foo
       const waitVisible = async (locator: Locator, timeout = 8_000) => { const deadline = Date.now() + timeout; do { const candidate = await visible(locator); if (candidate) return candidate; await page.waitForTimeout(250); } while (Date.now() < deadline); return undefined; };
       // Whole-label match, so "Boba" never selects a store or item that merely contains the word.
       const wholeLabel = (name: string) => new RegExp(`^\\s*${escapeRegExp(name)}\\s*$`, "i");
+      /** Reads whether a requested option is selected now, without clicking anything. */
+      const modifierSelected = async (name: string) => {
+        const label = wholeLabel(name);
+        for (const select of await page.locator("select").all()) {
+          if (!await select.isVisible().catch(() => false)) continue;
+          if (await select.evaluate((node, source) => Array.from((node as HTMLSelectElement).selectedOptions).some(option => new RegExp(source, "i").test(option.label)), label.source).catch(() => false)) return true;
+        }
+        const control = await visible(page.getByRole("checkbox", { name: label }).or(page.getByRole("radio", { name: label })));
+        if (control) return control.isChecked().catch(() => false);
+        const text = await visible(page.getByText(label)); if (!text) return false;
+        const field = text.locator("xpath=ancestor::label[.//input[@type='radio' or @type='checkbox']][1]").locator("input[type='radio'],input[type='checkbox']").first();
+        if (await field.count()) return field.isChecked().catch(() => false);
+        const semantic = text.locator("xpath=ancestor-or-self::*[@role='radio' or @role='checkbox' or @aria-pressed][1]");
+        if (await semantic.count()) return ["true", "checked"].includes((await semantic.getAttribute("aria-checked") || await semantic.getAttribute("aria-pressed") || "").toLowerCase());
+        return false;
+      };
       const selectAndReadBack = async (name: string) => {
         const label = wholeLabel(name);
         for (const select of await page.locator("select").all()) {
@@ -207,6 +223,8 @@ async function researchStoreOrderPage(input: ResearchTaskInput, requirement: Foo
       await chosen.locator.click();
       await waitVisible(page.getByRole("button", { name: /Add to order/i }), 3_000);
       for (const modifier of requirement.modifiers ?? []) await selectAndReadBack(modifier);
+      // A later choice can clear an earlier one (radio groups, linked options): read every one back again.
+      for (const modifier of requirement.modifiers ?? []) if (!await modifierSelected(modifier)) throw new BrowserIssue("merchant_changed", `The order page did not keep the requested ${modifier} selection after all options were chosen.`);
       const add = await waitVisible(page.getByRole("button", { name: /Add to order\s+\$\d{1,3}(?:,\d{3})*\.\d{2}/i }), 3_000);
       const unit = add ? priceMinor(await add.innerText()) : null;
       const check = validateFoodChoice({ title: chosen.title, context: chosen.context, unit_minor: unit }, requirement, { open }, genericWords);

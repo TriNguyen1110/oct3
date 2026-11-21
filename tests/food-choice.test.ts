@@ -122,6 +122,7 @@ test("the order page worker returns the drink the request names, at the price th
   });
   const browser = await launchTestChrome(t);
   const menu: Record<string, string> = { "Classic Black": "6.60", "Jasmine Green": "5.50", "Taro Slush": "7.10" };
+  // clearing: choosing Pudding silently clears Boba, so only a final read-back of every option catches it.
   const page = (closed: boolean, clearing = false) => `<!doctype html><body>${closed ? "<p>Currently closed</p>" : ""}<input placeholder="Search by city, state, or ZIP"><label><input type="radio" name="store"><span>Boba Guys Potrero</span><span>1002 16th St, San Francisco, CA 94107</span></label><button>Confirm location</button>${Object.entries(menu).map(([name, price]) => `<button onclick="document.querySelector('#add').textContent='Add to order $${price}'">${name}</button>`).join("")}<label><input type="checkbox" id="boba"><span>Boba</span></label>${clearing ? `<label><input type="checkbox" onchange="document.querySelector('#boba').checked=false"><span>Pudding</span></label>` : ""}<button id="add" onclick="window.canaryAdd()">Add to order</button></body>`;
   const research = async (query: string, closed = false, modifiers?: string[], clearing = false) => {
     const context = await browser.newContext(); let cartClicks = 0;
@@ -150,6 +151,8 @@ test("the order page worker returns the drink the request names, at the price th
   assert.equal(shut.options.length, 0); assert.match(shut.blocker!, /not open/);
   const noModifier = await research("Classic Black", false, ["Oat milk"]);
   assert.equal(noModifier.options.length, 0); assert.match(noModifier.blocker!, /does not offer the requested option "Oat milk"/);
+  const cleared = await research("Classic Black", false, ["Boba", "Pudding"], true);
+  assert.equal(cleared.options.length, 0); assert.equal(cleared.blocker_code, "merchant_changed"); assert.match(cleared.blocker!, /did not keep the requested Boba selection after all options were chosen/);
   const kept = await research("Classic Black boba milk tea", false, ["Boba"]);
   assert.equal(kept.options[0].title, "Classic Black"); assert.match(kept.options[0].description, /Boba \(selected and read back\)/);
 });
