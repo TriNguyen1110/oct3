@@ -45,6 +45,34 @@ Claude/Eve orchestration and hosted read-only Surfsky research are verified.
 Fixture data and test payments are labeled; neither proves a merchant order,
 freelancer hire or ticket booking. See the runbook for exact evidence and limits.
 
+## Installation policy
+
+Who may approve live actions, the wallet spend limit, allowed merchant hosts, food
+stores, generic food words and the default mission mode come from one installation
+policy, never from code. Without a valid policy, live approvals, wallet requests and
+the food worker refuse; fixture missions still run. The policy is read fresh on each
+request, so an edit applies without a restart.
+
+1. Copy `config/installation-policy.example.json` and replace every value with this
+   installation's own: approver principal ids, `max_wallet_total_minor`, each lane's
+   merchant hosts (exact hostnames, no wildcards; a food store's `order_url` and
+   `doordash_url` hosts must be listed for its option to reach the wallet), stores and
+   `generic_words`. The schema is strict: unknown keys make the policy invalid.
+2. Local development: save it as `.cue/policy.json` (gitignored, the default path), or
+   set `OCT3_POLICY_FILE` to its path.
+3. Deployment: the file must be inside the deployed function bundle.
+   - Keep it at a path the deploy uploads, for example `config/installation-policy.json`
+     (a private repository only; `.cue/policy.json` is gitignored and never ships).
+   - Set `OCT3_POLICY_FILE=config/installation-policy.json` in the project's
+     environment variables. A relative path resolves from the app root.
+   - Add the same path to `outputFileTracingIncludes["/api/**"]` in `next.config.ts`;
+     the tracer cannot see a file read through an environment variable.
+   - After deploy, `GET /api/readiness` reports the default `mode`; a live approval that
+     answers `installation_policy_missing` means the file did not ship or is invalid.
+
+`OCT3_POLICY_SOURCE=willder` selects the Willder source, which is not connected yet and
+so always reports the policy as missing.
+
 ## Review and history
 
 Agent results include a dashboard link and per-worker review/provider-preview

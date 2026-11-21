@@ -9,10 +9,11 @@
     "amazon": ["www.amazon.com", "amazon.com"],
     "fiverr": ["www.fiverr.com", "fiverr.com"],
     "event_tickets": ["luma.com", "www.eventbrite.com"],
-    "food": ["order.bobaguys.com", "www.bobaguys.com", "bobaguys.square.site"]
+    "food": ["boba-guys.square.site", "www.doordash.com"]
   },
   "food": {
     "max_quantity": 1,
+    "generic_words": ["tea", "milk", "boba", "drink"],
     "stores": [
       {
         "id": "boba-guys-potrero",
