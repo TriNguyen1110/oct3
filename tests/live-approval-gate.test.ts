@@ -12,6 +12,7 @@ import type { Principal } from "../src/server/auth";
 import { defaultInput } from "../src/client/preview";
 import { POST as approveRoute } from "../app/api/tasks/[id]/approve/route";
 import { POST as resumeRoute } from "../app/api/tasks/[id]/resume/route";
+import { approveWithFakePasskey, fakeVerifiedApproval } from "./helpers/fake-webauthn";
 
 // The bearer manager token always maps to this principal (src/server/auth.ts).
 const routeManager: Principal = { id: "demo-manager", workspace_id: "oct3-demo", role: "manager" };
@@ -88,9 +89,8 @@ test("demo mode never approves a live mission", async t => {
 
   await t.test("MCP confirm_and_execute continues a live plan already approved with a passkey", async () => {
     const { id, task, exact } = await plannedMission(routeManager, "live-gate-after-passkey-0001", "live");
-    // Stands in for the board's verified passkey ceremony (covered in passkeys tests).
-    const { action_hash } = await approvalRequirement(task.id, routeManager, exact);
-    await decideTask(task.id, routeManager, exact, "approve", { via: "passkey", action_hash });
+    // The real passkey checks with a fake authenticator stand in for the board's ceremony.
+    await approveWithFakePasskey(task.id, routeManager, exact);
     const context = { params: Promise.resolve({ id: task.id }) };
     const response = await confirmAndExecute(
       () => approveRoute(call(`/api/tasks/${task.id}/approve`, exact), context),
@@ -104,15 +104,15 @@ test("demo mode never approves a live mission", async t => {
   await t.test("a live approval needs an approver named in the installation policy", async () => {
     const outsider: Principal = { id: "not-in-policy", workspace_id: "live-gate-outsider", role: "manager" };
     const { task, exact } = await plannedMission(outsider, "live-gate-outsider-0001", "live");
-    const { action_hash } = await approvalRequirement(task.id, outsider, exact);
-    await assert.rejects(decideTask(task.id, outsider, exact, "approve", { via: "passkey", action_hash }), code("approver_not_allowed"));
+    const proof = await fakeVerifiedApproval(task.id, outsider, exact);
+    await assert.rejects(decideTask(task.id, outsider, exact, "approve", proof), code("approver_not_allowed"));
   });
 
   await t.test("a missing installation policy refuses live approval and still allows fixtures", async t2 => {
     setEnv(t2, { OCT3_POLICY_FILE: join(directory, "no-policy.json") });
     const live = await plannedMission(routeManager, "live-gate-nopolicy-0001", "live");
-    const { action_hash } = await approvalRequirement(live.task.id, routeManager, live.exact);
-    await assert.rejects(decideTask(live.task.id, routeManager, live.exact, "approve", { via: "passkey", action_hash }), code("installation_policy_missing"));
+    const proof = await fakeVerifiedApproval(live.task.id, routeManager, live.exact);
+    await assert.rejects(decideTask(live.task.id, routeManager, live.exact, "approve", proof), code("installation_policy_missing"));
     const fixture = await plannedMission(routeManager, "live-gate-nopolicy-0002", "fixture");
     const approved = await decideTask(fixture.task.id, routeManager, fixture.exact, "approve");
     assert.equal(approved.reservations.length, 1);

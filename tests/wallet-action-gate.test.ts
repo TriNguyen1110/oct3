@@ -9,6 +9,7 @@ import { AppError } from "../src/server/errors";
 import type { Principal } from "../src/server/auth";
 import type { Evidence, MissionInput, Proposal } from "../src/shared/contracts";
 import { defaultInput } from "../src/client/preview";
+import { approveWithFakePasskey } from "./helpers/fake-webauthn";
 
 const manager: Principal = { id: "wallet-manager", workspace_id: "wallet-gate", role: "manager" };
 const code = (value: string) => (error: unknown) => error instanceof AppError && error.code === value;
@@ -57,8 +58,7 @@ test("walletAction needs every charge observed and the observed checkout total t
         proposal_id: proposal.id, revision: proposal.revision, amount_minor: proposal.total_minor, ...checkout,
       });
     });
-    const { action_hash } = await approvalRequirement(taskId, manager, exact(proposal));
-    await decideTask(taskId, manager, exact(proposal), "approve", { via: "passkey", action_hash });
+    await approveWithFakePasskey(taskId, manager, exact(proposal));
     const record2 = await getRecord(record.id, manager.workspace_id);
     return () => walletAction(record2, taskId, exact(proposal));
   }

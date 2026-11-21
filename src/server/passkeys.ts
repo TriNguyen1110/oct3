@@ -1,14 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import {
-  generateAuthenticationOptions,
-  generateRegistrationOptions,
-  verifyAuthenticationResponse,
-  verifyRegistrationResponse,
-  type AuthenticationResponseJSON,
-  type RegistrationResponseJSON,
-  type WebAuthnCredential,
-} from "@simplewebauthn/server";
+import * as simpleWebAuthn from "@simplewebauthn/server";
+import type { AuthenticationResponseJSON, RegistrationResponseJSON, WebAuthnCredential } from "@simplewebauthn/server";
 import type { Principal } from "./auth";
 import { AppError } from "./errors";
 import { approvalRequirement } from "./missions";
@@ -17,6 +10,27 @@ import { storageMode } from "./store";
 type Kind = "registration" | "approval";
 interface CredentialRow { workspace_id:string; principal_id:string; credential_id:string; public_key:string; counter:number; transports:string[]; device_type:string; backed_up:boolean }
 interface ChallengeRow { id:string; workspace_id:string; principal_id:string; kind:Kind; challenge:string; task_id:string|null; proposal_id:string|null; revision:number|null; action_hash:string|null; expires_at:string; consumed_at:string|null }
+type WebAuthnLibrary = Pick<typeof simpleWebAuthn, "generateRegistrationOptions" | "verifyRegistrationResponse" | "generateAuthenticationOptions" | "verifyAuthenticationResponse">;
+let webAuthnLibrary: WebAuthnLibrary = simpleWebAuthn;
+/**
+ * Test seam: node tests swap in a fake WebAuthn library so the server-side binding, scope, expiry
+ * and single-use checks below run without real authenticator crypto. Refused outside a test run.
+ */
+export function setWebAuthnLibraryForTests(library: WebAuthnLibrary | null) {
+  const testRun = Boolean(process.env.NODE_TEST_CONTEXT) || process.env.NODE_ENV === "test";
+  if (!testRun || process.env.VERCEL || process.env.NODE_ENV === "production") throw new Error("The WebAuthn test seam is only available in tests.");
+  const previous = webAuthnLibrary;
+  webAuthnLibrary = library ?? simpleWebAuthn;
+  return previous;
+}
+
+/** Proof that one manager approved one exact live action. Only verifyApproval below can mint one. */
+export interface VerifiedApproval { readonly via: "passkey"; readonly action_hash: string; readonly principal_id: string; readonly workspace_id: string }
+const minted = new WeakSet<object>();
+/** True only for a proof verifyApproval returned; a hand-built object with the same fields is refused. */
+export function isVerifiedApproval(value: unknown): value is VerifiedApproval {
+  return typeof value === "object" && value !== null && minted.has(value);
+}
 const localCredentials = new Map<string, CredentialRow>();
 const localChallenges = new Map<string, ChallengeRow>();
 const db = () => createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession:false, autoRefreshToken:false } });
@@ -86,7 +100,7 @@ export async function registrationOptions(principal:Principal){
   manager(principal);
   if(await credential(principal))throw new AppError(409,"passkey_already_enrolled","This manager already has a passkey. Additional enrollment is not available in this demo.");
   const {rpID}=config();
-  const options=await generateRegistrationOptions({rpName:"Cue",rpID,userName:principal.id,userDisplayName:"Cue demo manager",userID:Buffer.from(createHash("sha256").update(key(principal)).digest()),attestationType:"none",authenticatorSelection:{authenticatorAttachment:"platform",residentKey:"required",userVerification:"required"},supportedAlgorithmIDs:[-7,-257],timeout:60000});
+  const options=await webAuthnLibrary.generateRegistrationOptions({rpName:"Cue",rpID,userName:principal.id,userDisplayName:"Cue demo manager",userID:Buffer.from(createHash("sha256").update(key(principal)).digest()),attestationType:"none",authenticatorSelection:{authenticatorAttachment:"platform",residentKey:"required",userVerification:"required"},supportedAlgorithmIDs:[-7,-257],timeout:60000});
   const row=challengeRow(principal,"registration",options.challenge);await saveChallenge(row);return {challenge_id:row.id,options};
 }
 export async function verifyRegistration(principal:Principal,input:{challenge_id:string;response:RegistrationResponseJSON}){
@@ -94,7 +108,7 @@ export async function verifyRegistration(principal:Principal,input:{challenge_id
   if(await credential(principal))throw new AppError(409,"passkey_already_enrolled","This manager already has a passkey.");
   if(input.response.authenticatorAttachment!=="platform")throw new AppError(400,"platform_passkey_required","Enroll this device's platform passkey.");
   const row=await loadChallenge(input.challenge_id,principal,"registration");const {origin,rpID}=config();
-  let verification;try{verification=await verifyRegistrationResponse({response:input.response,expectedChallenge:row.challenge,expectedOrigin:origin,expectedRPID:rpID,requireUserVerification:true,supportedAlgorithmIDs:[-7,-257]});}catch{throw new AppError(400,"passkey_verification_failed","The platform passkey response was not valid for this site.");}
+  let verification;try{verification=await webAuthnLibrary.verifyRegistrationResponse({response:input.response,expectedChallenge:row.challenge,expectedOrigin:origin,expectedRPID:rpID,requireUserVerification:true,supportedAlgorithmIDs:[-7,-257]});}catch{throw new AppError(400,"passkey_verification_failed","The platform passkey response was not valid for this site.");}
   if(!verification.verified||!verification.registrationInfo?.userVerified)throw new AppError(400,"passkey_user_verification_required","Biometric or device user verification is required.");
   await consume(row);const c=verification.registrationInfo.credential;const saved:CredentialRow={workspace_id:principal.workspace_id,principal_id:principal.id,credential_id:c.id,public_key:Buffer.from(c.publicKey).toString("base64url"),counter:c.counter,transports:c.transports||input.response.response.transports||[],device_type:verification.registrationInfo.credentialDeviceType,backed_up:verification.registrationInfo.credentialBackedUp};
   if(storageMode()==="local"){
@@ -107,16 +121,16 @@ export async function approvalOptions(taskId:string,principal:Principal,exact:{p
   manager(principal);
   const c=await credential(principal);if(!c)throw new AppError(409,"passkey_enrollment_required","Enroll the manager's platform passkey before approving live actions.");
   const binding=await approvalRequirement(taskId,principal,exact);if(binding.mode!=="live")throw new AppError(409,"passkey_not_required","Fixture approvals do not use a passkey.");
-  const {rpID}=config();const options=await generateAuthenticationOptions({rpID,allowCredentials:[{id:c.credential_id,transports:c.transports}],userVerification:"required",timeout:60000});
+  const {rpID}=config();const options=await webAuthnLibrary.generateAuthenticationOptions({rpID,allowCredentials:[{id:c.credential_id,transports:c.transports}],userVerification:"required",timeout:60000});
   const row=challengeRow(principal,"approval",options.challenge,{task_id:taskId,proposal_id:exact.proposal_id,revision:exact.revision,action_hash:binding.action_hash});await saveChallenge(row);return {challenge_id:row.id,options};
 }
-export async function verifyApproval(taskId:string,principal:Principal,exact:{proposal_id:string;revision:number},input:{challenge_id:string;response:AuthenticationResponseJSON}){
+export async function verifyApproval(taskId:string,principal:Principal,exact:{proposal_id:string;revision:number},input:{challenge_id:string;response:AuthenticationResponseJSON}):Promise<VerifiedApproval>{
   manager(principal);
   const row=await loadChallenge(input.challenge_id,principal,"approval");if(row.task_id!==taskId||row.proposal_id!==exact.proposal_id||row.revision!==exact.revision||!row.action_hash)throw new AppError(409,"passkey_scope_mismatch","The passkey challenge belongs to a different exact action.");
   const binding=await approvalRequirement(taskId,principal,exact);if(binding.mode!=="live"||binding.action_hash!==row.action_hash)throw new AppError(409,"stale_proposal","The exact action changed after the passkey prompt was created.");
   const c=await credential(principal);if(!c||c.credential_id!==input.response.id)throw new AppError(400,"passkey_credential_unknown","This passkey is not enrolled for the current manager.");
   const oldCounter=Number(c.counter);const {origin,rpID}=config();const webauthn:WebAuthnCredential={id:c.credential_id,publicKey:new Uint8Array(Buffer.from(c.public_key,"base64url")),counter:oldCounter,transports:c.transports};
-  let verification;try{verification=await verifyAuthenticationResponse({response:input.response,expectedChallenge:row.challenge,expectedOrigin:origin,expectedRPID:rpID,credential:webauthn,requireUserVerification:true});}catch{throw new AppError(400,"passkey_verification_failed","The passkey signature, origin, RP ID, or user verification was invalid.");}
+  let verification;try{verification=await webAuthnLibrary.verifyAuthenticationResponse({response:input.response,expectedChallenge:row.challenge,expectedOrigin:origin,expectedRPID:rpID,credential:webauthn,requireUserVerification:true});}catch{throw new AppError(400,"passkey_verification_failed","The passkey signature, origin, RP ID, or user verification was invalid.");}
   if(!verification.verified||!verification.authenticationInfo.userVerified)throw new AppError(400,"passkey_user_verification_required","Biometric or device user verification is required.");
   await consume(row);const counter=verification.authenticationInfo.newCounter;
   if(storageMode()==="local"){
@@ -128,5 +142,7 @@ export async function verifyApproval(taskId:string,principal:Principal,exact:{pr
     if(result.error)throw new AppError(503,"storage_unavailable","The passkey counter could not be updated.");
     if(!result.data)throw new AppError(409,"passkey_counter_changed","Another passkey assertion completed first. Start a fresh approval prompt.");
   }
-  return row.action_hash;
+  const proof:VerifiedApproval=Object.freeze({via:"passkey" as const,action_hash:row.action_hash,principal_id:principal.id,workspace_id:principal.workspace_id});
+  minted.add(proof);
+  return proof;
 }

@@ -8,6 +8,7 @@ import type { MissionRecord } from "./model";
 import { servicePaymentReadiness } from "./service-payments";
 import { constraintsSchema } from "./schema";
 import { requireInstallationPolicy } from "./installation-policy";
+import { isVerifiedApproval, type VerifiedApproval } from "./passkeys";
 import { createRecord, findTask, getRecord, mutateRecord } from "./store";
 
 const lanes: Lane[] = ["amazon", "fiverr", "event_tickets", "food"];
@@ -239,14 +240,14 @@ function exactApprovedAction(record: MissionRecord, task: Task) {
   return typeof saved === "string" && saved === approvedActionHash(record, task);
 }
 
-/** Proof that the manager approved one exact live action. Only a verified passkey assertion produces it. */
-export interface VerifiedApproval { via: "passkey"; action_hash: string }
+export type { VerifiedApproval } from "./passkeys";
 
 /** A live approval needs an approver named in the installation policy and a passkey proof for this exact action. */
 function assertLiveApproval(record: MissionRecord, task: Task, principal: Principal, verified: VerifiedApproval | undefined) {
   const policy = requireInstallationPolicy("Live approval");
   if (!policy.approval.live_approvers.includes(principal.id)) throw new AppError(403, "approver_not_allowed", "This manager is not an approver for live actions in this installation's policy.");
-  if (verified?.via !== "passkey" || verified.action_hash !== approvedActionHash(record, task)) {
+  // Only a proof minted by verifyApproval counts; a hand-built object with the same fields is refused.
+  if (!isVerifiedApproval(verified) || verified.principal_id !== principal.id || verified.workspace_id !== principal.workspace_id || verified.action_hash !== approvedActionHash(record, task)) {
     throw new AppError(403, "passkey_required", "Biometric or device passkey confirmation is required for this exact live action. Demo confirmation covers fixture missions only.");
   }
 }

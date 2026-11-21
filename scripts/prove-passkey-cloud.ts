@@ -41,8 +41,8 @@ try {
   assert.equal(proofs.filter(result => result.status === "fulfilled").length, 1);
   assert.equal(proofs.filter(result => result.status === "rejected").length, 1);
   report.concurrent_challenge_consume_winners = 1;
-  const verified = proofs.find(result => result.status === "fulfilled") as PromiseFulfilledResult<string>;
-  const approved = await decideTask(task.id, principal, exact, "approve", { via: "passkey", action_hash: verified.value });
+  const verified = proofs.find(result => result.status === "fulfilled") as PromiseFulfilledResult<Awaited<ReturnType<typeof verifyApproval>>>;
+  const approved = await decideTask(task.id, principal, exact, "approve", verified.value);
   assert.equal(approved.view.tasks[0].approval?.state, "approved");
   assert.equal(approved.reservations.filter(row => row.state === "reserved").length, 1);
   report.exact_signed_approval_persisted = true;

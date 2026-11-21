@@ -1,9 +1,9 @@
 import { presentMission } from "@/src/server/presentation";
 import { requireAuth } from "@/src/server/auth";
 import { handle } from "@/src/server/errors";
-import { decideTask, type VerifiedApproval } from "@/src/server/missions";
+import { decideTask } from "@/src/server/missions";
 import { approvalSchema } from "@/src/server/schema";
-import { assertPasskeyRequestOrigin, verifyApproval } from "@/src/server/passkeys";
+import { assertPasskeyRequestOrigin, verifyApproval, type VerifiedApproval } from "@/src/server/passkeys";
 import type { AuthenticationResponseJSON } from "@simplewebauthn/server";
 import { z } from "zod";
 
@@ -19,7 +19,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     let verified:VerifiedApproval|undefined;
     if(body.passkey){
       assertPasskeyRequestOrigin(request);
-      verified={via:"passkey",action_hash:await verifyApproval(taskId,principal,exact,{challenge_id:body.passkey.challenge_id,response:body.passkey.response as AuthenticationResponseJSON})};
+      verified=await verifyApproval(taskId,principal,exact,{challenge_id:body.passkey.challenge_id,response:body.passkey.response as AuthenticationResponseJSON});
     }
     const record = await decideTask(taskId, principal, exact, "approve", verified);
     return Response.json(presentMission(record.view, new URL(request.url).origin), { headers: { "cache-control": "no-store" } });

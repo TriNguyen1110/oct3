@@ -140,12 +140,12 @@ test("independent real WebAuthn crypto with virtual authenticator and isolated C
   });
   await t.test("all new live approvals need verified exact hash and CAS rejects post-verification changes", async () => {
     await assert.rejects(decideTask(task.id, manager, exact, "approve"), code("passkey_required"));
-    const assertion = await getAssertion(), hash = await verify(assertion);
+    const assertion = await getAssertion(), proof = await verify(assertion);
     await mutateRecord(planned.id, manager.workspace_id, record => { record.view.tasks[0].proposal!.merchant = "Changed after ceremony"; });
-    await assert.rejects(decideTask(task.id, manager, exact, "approve", { via: "passkey", action_hash: hash }), code("passkey_required"));
+    await assert.rejects(decideTask(task.id, manager, exact, "approve", proof), code("passkey_required"));
     await mutateRecord(planned.id, manager.workspace_id, record => { record.view.tasks[0].proposal!.merchant = task.proposal!.merchant; });
-    assert.equal(hash, (await approvalRequirement(task.id, manager, exact)).action_hash);
-    const approved = await decideTask(task.id, manager, exact, "approve", { via: "passkey", action_hash: hash }); assert.equal(approved.reservations.length, 1);
+    assert.equal(proof.action_hash, (await approvalRequirement(task.id, manager, exact)).action_hash);
+    const approved = await decideTask(task.id, manager, exact, "approve", proof); assert.equal(approved.reservations.length, 1);
     const replay = await decideTask(task.id, manager, exact, "approve"); assert.equal(replay.reservations.length, 1);
   });
 });
