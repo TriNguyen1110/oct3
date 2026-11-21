@@ -36,7 +36,7 @@ test("passkey enrollment options and exact live approval gate",async t=>{
   const binding=await approvalRequirement(task.id,manager,exact);
   assert.equal(binding.mode,"live");assert.match(binding.action_hash,/^[0-9a-f]{64}$/);
   await assert.rejects(decideTask(task.id,manager,exact,"approve"),code("passkey_required"));
-  await assert.rejects(decideTask(task.id,manager,exact,"approve",{via:"passkey",action_hash:"0".repeat(64)}),code("passkey_required"));
+  await assert.rejects(decideTask(task.id,manager,exact,"approve",{via:"passkey",action_hash:"0".repeat(64),principal_id:manager.id,workspace_id:manager.workspace_id}),code("passkey_required"));
   await assert.rejects(decideTask(task.id,manager,exact,"approve",{via:"passkey",action_hash:binding.action_hash,principal_id:manager.id,workspace_id:manager.workspace_id}),code("passkey_required"));
   const proof=await fakeVerifiedApproval(task.id,manager,exact);
   const approved=await decideTask(task.id,manager,exact,"approve",proof);
