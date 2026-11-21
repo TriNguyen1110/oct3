@@ -13,7 +13,7 @@ export interface MenuItem { title: string; unit_minor: number | null; context: s
 export type FoodPick =
   | { ok: true; index: number; picked_by: "model" | "search" }
   | { ok: false; reason: string };
-export type FoodCheck = { ok: true } | { ok: false; code: "price_missing" | "store_closed" | "item_mismatch"; message: string };
+export type FoodCheck = { ok: true } | { ok: false; code: "price_missing" | "store_closed" | "item_mismatch" | "item_ambiguous"; message: string };
 
 const money = /\$(\d{1,3}(?:,\d{3})*\.\d{2})/;
 const nonItem = /delivery fee|service fee|subtotal|dashpass|group order|add to (?:order|cart)|checkout/i;
@@ -80,14 +80,28 @@ function extraTitleWords(title: string, query: string) {
  * page order and price never break a tie.
  */
 export function searchPick(items: Array<{ title: string; context: string }>, query: string, genericWords: readonly string[] = []): FoodPick {
-  const ranked = items.map((item, index) => ({ index, title: item.title, score: matchScore(item, query), extra: extraTitleWords(item.title, query) }))
+  const ranked = items.map((item, index) => ({ index, score: matchScore(item, query), extra: extraTitleWords(item.title, query) }))
     .filter(entry => itemMatches(items[entry.index], query, genericWords))
     .sort((a, b) => b.score - a.score || a.extra - b.extra);
   if (!ranked.length) return { ok: false, reason: "No observed menu item matches the request." };
-  const [best, next] = ranked;
-  if (next && next.score === best.score && next.extra === best.extra) return { ok: false, reason: `The request matches more than one menu item equally (${best.title}; ${next.title}). Name the item more exactly.` };
-  return { ok: true, index: best.index, picked_by: "search" };
+  const rival = equalRival(items, ranked[0].index, query, genericWords);
+  if (rival !== undefined) return { ok: false, reason: ambiguousReason(items[ranked[0].index].title, items[rival].title) };
+  return { ok: true, index: ranked[0].index, picked_by: "search" };
 }
+
+/**
+ * Another menu item that matches the request exactly as well as the picked one (same request
+ * words matched, same unrequested title words), or undefined. Shared by the word search and
+ * validateFoodChoice, so a model pick faces the same ambiguity rule as a search pick.
+ */
+export function equalRival(items: Array<{ title: string; context: string }>, index: number, query: string, genericWords: readonly string[] = []) {
+  const picked = items[index];
+  if (!picked) return undefined;
+  const score = matchScore(picked, query), extra = extraTitleWords(picked.title, query);
+  const rival = items.findIndex((item, other) => other !== index && itemMatches(item, query, genericWords) && matchScore(item, query) === score && extraTitleWords(item.title, query) === extra);
+  return rival >= 0 ? rival : undefined;
+}
+const ambiguousReason = (a: string, b: string) => `The request matches more than one menu item equally (${a}; ${b}). Name the item more exactly.`;
 
 /**
  * The model picks one observed item for the request, by index only, so it cannot invent an item
@@ -113,11 +127,17 @@ export async function pickFoodItem(items: Array<{ title: string; context: string
   return searchPick(items, requirement.query, genericWords);
 }
 
-/** Deterministic check after any pick: the price is readable, the store is open, the item has every distinguishing request word. */
-export function validateFoodChoice(item: { title: string; context: string; unit_minor: number | null }, requirement: FoodRequirement, store: { open: boolean }, genericWords: readonly string[] = []): FoodCheck {
+/**
+ * Deterministic check after any pick: the price is readable, the store is open, the item has every
+ * distinguishing request word, and no other observed menu item matches the request equally well.
+ * Callers pass the observed menu and the picked index so model and search picks meet one bar.
+ */
+export function validateFoodChoice(item: { title: string; context: string; unit_minor: number | null }, requirement: FoodRequirement, store: { open: boolean }, genericWords: readonly string[] = [], menu?: { items: Array<{ title: string; context: string }>; index: number }): FoodCheck {
   if (item.unit_minor === null || !Number.isSafeInteger(item.unit_minor) || item.unit_minor <= 0) return { ok: false, code: "price_missing", message: `The menu did not show a readable price for ${item.title}.` };
   if (!store.open) return { ok: false, code: "store_closed", message: "The store is not open for pickup right now." };
   if (!itemMatches(item, requirement.query, genericWords)) return { ok: false, code: "item_mismatch", message: `${item.title} does not match the request "${requirement.query}".` };
+  const rival = menu ? equalRival(menu.items, menu.index, requirement.query, genericWords) : undefined;
+  if (rival !== undefined) return { ok: false, code: "item_ambiguous", message: ambiguousReason(item.title, menu!.items[rival].title) };
   return { ok: true };
 }
 

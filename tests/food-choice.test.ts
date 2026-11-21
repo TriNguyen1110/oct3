@@ -66,6 +66,19 @@ test("one shared generic word is not a match: Classic Black boba milk tea never 
   assert.equal(itemMatches(menu[1], query), false);
 });
 
+test("a model pick of one of two equally matching items is refused like a search pick", async t => {
+  setEnv(t, { ANTHROPIC_API_KEY: "synthetic-not-a-key" });
+  const items = [{ title: "Classic Milk Tea", context: "" }, { title: "Taro Milk Tea", context: "" }, { title: "Jasmine Green Milk Tea", context: "" }];
+  assert.equal(searchPick(items, "milk tea", generic).ok, false);
+  t.mock.method(globalThis, "fetch", async () => Response.json({ id: "msg_synthetic", type: "message", role: "assistant", model: "claude-sonnet-5-5", content: [{ type: "text", text: "{\"index\":0}" }], stop_reason: "end_turn", stop_sequence: null, usage: { input_tokens: 1, output_tokens: 1 } }));
+  const pick = await pickFoodItem(items, request("milk tea"), undefined, generic);
+  assert.deepEqual(pick, { ok: true, index: 0, picked_by: "model" });
+  const check = validateFoodChoice({ ...items[0], unit_minor: 600 }, request("milk tea"), { open: true }, generic, { items, index: 0 });
+  assert.equal((check as { code: string }).code, "item_ambiguous"); assert.match((check as { message: string }).message, /Classic Milk Tea; Taro Milk Tea/);
+  // A unique best item still validates, and so does a model pick of it.
+  assert.deepEqual(validateFoodChoice({ ...items[2], unit_minor: 650 }, request("jasmine milk tea"), { open: true }, generic, { items, index: 2 }), { ok: true });
+});
+
 test("a model pick must meet the same distinguishing-word bar", async t => {
   setEnv(t, { ANTHROPIC_API_KEY: "synthetic-not-a-key" });
   const items = [{ title: "Jasmine Green Milk Tea", context: "" }, { title: "Classic Black", context: "" }];
@@ -114,14 +127,17 @@ test("food worker refuses requests the installation policy does not cover, befor
 
 test("the order page worker returns the drink the request names, at the price the page shows", async t => {
   setEnv(t, { SURFSKY_API_KEY: "synthetic-provider", SURFSKY_API_BASE_URL: "https://food.synthetic.surfsky.io", BROWSERLESS_TOKEN: undefined, ANTHROPIC_API_KEY: undefined });
+  let modelAnswer: string | undefined; // set only for the model-pick run below
   t.mock.method(globalThis, "fetch", async (resource: string | URL | Request) => {
-    const url = new URL(resource instanceof Request ? resource.url : resource); assert.equal(url.hostname, "food.synthetic.surfsky.io");
+    const url = new URL(resource instanceof Request ? resource.url : resource);
+    if (modelAnswer && url.hostname === "api.anthropic.com") return Response.json({ id: "msg_synthetic", type: "message", role: "assistant", model: "claude-sonnet-5-5", content: [{ type: "text", text: modelAnswer }], stop_reason: "end_turn", stop_sequence: null, usage: { input_tokens: 1, output_tokens: 1 } });
+    assert.equal(url.hostname, "food.synthetic.surfsky.io");
     if (url.pathname === "/profiles") return Response.json([{ uuid: "synthetic-profile", title: "oct3-food", status: "stopped" }]);
     if (url.pathname.endsWith("/start")) return Response.json({ success: true, internal_uuid: "synthetic-session", ws_url: "wss://food.synthetic.surfsky.io/cdp" });
     assert.ok(url.pathname.endsWith("/stop")); return Response.json({ success: true });
   });
   const browser = await launchTestChrome(t);
-  const menu: Record<string, string> = { "Classic Black": "6.60", "Jasmine Green": "5.50", "Taro Slush": "7.10" };
+  const menu: Record<string, string> = { "Classic Black": "6.60", "Jasmine Green": "5.50", "Taro Slush": "7.10", "Classic Milk Tea": "6.00", "Taro Milk Tea": "6.20" };
   // clearing: choosing Pudding silently clears Boba, so only a final read-back of every option catches it.
   const page = (closed: boolean, clearing = false) => `<!doctype html><body>${closed ? "<p>Currently closed</p>" : ""}<input placeholder="Search by city, state, or ZIP"><label><input type="radio" name="store"><span>Boba Guys Potrero</span><span>1002 16th St, San Francisco, CA 94107</span></label><button>Confirm location</button>${Object.entries(menu).map(([name, price]) => `<button onclick="document.querySelector('#add').textContent='Add to order $${price}'">${name}</button>`).join("")}<label><input type="checkbox" id="boba"><span>Boba</span></label>${clearing ? `<label><input type="checkbox" onchange="document.querySelector('#boba').checked=false"><span>Pudding</span></label>` : ""}<label><input type="checkbox" onclick="event.preventDefault()"><span>Grass Jelly</span></label><button id="add" onclick="window.canaryAdd()">Add to order</button></body>`;
   const research = async (query: string, closed = false, modifiers?: string[], clearing = false) => {
@@ -155,6 +171,12 @@ test("the order page worker returns the drink the request names, at the price th
   assert.equal(cleared.options.length, 0); assert.equal(cleared.blocker_code, "merchant_changed"); assert.match(cleared.blocker!, /did not keep the requested Boba selection after all options were chosen/);
   const stuck = await research("Classic Black", false, ["Grass Jelly"]);
   assert.equal(stuck.options.length, 0); assert.equal(stuck.blocker_code, "merchant_changed"); assert.match(stuck.blocker!, /did not retain the requested Grass Jelly selection/);
+  // A model pick of one of two equally matching items is refused, as the word search refuses it.
+  modelAnswer = "{\"index\":3}"; process.env.ANTHROPIC_API_KEY = "synthetic-not-a-key";
+  try {
+    const tied = await research("milk tea");
+    assert.equal(tied.options.length, 0); assert.equal(tied.blocker_code, "no_options"); assert.match(tied.blocker!, /more than one menu item equally \(Classic Milk Tea; Taro Milk Tea\)/);
+  } finally { modelAnswer = undefined; delete process.env.ANTHROPIC_API_KEY; }
   const kept = await research("Classic Black boba milk tea", false, ["Boba"]);
   assert.equal(kept.options[0].title, "Classic Black"); assert.match(kept.options[0].description, /Boba \(selected and read back\)/);
 });

@@ -87,7 +87,7 @@ async function researchDoorDashMenu(input: ResearchTaskInput, requirement: FoodR
       const pick = await pickFoodItem(items, requirement, input.signal, genericWords);
       if (!pick.ok) throw new BrowserIssue("no_options", `${pick.reason} Searched ${items.length} ${store.name} menu items for "${requirement.query}".`);
       const item = items[pick.index];
-      const check = validateFoodChoice(item, requirement, { open }, genericWords);
+      const check = validateFoodChoice(item, requirement, { open }, genericWords, { items, index: pick.index });
       if (!check.ok) throw new BrowserIssue(check.code === "store_closed" ? "merchant_changed" : "no_options", check.message);
       const menuProof = evidence(input, store.doordash_url, `DoorDash ${store.name} pickup menu observed`, `DoorDash exposed Pickup and ${items.length} priced menu items. ${item.title} showed ${`$${(item.unit_minor! / 100).toFixed(2)}`}. The worker did not open modifiers, add an item to cart, checkout, or payment.`);
       observations.push(menuProof);
@@ -212,14 +212,14 @@ async function researchStoreOrderPage(input: ResearchTaskInput, requirement: Foo
       let items = await menuItems();
       let pick = await pickFoodItem(items, requirement, input.signal, genericWords);
       for (const category of store.menu_categories) {
-        if (pick.ok && validateFoodChoice({ ...items[pick.index], unit_minor: 1 }, requirement, { open: true }, genericWords).ok) break;
+        if (pick.ok && validateFoodChoice({ ...items[pick.index], unit_minor: 1 }, requirement, { open: true }, genericWords, { items, index: pick.index }).ok) break;
         const opener = await waitVisible(page.getByText(category, { exact: true }), 2_000); if (!opener) continue;
         await opener.click(); await page.waitForTimeout(500);
         items = await menuItems(); pick = await pickFoodItem(items, requirement, input.signal, genericWords);
       }
       if (!pick.ok) throw new BrowserIssue("no_options", `${pick.reason} Searched ${items.length} ${store.name} menu items for "${requirement.query}".`);
       const chosen = items[pick.index];
-      const nameCheck = validateFoodChoice({ ...chosen, unit_minor: 1 }, requirement, { open: true }, genericWords);
+      const nameCheck = validateFoodChoice({ ...chosen, unit_minor: 1 }, requirement, { open: true }, genericWords, { items, index: pick.index });
       if (!nameCheck.ok) throw new BrowserIssue("no_options", nameCheck.message);
       await chosen.locator.click();
       await waitVisible(page.getByRole("button", { name: /Add to order/i }), 3_000);
@@ -228,7 +228,7 @@ async function researchStoreOrderPage(input: ResearchTaskInput, requirement: Foo
       for (const modifier of requirement.modifiers ?? []) if (!await modifierSelected(modifier)) throw new BrowserIssue("merchant_changed", `The order page did not keep the requested ${modifier} selection after all options were chosen.`);
       const add = await waitVisible(page.getByRole("button", { name: /Add to order\s+\$\d{1,3}(?:,\d{3})*\.\d{2}/i }), 3_000);
       const unit = add ? priceMinor(await add.innerText()) : null;
-      const check = validateFoodChoice({ title: chosen.title, context: chosen.context, unit_minor: unit }, requirement, { open }, genericWords);
+      const check = validateFoodChoice({ title: chosen.title, context: chosen.context, unit_minor: unit }, requirement, { open }, genericWords, { items, index: pick.index });
       if (!check.ok) throw new BrowserIssue(check.code === "store_closed" ? "merchant_changed" : check.code === "price_missing" ? "merchant_changed" : "no_options", check.message);
       const price = `$${(unit! / 100).toFixed(2)}`;
       const storeProof = evidence(input, store.order_url, `${store.name} pickup store and item observed`, `The page showed ${store.store_label} at ${store.store_address} with its selection control checked, then the ${chosen.title} form. Requested options read back: ${modifiersText(requirement)}. It showed "Add to order ${price}" without activating it. No cart or checkout is claimed.`);
