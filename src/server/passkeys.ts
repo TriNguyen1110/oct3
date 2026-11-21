@@ -24,12 +24,15 @@ const key = (p:Principal) => `${p.workspace_id}:${p.id}`;
 const manager = (p:Principal) => { if(p.role!=="manager")throw new AppError(403,"manager_required","A manager must use passkeys for approvals."); };
 
 function config() {
+  // The trusted origin is this installation's own OCT3_APP_URL. A deployment never falls back to a
+  // built-in host; only local development defaults to localhost.
+  const deployed = Boolean(process.env.VERCEL || process.env.NODE_ENV === "production");
+  if (!process.env.OCT3_APP_URL && deployed) throw new AppError(503,"passkey_config_invalid","The trusted passkey origin is not configured for this deployment. Set OCT3_APP_URL to its HTTPS origin.");
   let configured = "";
-  try { configured = new URL(process.env.OCT3_APP_URL || (process.env.VERCEL || process.env.NODE_ENV === "production" ? "https://oct3-five.vercel.app" : "http://localhost:3003")).origin; }
+  try { configured = new URL(process.env.OCT3_APP_URL || "http://localhost:3003").origin; }
   catch { throw new AppError(503,"passkey_config_invalid","OCT3_APP_URL must be a valid trusted application URL."); }
   const origin = configured;
-  const allowed = new Set(["https://oct3-five.vercel.app", "http://localhost:3003"]);
-  if (!allowed.has(origin)) throw new AppError(503,"passkey_config_invalid","The trusted passkey origin is not configured for this deployment.");
+  if (deployed && !origin.startsWith("https://")) throw new AppError(503,"passkey_config_invalid","A deployed passkey origin must use HTTPS. Set OCT3_APP_URL to its HTTPS origin.");
   const rpID = new URL(origin).hostname;
   return { origin, rpID };
 }
