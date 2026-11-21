@@ -95,7 +95,7 @@ test("Link wallet exact-action and reconciliation boundary", async t => {
     });
     if (options.approve !== false) {
       const requirement = await approvalRequirement(taskId, manager, exact(proposal));
-      await decideTask(taskId, manager, exact(proposal), "approve", requirement.action_hash);
+      await decideTask(taskId, manager, exact(proposal), "approve", { via: "passkey", action_hash: requirement.action_hash });
     }
     return { missionId: record.id, taskId, proposal };
   }

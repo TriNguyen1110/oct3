@@ -110,7 +110,7 @@ test("independent real WebAuthn crypto with virtual authenticator and isolated C
     assert.ok(tables.get("oct3_passkey_challenges")!.find(row => row.id === second.challenge_id)!.consumed_at);
     assert.equal((await getRecord(planned.id, manager.workspace_id)).reservations.length, 0);
   });
-  await t.test("HTTP approval rejects injected hashes, requires proof normally, and derives its own exact hash in demo mode", async () => {
+  await t.test("HTTP approval rejects injected hashes, requires proof normally, and refuses a demo approval of a live mission", async () => {
     // Auth uses a fixed demo workspace, so this row exists only in the mocked
     // database. No credential is enrolled for the demo manager or workspace.
     const routePrincipal = { ...manager, workspace_id: "oct3-demo" };
@@ -124,28 +124,28 @@ test("independent real WebAuthn crypto with virtual authenticator and isolated C
     const missing = await approveRoute(request(selection), { params: Promise.resolve({ id: routeTask.id }) });
     assert.equal(missing.status, 403); assert.equal((await missing.json()).error.code, "passkey_required");
     assert.equal((await getRecord(planned.id, routePrincipal.workspace_id)).reservations.length, 0);
-    const previousDemo = process.env.OCT3_DEMO_MODE;
-    process.env.OCT3_DEMO_MODE = "true";
+    const previous = { demo: process.env.OCT3_DEMO_MODE, skip: process.env.OCT3_DEMO_SKIP_PASSKEY };
+    process.env.OCT3_DEMO_MODE = "true"; process.env.OCT3_DEMO_SKIP_PASSKEY = "true";
     try {
-      assert.deepEqual(await passkeyStatus(routePrincipal), { enrolled: false, required: false, demo_approval: true });
+      assert.deepEqual(await passkeyStatus(routePrincipal), { enrolled: false, required: true });
       const demo = await approveRoute(request(selection), { params: Promise.resolve({ id: routeTask.id }) });
-      assert.equal(demo.status, 200);
+      assert.equal(demo.status, 403); assert.equal((await demo.json()).error.code, "passkey_required");
       const saved = await getRecord(planned.id, routePrincipal.workspace_id);
-      assert.equal(saved.reservations.filter(item => item.state === "reserved").length, 1);
-      assert.equal(saved.view.tasks[0].approval?.proposal_id, selection.proposal_id);
-      assert.equal(saved.view.tasks[0].approval?.revision, selection.revision);
+      assert.equal(saved.reservations.length, 0);
+      assert.notEqual(saved.view.tasks[0].approval?.state, "approved");
     } finally {
-      if (previousDemo === undefined) delete process.env.OCT3_DEMO_MODE; else process.env.OCT3_DEMO_MODE = previousDemo;
+      if (previous.demo === undefined) delete process.env.OCT3_DEMO_MODE; else process.env.OCT3_DEMO_MODE = previous.demo;
+      if (previous.skip === undefined) delete process.env.OCT3_DEMO_SKIP_PASSKEY; else process.env.OCT3_DEMO_SKIP_PASSKEY = previous.skip;
     }
   });
   await t.test("all new live approvals need verified exact hash and CAS rejects post-verification changes", async () => {
     await assert.rejects(decideTask(task.id, manager, exact, "approve"), code("passkey_required"));
     const assertion = await getAssertion(), hash = await verify(assertion);
     await mutateRecord(planned.id, manager.workspace_id, record => { record.view.tasks[0].proposal!.merchant = "Changed after ceremony"; });
-    await assert.rejects(decideTask(task.id, manager, exact, "approve", hash), code("passkey_required"));
+    await assert.rejects(decideTask(task.id, manager, exact, "approve", { via: "passkey", action_hash: hash }), code("passkey_required"));
     await mutateRecord(planned.id, manager.workspace_id, record => { record.view.tasks[0].proposal!.merchant = task.proposal!.merchant; });
     assert.equal(hash, (await approvalRequirement(task.id, manager, exact)).action_hash);
-    const approved = await decideTask(task.id, manager, exact, "approve", hash); assert.equal(approved.reservations.length, 1);
+    const approved = await decideTask(task.id, manager, exact, "approve", { via: "passkey", action_hash: hash }); assert.equal(approved.reservations.length, 1);
     const replay = await decideTask(task.id, manager, exact, "approve"); assert.equal(replay.reservations.length, 1);
   });
 });

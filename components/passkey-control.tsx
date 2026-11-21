@@ -25,7 +25,7 @@ export async function confirmProposalWithPasskey(taskId: string, proposalId: str
   return { challenge_id: challenge.challenge_id, response };
 }
 
-/** Uses WebAuthn in normal deployments and the shorter server-bound demo flow when enabled. */
+/** Live approvals always use WebAuthn; the server refuses a live approval without it. */
 export async function confirmProposalApproval(taskId: string, proposalId: string, revision: number) {
   const status = await api<{ enrolled: boolean; required: boolean }>("/api/passkeys");
   if (!status.required) return undefined;

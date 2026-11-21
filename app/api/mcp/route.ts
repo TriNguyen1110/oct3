@@ -8,6 +8,7 @@ import { GET as getMission } from "@/app/api/missions/[id]/route";
 import { POST as approveTask } from "@/app/api/tasks/[id]/approve/route";
 import { POST as resumeTask } from "@/app/api/tasks/[id]/resume/route";
 import { demoApprovalEnabled } from "@/src/server/approval-policy";
+import { confirmAndExecute } from "@/src/server/confirm-and-execute";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -78,15 +79,15 @@ async function handler(request: Request): Promise<Response> {
       }, async () => result(await listMissions(callRequest("/api/missions"))));
       if (principal.role === "manager" && demoApprovalEnabled()) server.registerTool("confirm_and_execute", {
         title: "Confirm an exact plan and continue it",
-        description: "Demo-only manager action. Confirm the exact stored task proposal and immediately continue its existing provider flow. This can create a real commitment when a verified merchant executor is connected. Use only after the user explicitly asked to order, hire, book or register. The server rechecks the task, proposal, revision, expiry and budget; never infer a completed purchase without provider confirmation and receipt evidence.",
+        description: "Demo-only manager action. For a fixture mission, confirm the exact stored proposal and continue it. For a live mission, this only continues a proposal the manager already approved with a passkey on the mission board; otherwise it returns passkey_required, and you give the user the task review_url. This can create a real commitment when a verified merchant executor is connected. Use only after the user explicitly asked to order, hire, book or register. The server rechecks the task, proposal, revision, expiry and budget; never infer a completed purchase without provider confirmation and receipt evidence.",
         inputSchema: z.object({ task_id: z.string().min(3).max(220), proposal_id: z.string().min(3).max(220), revision: z.number().int().min(1) }),
         annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
       }, async ({ task_id, proposal_id, revision }) => {
         const exact = { proposal_id, revision };
         const context = { params: Promise.resolve({ id: task_id }) };
-        const approved = await approveTask(callRequest(`/api/tasks/${encodeURIComponent(task_id)}/approve`, "POST", exact), context);
-        if (!approved.ok) return result(approved);
-        return result(await resumeTask(callRequest(`/api/tasks/${encodeURIComponent(task_id)}/resume`, "POST", exact), context));
+        return result(await confirmAndExecute(
+          () => approveTask(callRequest(`/api/tasks/${encodeURIComponent(task_id)}/approve`, "POST", exact), context),
+          () => resumeTask(callRequest(`/api/tasks/${encodeURIComponent(task_id)}/resume`, "POST", exact), context)));
       });
     }, { serverInfo: { name: "oct3", version: "0.1.0" }, verboseLogs: false });
     return await mcp(request);

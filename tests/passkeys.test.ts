@@ -35,11 +35,11 @@ test("passkey enrollment options and exact live approval gate",async t=>{
   const binding=await approvalRequirement(task.id,manager,exact);
   assert.equal(binding.mode,"live");assert.match(binding.action_hash,/^[0-9a-f]{64}$/);
   await assert.rejects(decideTask(task.id,manager,exact,"approve"),code("passkey_required"));
-  await assert.rejects(decideTask(task.id,manager,exact,"approve","0".repeat(64)),code("passkey_required"));
-  const approved=await decideTask(task.id,manager,exact,"approve",binding.action_hash);
+  await assert.rejects(decideTask(task.id,manager,exact,"approve",{via:"passkey",action_hash:"0".repeat(64)}),code("passkey_required"));
+  const approved=await decideTask(task.id,manager,exact,"approve",{via:"passkey",action_hash:binding.action_hash});
   assert.equal(approved.reservations.filter(x=>x.state==="reserved").length,1);
   const replay=await decideTask(task.id,manager,exact,"approve");
   assert.equal(replay.reservations.filter(x=>x.state==="reserved").length,1);
   await mutateRecord(planned.id,manager.workspace_id,r=>{r.view.tasks[0].proposal!.title+=" changed";});
-  await assert.rejects(decideTask(task.id,manager,exact,"approve",binding.action_hash),code("approval_state_invalid"));
+  await assert.rejects(decideTask(task.id,manager,exact,"approve",{via:"passkey",action_hash:binding.action_hash}),code("approval_state_invalid"));
 });

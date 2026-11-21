@@ -7,6 +7,7 @@ import { assertPreparedFreeRegistration, resumeFreeRegistrationTask } from "./fr
 import type { MissionRecord } from "./model";
 import { servicePaymentReadiness } from "./service-payments";
 import { constraintsSchema } from "./schema";
+import { requireInstallationPolicy } from "./installation-policy";
 import { createRecord, findTask, getRecord, mutateRecord } from "./store";
 
 const lanes: Lane[] = ["amazon", "fiverr", "event_tickets", "food"];
@@ -215,7 +216,19 @@ function exactApprovedAction(record: MissionRecord, task: Task) {
   return typeof saved === "string" && saved === approvedActionHash(record, task);
 }
 
-export async function decideTask(taskId: string, principal: Principal, exact: { proposal_id: string; revision: number }, decision: "approve" | "reject", verifiedActionHash?: string) {
+/** Proof that the manager approved one exact live action. Only a verified passkey assertion produces it. */
+export interface VerifiedApproval { via: "passkey"; action_hash: string }
+
+/** A live approval needs an approver named in the installation policy and a passkey proof for this exact action. */
+function assertLiveApproval(record: MissionRecord, task: Task, principal: Principal, verified: VerifiedApproval | undefined) {
+  const policy = requireInstallationPolicy("Live approval");
+  if (!policy.approval.live_approvers.includes(principal.id)) throw new AppError(403, "approver_not_allowed", "This manager is not an approver for live actions in this installation's policy.");
+  if (verified?.via !== "passkey" || verified.action_hash !== approvedActionHash(record, task)) {
+    throw new AppError(403, "passkey_required", "Biometric or device passkey confirmation is required for this exact live action. Demo confirmation covers fixture missions only.");
+  }
+}
+
+export async function decideTask(taskId: string, principal: Principal, exact: { proposal_id: string; revision: number }, decision: "approve" | "reject", verified?: VerifiedApproval) {
   if (principal.role !== "manager") throw new AppError(403, "manager_required", "A manager must approve this action.");
   const found = await findTask(taskId, principal.workspace_id);
   return mutateRecord(found.id, principal.workspace_id, record => {
@@ -237,9 +250,7 @@ export async function decideTask(taskId: string, principal: Principal, exact: { 
         }
         return;
       }
-      if (record.view.mode === "live" && verifiedActionHash !== approvedActionHash(record, task)) {
-        throw new AppError(403, "passkey_required", "Biometric or device passkey confirmation is required for this exact live action.");
-      }
+      if (record.view.mode === "live") assertLiveApproval(record, task, principal, verified);
       if (task.blocker && task.blocker.startsWith("The lowest illustrative")) throw new AppError(409, "plan_infeasible", task.blocker);
       const cost = task.proposal!.total_minor;
       refresh(record);

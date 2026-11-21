@@ -55,7 +55,7 @@ function setup(t: TestContext, options: Options = {}) {
 }
 const task = (r: MissionRecord) => r.view.tasks.find(x => x.lane === "event_tickets")!;
 const exact = (r: MissionRecord) => ({ proposal_id: task(r).proposal!.id, revision: task(r).proposal!.revision });
-const approve = async (r: MissionRecord) => decideTask(task(r).id, manager, exact(r), "approve", (await approvalRequirement(task(r).id, manager, exact(r))).action_hash);
+const approve = async (r: MissionRecord) => decideTask(task(r).id, manager, exact(r), "approve", { via: "passkey", action_hash: (await approvalRequirement(task(r).id, manager, exact(r))).action_hash });
 
 test("free registration private preparation and exact approval guards", async t => {
   const h = setup(t);
