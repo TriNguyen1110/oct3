@@ -151,7 +151,8 @@ async function researchStoreOrderPage(input: ResearchTaskInput, requirement: Foo
         }
         const control = await visible(page.getByRole("checkbox", { name: label }).or(page.getByRole("radio", { name: label })));
         if (control) {
-          if (!await control.isChecked()) await control.check();
+          // A control that will not stay checked is a refusal, not a generic worker failure.
+          if (!await control.isChecked()) await control.check({ timeout: 3_000 }).catch(() => {});
           if (!await control.isChecked()) throw new BrowserIssue("merchant_changed", `The order page did not retain the requested ${name} selection.`);
           return;
         }
