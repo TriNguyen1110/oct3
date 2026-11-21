@@ -130,7 +130,7 @@ test("final four-worker palette keeps level hero and explicit boba pickup defaul
     await page.screenshot({ path: `/tmp/cue-cinematic-independent-${width}.png`, fullPage: true });
     await page.getByRole("button", { name: "New mission", exact: true }).click(); const dialog = page.getByRole("dialog", { name: "What needs doing?" }); await dialog.waitFor();
     assert.equal(await dialog.getByLabel("Find food for this mission").isChecked(), true);
-    assert.equal(await dialog.getByLabel("What sounds good?").inputValue(), "boba milk tea");
+    assert.equal(await dialog.getByLabel("What sounds good?").inputValue(), "Classic Black boba milk tea");
     assert.equal(await dialog.getByLabel("Fulfillment", { exact: true }).inputValue(), "pickup");
     assert.equal(await dialog.getByLabel("Quantity", { exact: true }).inputValue(), "1");
     assert.equal(await dialog.getByLabel("Search near").inputValue(), "580 20th Street, San Francisco");
