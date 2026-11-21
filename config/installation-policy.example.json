@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "approval": {
+    "live_approvers": ["demo-manager"],
+    "live_path": "passkey"
+  },
+  "spend": { "max_wallet_total_minor": 50000 },
+  "merchants": {
+    "amazon": ["www.amazon.com", "amazon.com"],
+    "fiverr": ["www.fiverr.com", "fiverr.com"],
+    "event_tickets": ["luma.com", "www.eventbrite.com"],
+    "food": ["order.bobaguys.com", "www.bobaguys.com", "bobaguys.square.site"]
+  },
+  "food": {
+    "max_quantity": 1,
+    "stores": [
+      {
+        "id": "boba-guys-potrero",
+        "name": "Boba Guys",
+        "pickup_addresses": ["580 20th Street, San Francisco"],
+        "doordash_url": "https://www.doordash.com/store/boba-guys-san-francisco-880283/?pickup=true",
+        "order_url": "https://boba-guys.square.site/",
+        "store_label": "Boba Guys Potrero",
+        "store_address": "1002 16th St, San Francisco, CA 94107",
+        "location_suggestion": "580 20th Street, San Francisco, California, USA",
+        "menu_categories": ["Build Your Drink"]
+      }
+    ]
+  },
+  "defaults": { "mission_mode": "fixture" }
+}
