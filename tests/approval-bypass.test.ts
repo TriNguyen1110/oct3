@@ -153,6 +153,16 @@ test("live approval bypass attempts are refused", async t => {
   });
 });
 
+test("the WebAuthn test seam is refused in a deployment or production build", t => {
+  for (const changes of [{ VERCEL: "1", NODE_ENV: undefined }, { VERCEL: undefined, NODE_ENV: "production" }]) {
+    const previous = { VERCEL: process.env.VERCEL, NODE_ENV: process.env.NODE_ENV };
+    for (const [key, value] of Object.entries(changes)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; }
+    try { assert.throws(() => setWebAuthnLibraryForTests(fakeWebAuthn), /only available in tests/); }
+    finally { for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } }
+  }
+  t.diagnostic("seam refused outside tests");
+});
+
 test("wallet gate: merchant lookalike hosts, charges and checkout totals", async t => {
   const directory = await mkdtemp(join(tmpdir(), "cue-wallet-bypass-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
