@@ -34,10 +34,10 @@ export function safeLinkUrl(value: unknown): string | undefined {
 }
 
 export function buildLinkRequest(record: MissionRecord, taskId: string, exact: { proposal_id: string; revision: number }, test: boolean, reconcileExisting = false): CreateSpendRequestParams {
-  const { task, proposal: p, action_hash } = walletAction(record, taskId, exact, reconcileExisting);
+  const { proposal: p, action_hash } = walletAction(record, taskId, exact, reconcileExisting);
   const url = new URL(p.source_url);
-  const allowed: Record<string, string[]> = { amazon: ["www.amazon.com", "amazon.com"], fiverr: ["www.fiverr.com", "fiverr.com"], food: ["order.bobaguys.com", "www.bobaguys.com", "bobaguys.square.site"], event_tickets: ["luma.com", "www.eventbrite.com"] };
-  if (url.protocol !== "https:" || url.username || url.password || !allowed[task.lane]?.includes(url.hostname) || url.search || url.hash || !Number.isSafeInteger(p.total_minor) || p.total_minor < 1 || p.total_minor > 50000) throw new AppError(409, "wallet_action_invalid", "Use a supported public merchant URL and a verified total between $0.01 and $500.");
+  // walletAction already applied the installation's merchant list and spend limit.
+  if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash || !Number.isSafeInteger(p.total_minor)) throw new AppError(409, "wallet_action_invalid", "Use a supported public merchant URL and a verified total.");
   const binding = createHash("sha256").update(`${record.workspace_id}:${taskId}:${action_hash}:${test}`).digest("hex");
   return {
     idempotency_key: `cue-wallet-${binding}`, credential_type: "card", test, request_approval: false,

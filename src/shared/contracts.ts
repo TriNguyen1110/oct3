@@ -10,6 +10,10 @@ export interface Evidence {
   /** Set only by an adapter after observing the corresponding provider page. */
   kind?: "observation" | "checkout_preview" | "merchant_confirmation" | "merchant_receipt";
   proposal_id?: string; revision?: number;
+  /** Checkout total the adapter observed (checkout_preview only), in USD cents. */
+  amount_minor?: number;
+  /** Itemized charges the adapter observed. An absent charge was not observed, not zero. */
+  charges?: { tax_minor?: number; shipping_minor?: number; fees_minor?: number };
 }
 export interface Option {
   id: string; title: string; description: string; source_url: string; merchant: string;
@@ -19,8 +23,11 @@ export interface Option {
 export interface Proposal {
   id: string; revision: number; task_id: string; option_id: string;
   merchant: string; title: string; source_url: string; quantity: number;
-  recipient_ref: string; deadline: string; subtotal_minor: number; tax_minor: number;
-  shipping_minor: number; fees_minor: number; total_minor: number;
+  recipient_ref: string; deadline: string; subtotal_minor: number;
+  /** null means the charge was not observed. Execution is blocked until every charge is known. */
+  tax_minor: number | null; shipping_minor: number | null; fees_minor: number | null;
+  /** Subtotal plus the known charges; a lower bound while any charge is null. */
+  total_minor: number;
   currency: "USD"; expires_at: string;
   /** Only the specialized zero-dollar registration path uses these fields. */
   action_type?: "free_registration";
@@ -65,7 +72,7 @@ export interface MissionInput {
     amazon?: { category: string; delivery_ref: string };
     fiverr?: { category: string; brief: string; due_date: string };
     event_tickets?: { event_url: string; date: string; quantity: number; attendee_ref: string };
-    food?: { query: string; fulfillment: "pickup" | "delivery"; location: string; quantity: number };
+    food?: { query: string; fulfillment: "pickup" | "delivery"; location: string; quantity: number; /** Options to select on the item, e.g. size or sweetness, read back after selecting. */ modifiers?: string[] };
   };
 }
 export interface MissionView {

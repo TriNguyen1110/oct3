@@ -12,3 +12,4 @@ artifacts/private/
 .output/
 *.tsbuildinfo
 .data/
+.cue/policy.json

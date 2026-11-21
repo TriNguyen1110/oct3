@@ -5,6 +5,7 @@ import { servicePaymentReadiness } from "@/src/server/service-payments";
 import { linkConfigured, linkTestMode } from "@/src/server/link-wallet";
 import { browserlessConfigured } from "@/src/browser";
 import type { RuntimeReadiness } from "@/src/shared/contracts";
+import { defaultMissionMode } from "@/src/server/installation-policy";
 
 export const runtime = "nodejs";
 export async function GET(request: Request) {
@@ -20,6 +21,6 @@ export async function GET(request: Request) {
       { service: "Stripe MPP", ready: stripe.ready, detail: stripe.detail },
       { service: "Link Agent Wallet", ready: linkConfigured(), detail: linkConfigured() ? `Connection configured in ${linkTestMode() ? "test" : "live"} mode; wallet health is checked separately. Exact checkout and Link approval are required; merchant execution remains disabled.` : "Connect Link to prepare exact merchant spend requests. Merchant execution remains disabled." },
     ];
-    return Response.json({ services, mode: process.env.OCT3_DEMO_MODE === "true" ? "fixture" : "live", storage: storageMode() });
+    return Response.json({ services, mode: defaultMissionMode(), storage: storageMode() });
   });
 }

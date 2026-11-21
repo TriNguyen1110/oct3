@@ -8,6 +8,7 @@ import type { MissionRecord } from "../src/server/model";
 import type { Principal } from "../src/server/auth";
 import type { MissionInput } from "../src/shared/contracts";
 import { mock, type Options } from "./helpers/luma-registration";
+import { approveWithFakePasskey } from "./helpers/fake-webauthn";
 
 const manager: Principal = { id: "synthetic-manager", workspace_id: "synthetic-free-workspace", role: "manager" };
 const agent: Principal = { ...manager, id: "synthetic-agent", role: "agent" };
@@ -55,7 +56,7 @@ function setup(t: TestContext, options: Options = {}) {
 }
 const task = (r: MissionRecord) => r.view.tasks.find(x => x.lane === "event_tickets")!;
 const exact = (r: MissionRecord) => ({ proposal_id: task(r).proposal!.id, revision: task(r).proposal!.revision });
-const approve = async (r: MissionRecord) => decideTask(task(r).id, manager, exact(r), "approve", (await approvalRequirement(task(r).id, manager, exact(r))).action_hash);
+const approve = async (r: MissionRecord) => approveWithFakePasskey(task(r).id, manager, exact(r));
 
 test("free registration private preparation and exact approval guards", async t => {
   const h = setup(t);

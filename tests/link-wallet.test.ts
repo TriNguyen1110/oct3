@@ -11,6 +11,7 @@ import { getRecord, mutateRecord } from "../src/server/store";
 import type { MissionInput, Proposal } from "../src/shared/contracts";
 import { GET as walletRoute } from "../app/api/wallet/route";
 import { POST as cancelRoute } from "../app/api/tasks/[id]/wallet/cancel/route";
+import { approveWithFakePasskey } from "./helpers/fake-webauthn";
 
 const manager: Principal = { id: "wallet-manager", workspace_id: "wallet-test", role: "manager" };
 const agent: Principal = { id: "wallet-agent", workspace_id: "wallet-test", role: "agent" };
@@ -90,12 +91,11 @@ test("Link wallet exact-action and reconciliation boundary", async t => {
         id: `checkout-${sequence}`, task_id: taskId, source_url: proposal.source_url,
         observed_at: "2026-10-03T00:00:00.000Z", title: "Synthetic exact checkout",
         detail: "Synthetic checkout preview only", mode: "live", kind: "checkout_preview",
-        proposal_id: proposal.id, revision: proposal.revision,
+        proposal_id: proposal.id, revision: proposal.revision, amount_minor: proposal.total_minor,
       });
     });
     if (options.approve !== false) {
-      const requirement = await approvalRequirement(taskId, manager, exact(proposal));
-      await decideTask(taskId, manager, exact(proposal), "approve", requirement.action_hash);
+      await approveWithFakePasskey(taskId, manager, exact(proposal));
     }
     return { missionId: record.id, taskId, proposal };
   }

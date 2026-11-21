@@ -10,7 +10,7 @@ export const defaultInput: MissionInput & { requirements: Required<MissionInput[
     amazon: { category: "Portable expo booth supplies", delivery_ref: "demo-office" },
     fiverr: { category: "Event flyer design", brief: "Design one print-ready A5 flyer for our six-person team at a startup expo. Supply editable source and print-ready PDF. One revision.", due_date: "2026-10-09T17:00:00-07:00" },
     event_tickets: { event_url: "", date: "2026-10-10T09:00:00-07:00", quantity: 6, attendee_ref: "demo-team" },
-    food: { query: "boba milk tea", fulfillment: "pickup", location: "580 20th Street, San Francisco", quantity: 1 },
+    food: { query: "Classic Black boba milk tea", fulfillment: "pickup", location: "580 20th Street, San Francisco", quantity: 1 },
   },
 };
 

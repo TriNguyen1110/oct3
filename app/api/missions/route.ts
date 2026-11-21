@@ -2,6 +2,7 @@ import { presentMission } from "@/src/server/presentation";
 import { requireAuth } from "@/src/server/auth";
 import { dispatchMission } from "@/src/server/dispatch";
 import { handle } from "@/src/server/errors";
+import { defaultMissionMode } from "@/src/server/installation-policy";
 import { createMission } from "@/src/server/missions";
 import { missionSchema } from "@/src/server/schema";
 import { gateMissionServicePayment } from "@/src/server/service-payment-gate";
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
     const principal = requireAuth(request);
     const paymentRequest = request.clone();
     const parsed = missionSchema.parse(await request.json());
-    const { mode = process.env.OCT3_DEMO_MODE === "true" ? "fixture" : "live", ...input } = parsed;
+    const { mode = defaultMissionMode(), ...input } = parsed;
     const result = await createMission(input, principal, request.headers.get("Idempotency-Key") || "", mode);
     const origin = new URL(request.url).origin;
     if (mode === "fixture") {

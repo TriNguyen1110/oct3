@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import type { Lane, MissionInput, MissionView, Proposal, Task } from "../shared/contracts";
+import type { Evidence, Lane, MissionInput, MissionView, Proposal, Task } from "../shared/contracts";
 import type { Principal } from "./auth";
 import { AppError } from "./errors";
 import { fixtureResearch } from "./fixtures";
@@ -7,6 +7,8 @@ import { assertPreparedFreeRegistration, resumeFreeRegistrationTask } from "./fr
 import type { MissionRecord } from "./model";
 import { servicePaymentReadiness } from "./service-payments";
 import { constraintsSchema } from "./schema";
+import { requireInstallationPolicy } from "./installation-policy";
+import { isVerifiedApproval, type VerifiedApproval } from "./passkeys";
 import { createRecord, findTask, getRecord, mutateRecord } from "./store";
 
 const lanes: Lane[] = ["amazon", "fiverr", "event_tickets", "food"];
@@ -54,14 +56,36 @@ export function refresh(record: MissionRecord) {
   if (view.mode === "fixture") view.next_actions.unshift("This is a fixture scenario. No merchant will be contacted or charged.");
 }
 
+const chargeKeys = ["tax_minor", "shipping_minor", "fees_minor"] as const;
+type ChargeKey = typeof chargeKeys[number];
+
+/**
+ * Charges come only from the option's own evidence. A charge no evidence reports, or that two
+ * pieces of evidence disagree on, is null (unknown), never assumed to be 0.
+ */
+export function observedCharges(evidence: Evidence[]): Record<ChargeKey, number | null> {
+  const result = {} as Record<ChargeKey, number | null>;
+  for (const key of chargeKeys) {
+    const seen = [...new Set(evidence.map(item => item.charges?.[key]).filter((value): value is number => value !== undefined))];
+    result[key] = seen.length === 1 && Number.isSafeInteger(seen[0]) && seen[0] >= 0 ? seen[0] : null;
+  }
+  return result;
+}
+
+/** Names of the charges a proposal has not observed yet. */
+export function unknownCharges(proposal: Proposal): ChargeKey[] {
+  return chargeKeys.filter(key => proposal[key] === null);
+}
+
 function proposal(record: MissionRecord, task: Task, optionId: string): Proposal {
   const option = task.options.find(x => x.id === optionId)!;
+  const charges = observedCharges(task.evidence.filter(item => option.evidence_ids.includes(item.id)));
   return {
     id: randomUUID(), task_id: task.id, revision: record.view.revision, option_id: option.id,
     merchant: option.merchant, title: option.title, source_url: option.source_url, quantity: option.quantity,
     recipient_ref: task.lane === "amazon" ? record.input.requirements.amazon!.delivery_ref : task.lane === "event_tickets" ? record.input.requirements.event_tickets!.attendee_ref : "manager-brief",
-    deadline: record.input.deadline, subtotal_minor: option.amount_minor, tax_minor: 0, shipping_minor: 0, fees_minor: 0,
-    total_minor: option.amount_minor, currency: "USD", expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+    deadline: record.input.deadline, subtotal_minor: option.amount_minor, ...charges,
+    total_minor: option.amount_minor + chargeKeys.reduce((sum, key) => sum + (charges[key] ?? 0), 0), currency: "USD", expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
   };
 }
 
@@ -167,11 +191,12 @@ function validateProposal(record: MissionRecord, taskId: string, exact: { propos
   if (stored.task_id !== task.id || stored.currency !== "USD" || !Number.isSafeInteger(stored.quantity) || stored.quantity <= 0) {
     throw new AppError(409, "invalid_proposal", "The stored proposal is not bound to this task, currency and quantity.");
   }
-  const money = [stored.subtotal_minor, stored.tax_minor, stored.shipping_minor, stored.fees_minor, stored.total_minor];
-  if (money.some(amount => !Number.isSafeInteger(amount) || amount < 0)) {
+  const charges = chargeKeys.map(key => stored[key]);
+  const money = [stored.subtotal_minor, stored.total_minor, ...charges.filter(amount => amount !== null)];
+  if (money.some(amount => !Number.isSafeInteger(amount) || (amount as number) < 0)) {
     throw new AppError(409, "invalid_proposal", "The stored proposal contains an invalid amount.");
   }
-  const computedTotal = stored.subtotal_minor + stored.tax_minor + stored.shipping_minor + stored.fees_minor;
+  const computedTotal = stored.subtotal_minor + charges.reduce<number>((sum, amount) => sum + (amount ?? 0), 0);
   if (!Number.isSafeInteger(computedTotal) || computedTotal !== stored.total_minor) {
     throw new AppError(409, "invalid_proposal", "The stored proposal total does not match its itemized amounts.");
   }
@@ -215,7 +240,19 @@ function exactApprovedAction(record: MissionRecord, task: Task) {
   return typeof saved === "string" && saved === approvedActionHash(record, task);
 }
 
-export async function decideTask(taskId: string, principal: Principal, exact: { proposal_id: string; revision: number }, decision: "approve" | "reject", verifiedActionHash?: string) {
+export type { VerifiedApproval } from "./passkeys";
+
+/** A live approval needs an approver named in the installation policy and a passkey proof for this exact action. */
+function assertLiveApproval(record: MissionRecord, task: Task, principal: Principal, verified: VerifiedApproval | undefined) {
+  const policy = requireInstallationPolicy("Live approval");
+  if (!policy.approval.live_approvers.includes(principal.id)) throw new AppError(403, "approver_not_allowed", "This manager is not an approver for live actions in this installation's policy.");
+  // Only a proof minted by verifyApproval counts; a hand-built object with the same fields is refused.
+  if (!isVerifiedApproval(verified) || verified.principal_id !== principal.id || verified.workspace_id !== principal.workspace_id || verified.action_hash !== approvedActionHash(record, task)) {
+    throw new AppError(403, "passkey_required", "Biometric or device passkey confirmation is required for this exact live action. Demo confirmation covers fixture missions only.");
+  }
+}
+
+export async function decideTask(taskId: string, principal: Principal, exact: { proposal_id: string; revision: number }, decision: "approve" | "reject", verified?: VerifiedApproval) {
   if (principal.role !== "manager") throw new AppError(403, "manager_required", "A manager must approve this action.");
   const found = await findTask(taskId, principal.workspace_id);
   return mutateRecord(found.id, principal.workspace_id, record => {
@@ -237,9 +274,7 @@ export async function decideTask(taskId: string, principal: Principal, exact: { 
         }
         return;
       }
-      if (record.view.mode === "live" && verifiedActionHash !== approvedActionHash(record, task)) {
-        throw new AppError(403, "passkey_required", "Biometric or device passkey confirmation is required for this exact live action.");
-      }
+      if (record.view.mode === "live") assertLiveApproval(record, task, principal, verified);
       if (task.blocker && task.blocker.startsWith("The lowest illustrative")) throw new AppError(409, "plan_infeasible", task.blocker);
       const cost = task.proposal!.total_minor;
       refresh(record);
@@ -295,8 +330,20 @@ export function walletAction(record: MissionRecord, taskId: string, exact: { pro
   if (record.view.mode !== "live" || record.view.service_payment.status !== "paid" || task.proposal!.action_type === "free_registration") throw new AppError(409, "wallet_action_invalid", "A paid live merchant task is required for wallet preparation.");
   if (["executing", "confirmed"].includes(task.status) || record.reservations.some(r => r.task_id === taskId && ["committed", "uncertain"].includes(r.state))) throw new AppError(409, "execution_locked", "Reconcile the existing merchant commitment first.");
   if (!exactStoredApproval(task, exact) || !exactApprovedAction(record, task) || !exactHeldReservation(record, taskId, exact.proposal_id, task.proposal!.total_minor)) throw new AppError(403, "approval_required", "The current exact action needs manager approval and a held budget reservation.");
-  if (!task.evidence.some(e => e.kind === "checkout_preview" && e.mode === "live" && e.proposal_id === exact.proposal_id && e.revision === exact.revision && e.source_url === task.proposal!.source_url)) throw new AppError(409, "checkout_required", "Verify the merchant checkout and final total before requesting wallet payment.");
-  return { task, proposal: task.proposal!, action_hash: approvedActionHash(record, task) };
+  const stored = task.proposal!;
+  const checkouts = task.evidence.filter(e => e.kind === "checkout_preview" && e.mode === "live" && e.proposal_id === exact.proposal_id && e.revision === exact.revision && e.source_url === stored.source_url);
+  if (!checkouts.length) throw new AppError(409, "checkout_required", "Verify the merchant checkout and final total before requesting wallet payment.");
+  const unknown = unknownCharges(stored);
+  if (unknown.length) throw new AppError(409, "charges_unknown", `The checkout has not shown ${unknown.map(key => key.replace("_minor", "")).join(", ")}. Observe every charge before requesting wallet payment.`);
+  if (!checkouts.every(e => e.amount_minor === stored.total_minor)) throw new AppError(409, "checkout_total_mismatch", "The observed checkout total does not equal the approved total. Research and approve the current total again.");
+  const policy = requireInstallationPolicy("Wallet payment");
+  const limit = policy.spend.max_wallet_total_minor;
+  if (stored.total_minor < 1 || stored.total_minor > limit) throw new AppError(409, "wallet_limit_exceeded", "This installation allows wallet requests from 1 cent up to " + limit + " cents.");
+  let host = "";
+  try { host = new URL(stored.source_url).hostname.toLowerCase(); } catch { /* refused below */ }
+  if (!policy.merchants[task.lane].includes(host)) throw new AppError(409, "merchant_not_allowed", "This merchant is not allowed for wallet payment in this installation's policy.");
+  const proposal = { ...stored, tax_minor: stored.tax_minor!, shipping_minor: stored.shipping_minor!, fees_minor: stored.fees_minor! };
+  return { task, proposal, action_hash: approvedActionHash(record, task) };
 }
 
 export async function missionView(id: string, principal: Principal): Promise<MissionView> { return (await getRecord(id, principal.workspace_id)).view; }
