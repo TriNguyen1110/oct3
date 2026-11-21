@@ -139,11 +139,11 @@ test("the order page worker returns the drink the request names, at the price th
   const browser = await launchTestChrome(t);
   const menu: Record<string, string> = { "Classic Black": "6.60", "Jasmine Green": "5.50", "Taro Slush": "7.10", "Classic Milk Tea": "6.00", "Taro Milk Tea": "6.20" };
   // clearing: choosing Pudding silently clears Boba, so only a final read-back of every option catches it.
-  const page = (closed: boolean, clearing = false) => `<!doctype html><body>${closed ? "<p>Currently closed</p>" : ""}<input placeholder="Search by city, state, or ZIP"><label><input type="radio" name="store"><span>Boba Guys Potrero</span><span>1002 16th St, San Francisco, CA 94107</span></label><button>Confirm location</button>${Object.entries(menu).map(([name, price]) => `<button onclick="document.querySelector('#add').textContent='Add to order $${price}'">${name}</button>`).join("")}<label><input type="checkbox" id="boba"><span>Boba</span></label>${clearing ? `<label><input type="checkbox" onchange="document.querySelector('#boba').checked=false"><span>Pudding</span></label>` : ""}<label><input type="checkbox" onclick="event.preventDefault()"><span>Grass Jelly</span></label><button id="add" onclick="window.canaryAdd()">Add to order</button></body>`;
+  const page = (closed: boolean, clearing = false) => `<!doctype html><body>${closed ? "<p>Currently closed</p>" : ""}<input placeholder="Search by city, state, or ZIP"><label><input type="radio" name="store"><span>Boba Guys Potrero</span><span>1002 16th St, San Francisco, CA 94107</span></label><button>Confirm location</button>${Object.entries(menu).map(([name, price]) => `<button onclick="window.canaryItem('${name}');document.querySelector('#add').textContent='Add to order $${price}'">${name}</button>`).join("")}<label><input type="checkbox" id="boba"><span>Boba</span></label>${clearing ? `<label><input type="checkbox" onchange="document.querySelector('#boba').checked=false"><span>Pudding</span></label>` : ""}<label><input type="checkbox" onclick="event.preventDefault()"><span>Grass Jelly</span></label><button id="add" onclick="window.canaryAdd()">Add to order</button></body>`;
   const research = async (query: string, closed = false, modifiers?: string[], clearing = false) => {
-    const context = await browser.newContext(); let cartClicks = 0;
+    const context = await browser.newContext(); let cartClicks = 0; const itemClicks: string[] = [];
     t.mock.method(chromium, "connectOverCDP", async () => ({ contexts: () => [{ newPage: async () => {
-      const tab = await context.newPage(); await tab.exposeFunction("canaryAdd", () => { cartClicks++; });
+      const tab = await context.newPage(); await tab.exposeFunction("canaryAdd", () => { cartClicks++; }); await tab.exposeFunction("canaryItem", (name: string) => { itemClicks.push(name); });
       await tab.route("**/*", route => route.fulfill({ contentType: "text/html", body: page(closed, clearing) }));
       return tab;
     } }], close: async () => {} }));
@@ -151,7 +151,7 @@ test("the order page worker returns the drink the request names, at the price th
     const result = await researchDoorDash(input);
     await context.close();
     assert.equal(cartClicks, 0);
-    return result;
+    return Object.assign(result, { itemClicks });
   };
   const jasmine = await research("Jasmine Green milk tea");
   assert.equal(jasmine.options.length, 1, jasmine.blocker); assert.equal(jasmine.options[0].title, "Jasmine Green"); assert.equal(jasmine.options[0].amount_minor, 550);
@@ -175,7 +175,8 @@ test("the order page worker returns the drink the request names, at the price th
   modelAnswer = "{\"index\":3}"; process.env.ANTHROPIC_API_KEY = "synthetic-not-a-key";
   try {
     const tied = await research("milk tea");
-    assert.equal(tied.options.length, 0); assert.equal(tied.blocker_code, "no_options"); assert.match(tied.blocker!, /more than one menu item equally \(Classic Milk Tea; Taro Milk Tea\)/);
+    assert.equal(tied.options.length, 0); assert.equal(tied.blocker_code, "no_options");
+    assert.deepEqual(tied.itemClicks, [], "an ambiguous item is refused before the worker opens it"); assert.match(tied.blocker!, /more than one menu item equally \(Classic Milk Tea; Taro Milk Tea\)/);
   } finally { modelAnswer = undefined; delete process.env.ANTHROPIC_API_KEY; }
   const kept = await research("Classic Black boba milk tea", false, ["Boba"]);
   assert.equal(kept.options[0].title, "Classic Black"); assert.match(kept.options[0].description, /Boba \(selected and read back\)/);
