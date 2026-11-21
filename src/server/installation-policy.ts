@@ -92,6 +92,17 @@ export function requireInstallationPolicy(gate: string): InstallationPolicy {
   return loaded.policy;
 }
 
+/**
+ * The mode a new mission gets when the request names none. OCT3_DEMO_MODE=true only ever moves it
+ * toward the safer fixture mode; otherwise the policy's defaults.mission_mode applies, and live
+ * without one (live actions still fail closed on their own gates).
+ */
+export function defaultMissionMode(): "fixture" | "live" {
+  if (process.env.OCT3_DEMO_MODE === "true") return "fixture";
+  const loaded = loadInstallationPolicy();
+  return loaded.ok ? loaded.policy.defaults.mission_mode ?? "live" : "live";
+}
+
 /** Normalizes an address for comparison: case, punctuation and common street suffixes. */
 export function normalizeAddress(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, " ")
