@@ -2,9 +2,9 @@ import { createHash } from "node:crypto";
 import type { Evidence, Lane, Option } from "../shared/contracts";
 import { collectCandidates, detectAccessBlocker, publicSourceUrl, researchUrl } from "./extract";
 import { BrowserIssue, withSurfskyPage } from "./surfsky";
-import { rankCandidates } from "./rank";
+import { rankCandidates, type Ranking } from "./rank";
 import { createComponentToolkit, type ComponentSnapshot } from "./components";
-import type { ExecuteApprovedTaskInput, ExecuteApprovedTaskResult, ResearchTaskInput, ResearchTaskResult } from "./types";
+import type { ExecuteApprovedTaskInput, ExecuteApprovedTaskResult, ObservedCandidate, ResearchTaskInput, ResearchTaskResult } from "./types";
 import { researchDoorDash } from "./doordash";
 import { browserlessConfigured, solveBrowserlessChallenge, withBrowserlessPage } from "./browserless";
 
@@ -31,6 +31,15 @@ async function progress(input: ResearchTaskInput, message: string) {
 }
 function runSignal(input: ResearchTaskInput) {
   return AbortSignal.any([AbortSignal.timeout(Math.max(10_000,Math.min(input.timeout_ms ?? 90_000,120_000))), ...(input.signal ? [input.signal] : [])]);
+}
+/** Options for ranked candidates. Only a model ranking recommends one; unranked options never are. */
+export function rankedOptions(ranked: { candidates: ObservedCandidate[]; ranking: Ranking }, input: ResearchTaskInput, proofFor: (candidate: ObservedCandidate) => string): Option[] {
+  return ranked.candidates.map((candidate,index) => {
+    const proofId = proofFor(candidate);
+    const isRanked = ranked.ranking.status === "ranked";
+    const reason = isRanked ? "Claude selected this from observed merchant options for the brief and budget. Final scope and checkout total still need verification." : `Ranking unavailable (${ranked.ranking.status === "unavailable" ? ranked.ranking.reason : ""}). Shown in page order, not recommended; compare scope and final total before approval.`;
+    return { id: id(input.task_id,candidate.source_url,String(candidate.amount_minor)), title:candidate.title, description:candidate.description, source_url:candidate.source_url, merchant:providerName(input.lane,candidate.source_url), amount_minor:candidate.amount_minor,currency:"USD",quantity:candidate.quantity,delivery_date:candidate.delivery_date,available:candidate.available,recommended:isRanked && index===0,reason:input.lane === "event_tickets" ? `${reason} This read-only result does not claim a registration request or confirmed RSVP.` : reason,evidence_ids:[proofId] };
+  });
 }
 export async function researchTask(input: ResearchTaskInput): Promise<ResearchTaskResult> {
   if(input.lane==="food")return researchDoorDash(input);
@@ -71,12 +80,10 @@ export async function researchTask(input: ResearchTaskInput): Promise<ResearchTa
       if (deduped.length > 1) await progress(input,"Comparing observed options against the brief and shared budget.");
       const ranked = await rankCandidates(deduped,input,signal);
       if (signal.aborted) throw new BrowserIssue("cancelled", "Browser research was cancelled before its result was finalized.");
-      const options: Option[] = ranked.candidates.map((candidate,index) => {
+      const options = rankedOptions(ranked, input, candidate => {
         const proof = evidence(input,candidate.source_url,candidate.title,`${candidate.price_text}. ${candidate.description}`,true);
         observations.push(proof);
-        const isRanked = ranked.ranking.status === "ranked";
-        const reason = isRanked ? "Claude selected this from observed merchant options for the brief and budget. Final scope and checkout total still need verification." : `Ranking unavailable (${ranked.ranking.status === "unavailable" ? ranked.ranking.reason : ""}). Shown in page order, not recommended; compare scope and final total before approval.`;
-        return { id: id(input.task_id,candidate.source_url,String(candidate.amount_minor)), title:candidate.title, description:candidate.description, source_url:candidate.source_url, merchant:providerName(input.lane,candidate.source_url), amount_minor:candidate.amount_minor,currency:"USD",quantity:candidate.quantity,delivery_date:candidate.delivery_date,available:candidate.available,recommended:isRanked && index===0,reason:input.lane === "event_tickets" ? `${reason} This read-only result does not claim a registration request or confirmed RSVP.` : reason,evidence_ids:[proof.id] };
+        return proof.id;
       });
       if (!options.length) {
         observations.push(evidence(input,source!,`${provider} page inspected`,"The page was accessible, but no supported USD options with a grounded title, source and price could be extracted. No purchase or registration was attempted.",true));
